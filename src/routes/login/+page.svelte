@@ -1,11 +1,11 @@
 <!-- src/routes/login/+page.svelte -->
 <script>
-    import { page } from '$app/stores';
+    import { page } from '$app/state';
     import LoginForm from '$lib/components/Auth/LoginForm.svelte';
     
     // Check for return URL and expired token notification
-    let returnUrl = $page.url.searchParams.get('returnUrl') || '/dashboard';
-    let tokenExpired = $page.url.searchParams.get('expired') === 'true';
+    let returnUrl = $derived(page.url.searchParams.get('returnUrl') || '/dashboard');
+    let tokenExpired = $derived(page.url.searchParams.get('expired') === 'true');
   </script>
   
   <svelte:head>

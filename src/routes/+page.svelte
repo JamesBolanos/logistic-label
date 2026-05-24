@@ -1,18 +1,9 @@
 <!-- src/routes/+page.svelte -->
 <script>
     import { goto } from '$app/navigation';
-    
-    // Check if user is logged in
-    let isLoggedIn = false;
-    
-    // On component mount, check auth status
-    import { onMount } from 'svelte';
-    
-    onMount(() => {
-      if (typeof window !== 'undefined') {
-        isLoggedIn = !!localStorage.getItem('authToken');
-      }
-    });
+    import { page } from '$app/state';
+
+    let isLoggedIn = $derived(Boolean(page.data.user));
     
     // Features list
     const features = [

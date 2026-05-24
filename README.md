@@ -1,50 +1,72 @@
 # Logistic Label (SvelteKit)
 
-Mocked SvelteKit app for GS1-128 logistic label workflows: auth (mock), dashboard, labels, and PDF/barcode stubs. Uses Tailwind v4 and in-memory data; no real backend or database is wired up yet.
+SvelteKit app for GS1-128 logistic label workflows: authentication, dashboard, label creation, preview, and PDF download. Uses Better Auth, Drizzle ORM, Neon Postgres, Tailwind v4, and server-side PDF/barcode generation.
 
 ## Quick start
 ```bash
 npm install
+cp .env.example .env
+npm run db:generate
+npm run db:migrate
 npm run dev -- --host --port 5173
 # build: npm run build
 # preview: npm run preview
 ```
 
+For Google sign-in, configure a Google OAuth client with this callback URL:
+`http://localhost:5173/api/auth/callback/google` locally, and `<production-origin>/api/auth/callback/google` in production.
+
 ## Tech stack
 - SvelteKit (Svelte 5), Vite
 - Tailwind CSS v4 (via `src/app.css`), custom theme tokens
-- Auth: mock endpoints setting `authToken` cookie; client guard via cookie check
-- Data: in-memory stub DB (`src/lib/server/db/neon.js`)
-- PDF/Labels: stub generators/placeholders
+- Auth: Better Auth with email/password and Google OAuth
+- Data: Neon Postgres via Drizzle ORM
+- PDF/Labels: server-side 4x6 PDF generation with vector GS1-128 barcode rendering
 - reCAPTCHA: Google test key; CSP updated to allow recaptcha domains
 
 ## App structure
 - Routes: `src/routes` (pages) and `src/routes/api` (endpoints)
 - Components: `src/lib/components` (Auth, Labels, Layout)
-- Server utilities: `src/lib/server` (auth, db stub, pdf stub)
+- Server utilities: `src/lib/server` (auth, db, pdf)
 - Validation: `src/lib/validation`
 - Styling: `src/app.css` (Tailwind import + tokens)
+- Database migrations: `drizzle/`
 
-## Auth flow (mock)
-- Endpoints: `/api/auth/login`, `/api/auth/signup`, `/api/auth/logout`
-- Cookie: `authToken` set on login; client guards check the cookie
-- Test user: `test@example.com` / `password123`
-- Note: Token is mock; httpOnly disabled in dev to allow client check. Enable secure/httpOnly for real deployments and move checks server-side.
+## Environment
+```bash
+LOGISTIC_LABEL_DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+BETTER_AUTH_SECRET="replace-with-a-long-random-secret"
+BETTER_AUTH_URL="http://localhost:5173"
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+PDF_STORAGE_PATH="storage/pdf"
+PREVIEW_STORAGE_PATH="storage/preview"
+```
 
-## Dashboard data (mock)
+Rotate any database URL or OAuth secret that has been shared in chat, logs, or issue trackers before using it in production.
+
+## Auth flow
+- Better Auth is mounted under `/api/auth/*` from `src/hooks.server.js`.
+- Protected pages: `/dashboard`, `/labels`.
+- Protected APIs: all `/api/*` routes except `/api/auth/*`.
+- `event.locals.user` and `event.locals.session` are populated server-side from Better Auth.
+
+## Dashboard data
 - Endpoint: `/api/dashboard`
-- Uses in-memory `logistic_labels` table stub; data resets on restart
+- Uses persisted `logistic_label` rows scoped to the authenticated user.
 
-## Labels/PDF (stub)
-- Placeholder modules for barcode/PDF generation; no real output yet.
+## Labels/PDF
+- Generates 4x6 PDF labels with vector GS1-128 barcode rendering.
+- Preview PDFs are stored under `storage/preview`; generated PDFs are stored under `storage/pdf`.
+- Scanner validation and any formal GS1 certification still need physical/test-suite verification before real production use.
 
 ## CSP and reCAPTCHA
 - CSP in `src/app.html` allows Google reCAPTCHA. Security headers (X-Frame-Options, etc.) set via `src/hooks.server.js`.
 
 ## What is missing / next steps
-- Real database and models (replace `src/lib/server/db/neon.js`)
-- Real auth (JWT or session) with secure cookies
-- Implement actual PDF/barcode generation
+- Email verification/password reset email delivery
+- Apple OAuth, if required after Google
+- Verify barcode output against physical scanners/GS1 certification requirements
 - Tests and linting scripts
 - Production adapter config for target hosting
 

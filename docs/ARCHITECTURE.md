@@ -3,8 +3,10 @@
 ## Overview
 - SvelteKit (Svelte 5) with Vite for build/dev.
 - Tailwind CSS v4 via `@import "tailwindcss";` in `src/app.css` plus theme tokens.
-- Mocked backend: in-memory auth and DB stubs, placeholder PDF/barcode generators.
-- Auth cookie (`authToken`) set by API; client guards check the cookie.
+- Better Auth for email/password sessions and Google OAuth.
+- Neon Postgres with Drizzle ORM and checked-in SQL migrations.
+- Server hooks expose the authenticated Better Auth user/session via `locals`.
+- PDF generation renders 4x6 labels with vector GS1-128 barcodes.
 
 ## Routing
 - Pages under `src/routes/`
@@ -13,29 +15,34 @@
   - `/dashboard` (protected)
   - `/labels` (listing/creation pages)
 - API endpoints under `src/routes/api/`
-  - `auth/`: login, signup, logout
+  - `auth/`: Better Auth mounted under `/api/auth/*`
   - `dashboard/`: aggregated dashboard data
   - `labels/`: create, list
-  - `pdf/`: generate, preview, download (stubs)
+  - `pdf/`: generate, preview, download
 
-## Auth flow (mock)
-- Login/signup endpoints set `authToken` cookie.
-- Client guards:
-  - `src/routes/+layout.js` checks `authToken` cookie for protected routes.
-  - `src/lib/components/Layout/ProtectedRoute.svelte` checks cookie on mount.
-- Test user seeded: `test@example.com` / `password123`.
-- Cookie flags: `httpOnly: false`, `secure: false`, `sameSite: 'lax'` for dev. For production: set `httpOnly: true`, `secure: true`, and perform server-side auth checks.
+## Auth flow
+- `src/lib/server/auth/betterAuth.js` configures Better Auth with Drizzle and Neon.
+- Email/password auth is enabled.
+- Google OAuth is enabled through `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+- Apple OAuth is intentionally deferred.
+- Server guard:
+  - `src/hooks.server.js` resolves the Better Auth session, sets `event.locals.user` and `event.locals.session`, redirects protected pages, and blocks protected APIs.
+  - Better Auth handles `/api/auth/*` requests.
 
-## Data layer (stub)
-- `src/lib/server/db/neon.js`: in-memory store with a minimal `query` that supports dashboard needs (counts, unique GTINs, recents) and filters by `user_id`. Data is non-persistent and resets on restart.
-- Labels stored in `data.logistic_labels` array with fields: `id, user_id, gtin, lot_number, created_at` (others can be added when implementing real DB).
+## Data layer
+- `src/lib/server/db/index.js` creates the Neon HTTP client and Drizzle database instance.
+- `src/lib/server/db/schema.js` defines Better Auth tables plus `logistic_label`.
+- `drizzle/` contains SQL migrations.
+- Label rows are scoped by Better Auth user id.
 
 ## Dashboard data
 - Endpoint: `/api/dashboard`
-- Requires `authToken` cookie; uses stub DB to compute totals, today count, last label, unique GTINs, recent labels.
+- Requires an authenticated session; computes totals, today count, last label, unique GTINs, and recent labels from Postgres.
 
-## Labels and PDF (stub)
-- `src/lib/server/pdf/labelGenerator.js` and `src/lib/pdf/barcodeGenerator.js` are placeholders; no real PDF/barcode output yet. Replace with real generators and binary responses when implementing.
+## Labels and PDF
+- `src/lib/server/pdf/labelGenerator.js` produces 4x6 PDF labels.
+- `src/lib/server/pdf/gs1Barcode.js` encodes supported GS1 application identifiers as Code 128 / GS1-128 bar patterns.
+- Preview PDFs are short-lived files under `storage/preview`; generated PDFs are under `storage/pdf`.
 
 ## Validation
 - Shared form validation in `src/lib/validation/formValidation.js` for login/signup and label inputs.
@@ -48,8 +55,9 @@
 - Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy) are set in `src/hooks.server.js` (server-side).
 
 ## Known gaps / next steps
-- Replace mock auth with real auth (JWT or session) and enable secure/httpOnly cookies; move auth checks server-side.
-- Replace stub DB with real database and migrations.
-- Implement actual PDF/barcode generation.
-- Add tests and linting (no scripts presently).
+- Configure production `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google OAuth credentials, and Neon URL in Vercel.
+- Add email delivery for verification and password reset flows.
+- Add Apple OAuth when the developer account/callback requirements are ready.
+- Verify barcode output against physical scanners/GS1 certification requirements.
+- Add test and lint scripts.
 - Choose and configure a production adapter (currently `adapter-auto`).

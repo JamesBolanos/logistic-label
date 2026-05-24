@@ -1,7 +1,6 @@
 // src/routes/api/pdf/preview/+server.js
 import { json } from '@sveltejs/kit';
 import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
-import { verifyToken } from '$lib/server/auth/auth';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { generateSSCC } from '$lib/utils/gs1Utils';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
@@ -41,22 +40,13 @@ setInterval(() => {
   }
 }, PREVIEW_MAX_AGE);
 
-export async function POST({ request, cookies, url }) {
+export async function POST({ request, locals, url }) {
   // Apply rate limiting
   const rateLimitResponse = pdfRateLimiter(request);
   if (rateLimitResponse) return rateLimitResponse;
-  
-  // Get auth token from cookies
-  const token = cookies.get('authToken');
-  
-  // Verify authentication
-  if (!token) {
+
+  if (!locals.user) {
     return json({ success: false, message: 'Authentication required' }, { status: 401 });
-  }
-  
-  const user = verifyToken(token);
-  if (!user) {
-    return json({ success: false, message: 'Invalid authentication token' }, { status: 401 });
   }
   
   try {
@@ -124,44 +114,4 @@ export async function POST({ request, cookies, url }) {
       { status: 500 }
     );
   }
-}
-
-// Endpoint to serve the preview PDF
-export async function GET({ params, cookies }) {
-  // Get auth token from cookies
-  const token = cookies.get('authToken');
-  
-  // Verify authentication
-  if (!token) {
-    return new Response('Authentication required', { status: 401 });
-  }
-  
-  const user = verifyToken(token);
-  if (!user) {
-    return new Response('Invalid authentication token', { status: 401 });
-  }
-  
-  // Get hash from params
-  const hash = params.hash;
-  
-  // Construct the file path
-  const filename = `preview_${hash}.pdf`;
-  const pdfPath = path.join(PREVIEW_DIR, filename);
-  
-  // Check if file exists
-  if (!fs.existsSync(pdfPath)) {
-    return new Response('Preview not found', { status: 404 });
-  }
-  
-  // Read the file
-  const pdfBuffer = fs.readFileSync(pdfPath);
-  
-  // Return the PDF
-  return new Response(pdfBuffer, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Length': pdfBuffer.length.toString()
-    }
-  });
 }

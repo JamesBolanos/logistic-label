@@ -7,6 +7,8 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
+/storage
+/.playwright-mcp
 
 # OS
 .DS_Store

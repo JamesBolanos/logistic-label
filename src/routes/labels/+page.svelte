@@ -1,22 +1,20 @@
 <!-- src/routes/labels/+page.svelte -->
 <script>
-    import { onMount } from 'svelte';
     import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
     import LabelForm from '$lib/components/Labels/LabelForm.svelte';
     import LabelPreview from '$lib/components/Labels/LabelPreview.svelte';
     import LabelHistory from '$lib/components/Labels/LabelHistory.svelte';
     
     // State
-    let labelData = null;
-    let previewUrl = null;
-    let generatedLabelId = null;
-    let isGenerating = false;
-    let error = null;
-    let success = null;
+    let labelData = $state(null);
+    let previewUrl = $state(null);
+    let generatedLabelId = $state(null);
+    let isGenerating = $state(false);
+    let error = $state(null);
+    let success = $state(null);
     
     // Handle form submission
-    async function handleSubmit(event) {
-      const formData = event.detail;
+    async function handleSubmit(formData) {
       labelData = formData;
       success = null;
       error = null;
@@ -86,17 +84,17 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Label Form -->
         <div>
-          <LabelForm on:submit={handleSubmit} />
+          <LabelForm onsubmit={handleSubmit} />
         </div>
         
         <!-- Label Preview -->
         <div>
-          <LabelPreview {labelData} {previewUrl} />
+          <LabelPreview {labelData} bind:previewUrl />
           
           {#if labelData && previewUrl}
             <div class="mt-4">
               <button
-                on:click={generatePDF}
+                onclick={generatePDF}
                 disabled={isGenerating}
                 class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >

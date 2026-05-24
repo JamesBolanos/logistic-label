@@ -1,59 +1,18 @@
 <!-- src/lib/components/Layout/Navbar.svelte -->
 <script>
-    import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
+    import { page } from '$app/state';
+    import { authClient } from '$lib/auth-client';
     
     // User state
-    let user = null;
-    let isLoggedIn = false;
-    let isMobileMenuOpen = false;
-    
-    // Check user authentication status
-    onMount(() => {
-      // Skip on the server
-      if (typeof window === 'undefined') return;
-      
-      // Get auth token
-      const token = localStorage.getItem('authToken');
-      
-      if (token) {
-        try {
-          // Parse the token (assuming JWT)
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          user = {
-            id: payload.id,
-            username: payload.username,
-            email: payload.email,
-            role: payload.role
-          };
-          isLoggedIn = true;
-        } catch (error) {
-          console.error('Error parsing auth token:', error);
-          handleLogout();
-        }
-      }
-    });
+    let user = $derived(page.data.user);
+    let isLoggedIn = $derived(Boolean(user));
+    let isMobileMenuOpen = $state(false);
     
     // Logout function
     async function handleLogout() {
       try {
-        // Call logout API
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        // Remove token from local storage
-        localStorage.removeItem('authToken');
-        
-        // Reset user state
-        user = null;
-        isLoggedIn = false;
-        
-        // Redirect to login
+        await authClient.signOut();
         goto('/login');
       } catch (error) {
         console.error('Logout error:', error);
@@ -81,7 +40,7 @@
           <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
             <a 
               href="/" 
-              class="{$page.url.pathname === '/' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              class="{page.url.pathname === '/' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
             >
               Home
             </a>
@@ -89,14 +48,14 @@
             {#if isLoggedIn}
               <a 
                 href="/dashboard" 
-                class="{$page.url.pathname === '/dashboard' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                class="{page.url.pathname === '/dashboard' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Dashboard
               </a>
               
               <a 
                 href="/labels" 
-                class="{$page.url.pathname.startsWith('/labels') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                class="{page.url.pathname.startsWith('/labels') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Labels
               </a>
@@ -113,7 +72,7 @@
                   {user?.username || 'User'}
                 </span>
                 <button
-                  on:click={handleLogout}
+                  onclick={handleLogout}
                   class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Logout
@@ -141,7 +100,7 @@
         <!-- Mobile menu button -->
         <div class="flex items-center sm:hidden">
           <button
-            on:click={toggleMobileMenu}
+            onclick={toggleMobileMenu}
             type="button"
             class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             aria-expanded="false"
@@ -169,7 +128,7 @@
         <div class="pt-2 pb-3 space-y-1">
           <a
             href="/"
-            class="{$page.url.pathname === '/' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            class="{page.url.pathname === '/' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
           >
             Home
           </a>
@@ -177,14 +136,14 @@
           {#if isLoggedIn}
             <a
               href="/dashboard"
-              class="{$page.url.pathname === '/dashboard' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              class="{page.url.pathname === '/dashboard' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Dashboard
             </a>
             
             <a
               href="/labels"
-              class="{$page.url.pathname.startsWith('/labels') ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              class="{page.url.pathname.startsWith('/labels') ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'} block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Labels
             </a>
@@ -201,7 +160,7 @@
             </div>
             <div class="mt-3 space-y-1">
               <button
-                on:click={handleLogout}
+                onclick={handleLogout}
                 class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 w-full text-left"
               >
                 Logout

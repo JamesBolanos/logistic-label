@@ -1,28 +1,22 @@
 <!-- src/lib/components/Labels/LabelForm.svelte -->
 <script>
-  import { createEventDispatcher } from 'svelte';
   import { validateLabelForm } from '$lib/validation/formValidation';
 
-  const dispatch = createEventDispatcher();
-
-  export let initialData = {
+  const today = new Date().toISOString().split('T')[0];
+  const defaultFormData = {
     gtin: '',
     lot_number: '',
-    production_date: '',
+    production_date: today,
     quantity: '',
     weight_pounds: ''
   };
 
-  let formData = { ...initialData };
-  let isLoading = false;
-  let errors = {};
-  let formError = '';
+  let { onsubmit } = $props();
 
-  // Ensure production date defaults to today when empty
-  const today = new Date().toISOString().split('T')[0];
-  if (!formData.production_date) {
-    formData.production_date = today;
-  }
+  let formData = $state({ ...defaultFormData });
+  let isLoading = $state(false);
+  let errors = $state({});
+  let formError = $state('');
 
   async function handleSubmit() {
     const validation = validateLabelForm(formData);
@@ -37,7 +31,7 @@
     errors = {};
 
     try {
-      dispatch('submit', { ...formData });
+      onsubmit?.({ ...formData });
     } catch (error) {
       console.error('Form submission error:', error);
       formError = 'An unexpected error occurred. Please try again.';
@@ -47,13 +41,13 @@
   }
 
   function resetForm() {
-    formData = { ...initialData, production_date: initialData.production_date || today };
+    formData = { ...defaultFormData };
     errors = {};
     formError = '';
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="space-y-6 bg-white p-6 rounded-lg shadow-md">
+<form onsubmit={(event) => { event.preventDefault(); handleSubmit(); }} class="space-y-6 bg-white p-6 rounded-lg shadow-md">
   <h2 class="text-xl font-bold mb-6">Create GS1-128 Logistic Label</h2>
 
   {#if formError}
@@ -75,7 +69,7 @@
         class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         placeholder="00123456789012"
         maxlength="14"
-        pattern="[0-9]{14}"
+        pattern="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]"
         required
       />
       {#if errors.gtin}
@@ -176,7 +170,7 @@
   <div class="flex items-center justify-end space-x-3">
     <button
       type="button"
-      on:click={resetForm}
+      onclick={resetForm}
       class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
     >
       Reset

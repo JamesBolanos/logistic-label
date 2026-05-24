@@ -1,6 +1,5 @@
 // src/routes/api/pdf/download/[id]/+server.js
 import { getLabelById } from '$lib/server/db/labels';
-import { verifyToken, logUserActivity } from '$lib/server/auth/auth';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
 import fs from 'fs';
 import path from 'path';
@@ -9,22 +8,14 @@ import { env } from '$env/dynamic/private';
 // Directory to store generated PDFs
 const PDF_DIR = env.PDF_STORAGE_PATH || 'storage/pdf';
 
-export async function GET({ params, request, cookies }) {
+export async function GET({ params, request, locals }) {
   // Apply rate limiting
   const rateLimitResponse = pdfRateLimiter(request);
   if (rateLimitResponse) return rateLimitResponse;
-  
-  // Get auth token from cookies
-  const token = cookies.get('authToken');
-  
-  // Verify authentication
-  if (!token) {
-    return new Response('Authentication required', { status: 401 });
-  }
-  
-  const user = verifyToken(token);
+
+  const user = locals.user;
   if (!user) {
-    return new Response('Invalid authentication token', { status: 401 });
+    return new Response('Authentication required', { status: 401 });
   }
   
   // Get label ID from params
@@ -52,20 +43,6 @@ export async function GET({ params, request, cookies }) {
     
     // Read the file
     const pdfBuffer = fs.readFileSync(pdfPath);
-    
-    // Log PDF download activity
-    await logUserActivity(
-      user.id,
-      'label_downloaded',
-      { 
-        label_id: label.id,
-        gtin: label.gtin,
-        lot_number: label.lot_number,
-        file: label.pdf_path
-      },
-      request.headers.get('x-forwarded-for') || 'unknown',
-      request.headers.get('user-agent')
-    );
     
     // Return the PDF
     return new Response(pdfBuffer, {

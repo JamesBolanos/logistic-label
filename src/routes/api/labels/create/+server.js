@@ -1,26 +1,17 @@
 // src/routes/api/labels/create/+server.js
 import { json } from '@sveltejs/kit';
 import { createLabel } from '$lib/server/db/labels';
-import { verifyToken, logUserActivity } from '$lib/server/auth/auth';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
 
-export async function POST({ request, cookies }) {
+export async function POST({ request, locals }) {
   // Apply rate limiting
   const rateLimitResponse = pdfRateLimiter(request);
   if (rateLimitResponse) return rateLimitResponse;
-  
-  // Get auth token from cookies
-  const token = cookies.get('authToken');
-  
-  // Verify authentication
-  if (!token) {
-    return json({ success: false, message: 'Authentication required' }, { status: 401 });
-  }
-  
-  const user = verifyToken(token);
+
+  const user = locals.user;
   if (!user) {
-    return json({ success: false, message: 'Invalid authentication token' }, { status: 401 });
+    return json({ success: false, message: 'Authentication required' }, { status: 401 });
   }
   
   try {
@@ -45,19 +36,6 @@ export async function POST({ request, cookies }) {
     
     // Create label in database
     const label = await createLabel(sanitizedData, user.id);
-    
-    // Log label creation activity
-    await logUserActivity(
-      user.id,
-      'label_created',
-      { 
-        label_id: label.id,
-        gtin: label.gtin,
-        lot_number: label.lot_number
-      },
-      request.headers.get('x-forwarded-for') || 'unknown',
-      request.headers.get('user-agent')
-    );
     
     return json({ 
       success: true,

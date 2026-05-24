@@ -1,19 +1,17 @@
 <!-- src/lib/components/Labels/LabelPreview.svelte -->
 <script>
-    import { onMount } from 'svelte';
-    
     // Props
-    export let labelData = null;
-    export let previewUrl = null;
+    let { labelData = null, previewUrl = $bindable(null) } = $props();
     
     // State
-    let isLoading = false;
-    let error = null;
+    let isLoading = $state(false);
+    let error = $state(null);
     
     // Watch for changes in labelData
-    $: if (labelData && !previewUrl) {
+    $effect(() => {
+      if (!labelData || previewUrl) return;
       generatePreview();
-    }
+    });
     
     // Generate a preview of the label
     async function generatePreview() {
@@ -60,7 +58,7 @@
       <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
         <p>Error: {error}</p>
         <button 
-          on:click={generatePreview}
+          onclick={generatePreview}
           class="mt-2 text-sm text-blue-600 hover:text-blue-500"
         >
           Try again

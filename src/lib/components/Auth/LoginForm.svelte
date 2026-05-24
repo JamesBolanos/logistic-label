@@ -1,22 +1,23 @@
 <!-- src/lib/components/Auth/LoginForm.svelte -->
 <script>
     import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
     import { dev } from '$app/environment';
+    import { authClient } from '$lib/auth-client';
     import { validateLoginForm } from '$lib/validation/formValidation';
     import Captcha from './Captcha.svelte';
     
     // Allow redirect to a provided return URL (defaults to dashboard)
-    export let returnUrl = '/dashboard';
+    let { returnUrl = '/dashboard' } = $props();
     
     // Form state
-    let email = '';
-    let password = '';
-    let rememberMe = false;
-    let isLoading = false;
-    let errors = {};
-    let formError = '';
-    let captchaVerified = false;
+    let email = $state('');
+    let password = $state('');
+    let rememberMe = $state(false);
+    let isLoading = $state(false);
+    let isSocialLoading = $state(false);
+    let errors = $state({});
+    let formError = $state('');
+    let captchaVerified = $state(false);
     
     // Handle form submission
     async function handleSubmit() {
@@ -39,26 +40,18 @@
       errors = {};
       
       try {
-        console.log('LoginForm submit start', { email, rememberMe, returnUrl, dev });
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({ email, password, rememberMe })
+        const { error } = await authClient.signIn.email({
+          email,
+          password,
+          rememberMe,
+          callbackURL: returnUrl
         });
-        
-        const data = await response.json();
-        console.log('LoginForm response', { status: response.status, ok: response.ok, data });
-        
-        if (!response.ok) {
-          formError = data.message || 'Login failed. Please check your credentials.';
+
+        if (error) {
+          formError = error.message || 'Login failed. Please check your credentials.';
           return;
         }
         
-        // Successful login
-        console.log('LoginForm navigating to returnUrl', returnUrl);
         goto(returnUrl);
       } catch (error) {
         console.error('LoginForm fetch error', error);
@@ -66,6 +59,22 @@
       } finally {
         // Ensure the button unfreezes even if navigation is blocked
         isLoading = false;
+      }
+    }
+
+    async function signInWithGoogle() {
+      isSocialLoading = true;
+      formError = '';
+
+      try {
+        await authClient.signIn.social({
+          provider: 'google',
+          callbackURL: returnUrl
+        });
+      } catch (error) {
+        console.error('Google sign-in error', error);
+        formError = 'Unable to start Google sign-in. Please try again.';
+        isSocialLoading = false;
       }
     }
     
@@ -84,7 +93,25 @@
       </div>
     {/if}
     
-    <form on:submit|preventDefault={handleSubmit} class="space-y-6">
+    <button
+      type="button"
+      onclick={signInWithGoogle}
+      disabled={isSocialLoading || isLoading}
+      class="mb-6 w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+    >
+      {isSocialLoading ? 'Opening Google...' : 'Continue with Google'}
+    </button>
+
+    <div class="relative mb-6">
+      <div class="absolute inset-0 flex items-center" aria-hidden="true">
+        <div class="w-full border-t border-gray-200"></div>
+      </div>
+      <div class="relative flex justify-center text-sm">
+        <span class="bg-white px-2 text-gray-500">or use email</span>
+      </div>
+    </div>
+
+    <form onsubmit={(event) => { event.preventDefault(); handleSubmit(); }} class="space-y-6">
       <!-- Email Field -->
       <div>
         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
@@ -165,14 +192,6 @@
         </button>
       </div>
     </form>
-    
-    {#if dev}
-      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-        <p class="text-sm text-blue-800">
-          <strong>Development Mode:</strong> Use test@example.com / password123 to log in.
-        </p>
-      </div>
-    {/if}
     
     <div class="mt-6 text-center">
       <p class="text-sm text-gray-600">

@@ -2,19 +2,21 @@
 <script>
   import { goto } from '$app/navigation';
   import { dev } from '$app/environment';
+  import { authClient } from '$lib/auth-client';
   import { validateRegistrationForm } from '$lib/validation/formValidation';
   import Captcha from './Captcha.svelte';
 
-  let email = '';
-  let username = '';
-  let full_name = '';
-  let password = '';
-  let password_confirm = '';
-  let isLoading = false;
-  let errors = {};
-  let formError = '';
-  let formSuccess = '';
-  let captchaVerified = false;
+  let email = $state('');
+  let username = $state('');
+  let full_name = $state('');
+  let password = $state('');
+  let password_confirm = $state('');
+  let isLoading = $state(false);
+  let isSocialLoading = $state(false);
+  let errors = $state({});
+  let formError = $state('');
+  let formSuccess = $state('');
+  let captchaVerified = $state(false);
 
   async function handleSubmit() {
     const validation = validateRegistrationForm({ 
@@ -41,36 +43,40 @@
     errors = {};
 
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          username,
-          full_name,
-          password,
-          password_confirm
-        })
+      const { error } = await authClient.signUp.email({
+        email,
+        password,
+        name: full_name || username,
+        callbackURL: '/dashboard'
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        formError = data.message || 'Registration failed. Please try again.';
-        if (data.errors) {
-          errors = data.errors;
-        }
+      if (error) {
+        formError = error.message || 'Registration failed. Please try again.';
         isLoading = false;
         return;
       }
 
-      formSuccess = 'Account created successfully! Redirecting to login...';
-      setTimeout(() => goto('/login'), 2000);
+      formSuccess = 'Account created successfully! Redirecting...';
+      setTimeout(() => goto('/dashboard'), 1000);
     } catch (error) {
       formError = 'An unexpected error occurred. Please try again.';
       isLoading = false;
+    }
+  }
+
+  async function signInWithGoogle() {
+    isSocialLoading = true;
+    formError = '';
+
+    try {
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/dashboard'
+      });
+    } catch (error) {
+      console.error('Google sign-in error', error);
+      formError = 'Unable to start Google sign-in. Please try again.';
+      isSocialLoading = false;
     }
   }
 
@@ -94,7 +100,25 @@
     </div>
   {/if}
 
-  <form on:submit|preventDefault={handleSubmit} class="space-y-6">
+  <button
+    type="button"
+    onclick={signInWithGoogle}
+    disabled={isSocialLoading || isLoading}
+    class="mb-6 w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+  >
+    {isSocialLoading ? 'Opening Google...' : 'Continue with Google'}
+  </button>
+
+  <div class="relative mb-6">
+    <div class="absolute inset-0 flex items-center" aria-hidden="true">
+      <div class="w-full border-t border-gray-200"></div>
+    </div>
+    <div class="relative flex justify-center text-sm">
+      <span class="bg-white px-2 text-gray-500">or create with email</span>
+    </div>
+  </div>
+
+  <form onsubmit={(event) => { event.preventDefault(); handleSubmit(); }} class="space-y-6">
     <div>
       <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
         Email Address

@@ -2,7 +2,6 @@
 import { json } from '@sveltejs/kit';
 import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
 import { createLabel, updateLabelPrinted } from '$lib/server/db/labels';
-import { verifyToken, logUserActivity } from '$lib/server/auth/auth';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
 import path from 'path';
@@ -19,22 +18,14 @@ try {
   console.error('Failed to create PDF storage directory:', err);
 }
 
-export async function POST({ request, cookies }) {
+export async function POST({ request, locals }) {
   // Apply rate limiting
   const rateLimitResponse = pdfRateLimiter(request);
   if (rateLimitResponse) return rateLimitResponse;
-  
-  // Get auth token from cookies
-  const token = cookies.get('authToken');
-  
-  // Verify authentication
-  if (!token) {
-    return json({ success: false, message: 'Authentication required' }, { status: 401 });
-  }
-  
-  const user = verifyToken(token);
+
+  const user = locals.user;
   if (!user) {
-    return json({ success: false, message: 'Invalid authentication token' }, { status: 401 });
+    return json({ success: false, message: 'Authentication required' }, { status: 401 });
   }
   
   try {
@@ -75,20 +66,6 @@ export async function POST({ request, cookies }) {
     
     // Update the label record with PDF path
     await updateLabelPrinted(label.id, filename, user.id);
-    
-    // Log label generation activity
-    await logUserActivity(
-      user.id,
-      'label_generated',
-      { 
-        label_id: label.id,
-        gtin: label.gtin,
-        lot_number: label.lot_number,
-        file: filename
-      },
-      request.headers.get('x-forwarded-for') || 'unknown',
-      request.headers.get('user-agent')
-    );
     
     return json({ 
       success: true,
