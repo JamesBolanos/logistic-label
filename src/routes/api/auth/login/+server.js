@@ -10,6 +10,7 @@ export async function POST({ request, cookies }) {
   
   try {
     const { email, password, rememberMe } = await request.json();
+    console.log('API /auth/login attempt', { email, rememberMe });
     
     // Get client IP
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
@@ -31,6 +32,7 @@ export async function POST({ request, cookies }) {
     
     // Attempt to log in user
     const { token, user } = await loginUser(email, password);
+    console.log('API /auth/login success', { user: user.email });
     
     // Set JWT cookie
     const cookieOptions = getJwtCookieOptions();
@@ -41,6 +43,7 @@ export async function POST({ request, cookies }) {
     }
     
     cookies.set('authToken', token, cookieOptions);
+    console.log('API /auth/login cookie set', { cookieOptions });
     
     return json({ 
       success: true,
@@ -53,7 +56,7 @@ export async function POST({ request, cookies }) {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('API /auth/login error:', error);
     
     // Return a generic error for security
     return json(

@@ -20,7 +20,7 @@
     onMount(async () => {
       try {
         // Get dashboard stats
-        const response = await fetch('/api/dashboard/stats');
+        const response = await fetch('/api/dashboard');
         
         if (!response.ok) {
           throw new Error('Failed to load dashboard data');

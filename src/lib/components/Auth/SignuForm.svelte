@@ -1,7 +1,7 @@
 <!-- src/lib/components/Auth/SignupForm.svelte -->
 <script>
     import { goto } from '$app/navigation';
-    import { validateRegistrationForm } from '$lib/server/validation/formValidation';
+    import { validateRegistrationForm } from '$lib/validation/formValidation';
     import Captcha from './Captcha.svelte';
     
     // Form state

@@ -1,38 +1,52 @@
-# sv
+# Logistic Label (SvelteKit)
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Mocked SvelteKit app for GS1-128 logistic label workflows: auth (mock), dashboard, labels, and PDF/barcode stubs. Uses Tailwind v4 and in-memory data; no real backend or database is wired up yet.
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
+## Quick start
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+npm install
+npm run dev -- --host --port 5173
+# build: npm run build
+# preview: npm run preview
 ```
 
-## Developing
+## Tech stack
+- SvelteKit (Svelte 5), Vite
+- Tailwind CSS v4 (via `src/app.css`), custom theme tokens
+- Auth: mock endpoints setting `authToken` cookie; client guard via cookie check
+- Data: in-memory stub DB (`src/lib/server/db/neon.js`)
+- PDF/Labels: stub generators/placeholders
+- reCAPTCHA: Google test key; CSP updated to allow recaptcha domains
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## App structure
+- Routes: `src/routes` (pages) and `src/routes/api` (endpoints)
+- Components: `src/lib/components` (Auth, Labels, Layout)
+- Server utilities: `src/lib/server` (auth, db stub, pdf stub)
+- Validation: `src/lib/validation`
+- Styling: `src/app.css` (Tailwind import + tokens)
 
-```bash
-npm run dev
+## Auth flow (mock)
+- Endpoints: `/api/auth/login`, `/api/auth/signup`, `/api/auth/logout`
+- Cookie: `authToken` set on login; client guards check the cookie
+- Test user: `test@example.com` / `password123`
+- Note: Token is mock; httpOnly disabled in dev to allow client check. Enable secure/httpOnly for real deployments and move checks server-side.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Dashboard data (mock)
+- Endpoint: `/api/dashboard`
+- Uses in-memory `logistic_labels` table stub; data resets on restart
 
-## Building
+## Labels/PDF (stub)
+- Placeholder modules for barcode/PDF generation; no real output yet.
 
-To create a production version of your app:
+## CSP and reCAPTCHA
+- CSP in `src/app.html` allows Google reCAPTCHA. Security headers (X-Frame-Options, etc.) set via `src/hooks.server.js`.
 
-```bash
-npm run build
-```
+## What is missing / next steps
+- Real database and models (replace `src/lib/server/db/neon.js`)
+- Real auth (JWT or session) with secure cookies
+- Implement actual PDF/barcode generation
+- Tests and linting scripts
+- Production adapter config for target hosting
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## More details
+See docs/ARCHITECTURE.md for routing, auth, data, and security notes.

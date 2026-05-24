@@ -2,8 +2,12 @@
 <script>
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
-    import { validateLoginForm } from '$lib/server/validation/formValidation';
+    import { dev } from '$app/environment';
+    import { validateLoginForm } from '$lib/validation/formValidation';
     import Captcha from './Captcha.svelte';
+    
+    // Allow redirect to a provided return URL (defaults to dashboard)
+    export let returnUrl = '/dashboard';
     
     // Form state
     let email = '';
@@ -24,8 +28,8 @@
         return;
       }
       
-      // Check if captcha is verified
-      if (!captchaVerified) {
+      // Check if captcha is verified (skip in development)
+      if (!dev && !captchaVerified) {
         formError = 'Please complete the captcha verification';
         return;
       }
@@ -35,27 +39,32 @@
       errors = {};
       
       try {
+        console.log('LoginForm submit start', { email, rememberMe, returnUrl, dev });
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify({ email, password, rememberMe })
         });
         
         const data = await response.json();
+        console.log('LoginForm response', { status: response.status, ok: response.ok, data });
         
         if (!response.ok) {
           formError = data.message || 'Login failed. Please check your credentials.';
-          isLoading = false;
           return;
         }
         
         // Successful login
-        goto('/dashboard');
+        console.log('LoginForm navigating to returnUrl', returnUrl);
+        goto(returnUrl);
       } catch (error) {
-        console.error('Login error:', error);
+        console.error('LoginForm fetch error', error);
         formError = 'An unexpected error occurred. Please try again.';
+      } finally {
+        // Ensure the button unfreezes even if navigation is blocked
         isLoading = false;
       }
     }
@@ -131,9 +140,11 @@
       </div>
       
       <!-- Captcha -->
-      <div class="my-4">
-        <Captcha on:verify={onCaptchaVerify} />
-      </div>
+      {#if !dev}
+        <div class="my-4">
+          <Captcha on:verify={onCaptchaVerify} />
+        </div>
+      {/if}
       
       <!-- Submit Button -->
       <div>
@@ -154,6 +165,14 @@
         </button>
       </div>
     </form>
+    
+    {#if dev}
+      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <p class="text-sm text-blue-800">
+          <strong>Development Mode:</strong> Use test@example.com / password123 to log in.
+        </p>
+      </div>
+    {/if}
     
     <div class="mt-6 text-center">
       <p class="text-sm text-gray-600">

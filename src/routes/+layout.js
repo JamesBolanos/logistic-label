@@ -5,47 +5,30 @@ import { goto } from '$app/navigation';
 // Pages that don't require authentication
 const publicPages = ['/', '/login', '/signup', '/reset-password', '/privacy'];
 
+function getCookie(name) {
+  return document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${name}=`))
+    ?.split('=')[1];
+}
+
 export const load = async ({ url }) => {
   // Skip auth check on the server
   if (!browser) return {};
 
   const path = url.pathname;
-  
-  // Check if current path is a public page
-  const isPublicPage = publicPages.some(page => 
-    path === page || path.startsWith(page + '/')
-  );
-  
-  // If it's a public page, no need to check auth
+
+  // Allow public pages through
+  const isPublicPage = publicPages.some((page) => path === page || path.startsWith(page + '/'));
   if (isPublicPage) return {};
-  
-  // Check if user is authenticated
-  const token = localStorage.getItem('authToken');
-  
-  // If no token and not on a public page, redirect to login
+
+  // Check auth via cookie set by the API
+  const token = getCookie('authToken');
   if (!token) {
     goto(`/login?returnUrl=${encodeURIComponent(path)}`);
     return {};
   }
-  
-  // Check if token is expired
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const expiryTime = payload.exp * 1000; // Convert to milliseconds
-    
-    if (Date.now() >= expiryTime) {
-      // Token expired
-      localStorage.removeItem('authToken');
-      goto(`/login?returnUrl=${encodeURIComponent(path)}&expired=true`);
-      return {};
-    }
-  } catch (error) {
-    console.error('Error parsing auth token:', error);
-    localStorage.removeItem('authToken');
-    goto(`/login?returnUrl=${encodeURIComponent(path)}`);
-    return {};
-  }
-  
-  // User is authenticated
+
+  // Auth present; let the page load
   return {};
 };
