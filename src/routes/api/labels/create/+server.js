@@ -52,6 +52,16 @@ export async function POST({ request, locals }) {
       }
     });
   } catch (error) {
+    if (error.code === 'LABEL_SETTINGS_REQUIRED') {
+      return json(
+        {
+          success: false,
+          message: 'Configure your GS1 Company Prefix in Settings before creating labels.'
+        },
+        { status: 400 }
+      );
+    }
+
     console.error('Label creation error:', error);
     
     return json(

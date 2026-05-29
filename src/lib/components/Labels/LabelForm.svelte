@@ -187,7 +187,7 @@
         </svg>
         Saving...
       {:else}
-        Save and Preview
+        Preview Label
       {/if}
     </button>
   </div>

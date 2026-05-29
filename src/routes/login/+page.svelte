@@ -14,7 +14,7 @@
   </svelte:head>
   
   <div class="max-w-md mx-auto">
-    <h1 class="text-2xl font-bold text-center text-gray-900 mb-8">Sign In</h1>
+   
     
     {#if tokenExpired}
       <div class="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">

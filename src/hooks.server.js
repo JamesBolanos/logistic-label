@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { auth } from '$lib/server/auth/betterAuth';
 
-const PROTECTED_PATHS = ['/dashboard', '/labels'];
+const PROTECTED_PATHS = ['/dashboard', '/labels', '/settings'];
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -25,6 +25,10 @@ export async function handle({ event, resolve }) {
       resolve: resolveWithSecurityHeaders,
       building
     });
+  }
+
+  if (event.url.pathname.startsWith('/api/auth/')) {
+    return auth.handler(event.request);
   }
 
   const session = await auth.api.getSession({

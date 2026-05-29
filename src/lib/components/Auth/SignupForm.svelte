@@ -7,8 +7,6 @@
   import Captcha from './Captcha.svelte';
 
   let email = $state('');
-  let username = $state('');
-  let full_name = $state('');
   let password = $state('');
   let password_confirm = $state('');
   let isLoading = $state(false);
@@ -21,8 +19,6 @@
   async function handleSubmit() {
     const validation = validateRegistrationForm({ 
       email, 
-      username, 
-      full_name, 
       password, 
       password_confirm 
     });
@@ -46,7 +42,7 @@
       const { error } = await authClient.signUp.email({
         email,
         password,
-        name: full_name || username,
+        name: getDefaultName(email),
         callbackURL: '/dashboard'
       });
 
@@ -82,6 +78,10 @@
 
   function onCaptchaVerify(isVerified) {
     captchaVerified = isVerified;
+  }
+
+  function getDefaultName(emailAddress) {
+    return emailAddress.split('@')[0] || 'User';
   }
 </script>
 
@@ -133,40 +133,6 @@
       />
       {#if errors.email}
         <p class="mt-1 text-sm text-red-600">{errors.email}</p>
-      {/if}
-    </div>
-
-    <div>
-      <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-        Username
-      </label>
-      <input
-        type="text"
-        id="username"
-        bind:value={username}
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        autocomplete="username"
-        required
-      />
-      {#if errors.username}
-        <p class="mt-1 text-sm text-red-600">{errors.username}</p>
-      {/if}
-    </div>
-
-    <div>
-      <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">
-        Full Name
-      </label>
-      <input
-        type="text"
-        id="full_name"
-        bind:value={full_name}
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        autocomplete="name"
-        required
-      />
-      {#if errors.full_name}
-        <p class="mt-1 text-sm text-red-600">{errors.full_name}</p>
       {/if}
     </div>
 

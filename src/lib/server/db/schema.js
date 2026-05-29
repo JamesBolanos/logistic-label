@@ -93,10 +93,33 @@ export const logisticLabel = pgTable(
   ]
 );
 
-export const userRelations = relations(user, ({ many }) => ({
+export const labelSettings = pgTable('label_settings', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  companyName: text('company_name').notNull().default('Company Name'),
+  gs1CompanyPrefix: varchar('gs1_company_prefix', { length: 12 }),
+  extensionDigit: varchar('extension_digit', { length: 1 }).notNull().default('0'),
+  nextSerialReference: integer('next_serial_reference').notNull().default(1),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
-  labels: many(logisticLabel)
+  labels: many(logisticLabel),
+  labelSettings: one(labelSettings, {
+    fields: [user.id],
+    references: [labelSettings.userId]
+  })
+}));
+
+export const labelSettingsRelations = relations(labelSettings, ({ one }) => ({
+  user: one(user, {
+    fields: [labelSettings.userId],
+    references: [user.id]
+  })
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

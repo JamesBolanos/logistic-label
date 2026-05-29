@@ -1,11 +1,18 @@
 <!-- src/lib/components/Labels/LabelPreview.svelte -->
 <script>
+    import { onDestroy } from 'svelte';
+
     // Props
     let { labelData = null, previewUrl = $bindable(null) } = $props();
     
     // State
     let isLoading = $state(false);
     let error = $state(null);
+    let objectUrl = null;
+
+    onDestroy(() => {
+      revokePreviewUrl();
+    });
     
     // Watch for changes in labelData
     $effect(() => {
@@ -35,14 +42,22 @@
           throw new Error(errorData.message || 'Failed to generate preview');
         }
         
-        // Get the preview URL
-        const data = await response.json();
-        previewUrl = data.previewUrl;
+        const pdf = await response.blob();
+        revokePreviewUrl();
+        objectUrl = URL.createObjectURL(pdf);
+        previewUrl = `${objectUrl}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
       } catch (err) {
         console.error('Preview generation error:', err);
         error = err.message || 'Error generating preview';
       } finally {
         isLoading = false;
+      }
+    }
+
+    function revokePreviewUrl() {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        objectUrl = null;
       }
     }
   </script>
@@ -65,12 +80,11 @@
         </button>
       </div>
     {:else if previewUrl}
-      <div class="border border-gray-300 rounded-md overflow-hidden">
+      <div class="flex justify-center rounded-md border border-gray-300 bg-gray-100 p-4">
         <iframe 
           src={previewUrl} 
           title="Label Preview" 
-          class="w-full h-96"
-          sandbox="allow-scripts"
+          class="h-[36rem] w-full max-w-sm rounded-md bg-white shadow-sm"
         ></iframe>
       </div>
       <div class="mt-4 text-sm text-gray-500">

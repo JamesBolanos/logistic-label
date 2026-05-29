@@ -1,5 +1,6 @@
 <!-- src/routes/labels/+page.svelte -->
 <script>
+    import { onMount } from 'svelte';
     import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
     import LabelForm from '$lib/components/Labels/LabelForm.svelte';
     import LabelPreview from '$lib/components/Labels/LabelPreview.svelte';
@@ -12,6 +13,26 @@
     let isGenerating = $state(false);
     let error = $state(null);
     let success = $state(null);
+    let settings = $state(null);
+    let settingsError = $state(null);
+    let historyVersion = $state(0);
+
+    onMount(loadSettings);
+
+    async function loadSettings() {
+      try {
+        const response = await fetch('/api/settings');
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to load label settings');
+        }
+
+        settings = data.settings;
+      } catch (err) {
+        settingsError = err.message || 'Failed to load label settings';
+      }
+    }
     
     // Handle form submission
     async function handleSubmit(formData) {
@@ -46,11 +67,24 @@
         const data = await response.json();
         generatedLabelId = data.labelId;
         
-        // Download the PDF
-        window.location.href = `/api/pdf/download/${generatedLabelId}`;
+        const pdfResponse = await fetch(`/api/pdf/download/${generatedLabelId}`);
+
+        if (!pdfResponse.ok) {
+          throw new Error('Label was saved, but the PDF download failed');
+        }
+
+        const blob = await pdfResponse.blob();
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `gs1_label_${generatedLabelId}.pdf`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.URL.revokeObjectURL(url);
         
-        // Show success message
-        success = 'Label generated successfully!';
+        historyVersion += 1;
+        success = 'Label generated successfully and saved to history.';
       } catch (err) {
         console.error('PDF generation error:', err);
         error = err.message || 'Error generating label';
@@ -68,6 +102,18 @@
   <ProtectedRoute>
     <div class="space-y-6">
       <h1 class="text-2xl font-bold text-gray-900">Generate Logistic Labels</h1>
+
+      {#if settingsError}
+        <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
+          {settingsError}
+        </div>
+      {:else if settings && !settings.is_configured}
+        <div class="p-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md">
+          Configure your GS1 Company Prefix in
+          <a href="/settings" class="font-medium text-blue-600 hover:text-blue-500">Settings</a>
+          before previewing or generating labels.
+        </div>
+      {/if}
       
       {#if error}
         <div class="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
@@ -116,7 +162,9 @@
       <!-- Label History -->
       <div class="mt-12">
         <h2 class="text-xl font-bold text-gray-900 mb-4">Label History</h2>
-        <LabelHistory />
+        {#key historyVersion}
+          <LabelHistory />
+        {/key}
       </div>
     </div>
   </ProtectedRoute>

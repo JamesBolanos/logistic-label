@@ -1,10 +1,17 @@
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
-import { generateSSCC } from '$lib/utils/gs1Utils';
+import { allocateSSCC } from '$lib/server/db/settings';
+import { validateSSCC } from '$lib/utils/gs1Utils';
 import { db } from '$lib/server/db';
 import { logisticLabel } from '$lib/server/db/schema.js';
 
 export async function createLabel(data, userId) {
   ensureDatabase();
+
+  const sscc = data.sscc || await allocateSSCC(userId);
+
+  if (!validateSSCC(sscc)) {
+    throw new Error('Invalid SSCC check digit');
+  }
 
   const [label] = await db
     .insert(logisticLabel)
@@ -15,7 +22,7 @@ export async function createLabel(data, userId) {
       productionDate: data.production_date,
       quantity: data.quantity,
       weightPounds: String(data.weight_pounds),
-      sscc: data.sscc || generateSSCC()
+      sscc
     })
     .returning();
 

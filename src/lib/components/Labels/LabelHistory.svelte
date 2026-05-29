@@ -3,12 +3,12 @@
     import { onMount } from 'svelte';
     
     // State
-    let labels = [];
-    let isLoading = true;
-    let error = null;
-    let currentPage = 1;
-    let totalPages = 1;
-    let searchTerm = '';
+    let labels = $state([]);
+    let isLoading = $state(true);
+    let error = $state(null);
+    let currentPage = $state(1);
+    let totalPages = $state(1);
+    let searchTerm = $state('');
     
     // Load labels on mount
     onMount(() => {
@@ -65,10 +65,10 @@
       fetchLabels(1, searchTerm);
     }
     
-    // Format date for display
-    function formatDate(dateString) {
+    function formatProductionDate(dateString) {
       const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+      if (Number.isNaN(date.getTime())) return dateString || '';
+      return date.toLocaleDateString();
     }
     
     // Download a label PDF
@@ -131,10 +131,10 @@
           bind:value={searchTerm}
           placeholder="Search by GTIN, lot number, or SSCC..."
           class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          on:keyup={e => e.key === 'Enter' && handleSearch()}
+          onkeyup={(event) => event.key === 'Enter' && handleSearch()}
         />
         <button
-          on:click={handleSearch}
+          onclick={handleSearch}
           class="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Search
@@ -150,7 +150,7 @@
       <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
         <p>Error: {error}</p>
         <button 
-          on:click={() => fetchLabels(currentPage, searchTerm)}
+          onclick={() => fetchLabels(currentPage, searchTerm)}
           class="mt-2 text-sm text-blue-600 hover:text-blue-500"
         >
           Try again
@@ -167,16 +167,19 @@
           <thead class="bg-gray-50">
             <tr>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                SSCC Number
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 GTIN
               </th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Lot Number
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date Created
+                Production Date
               </th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Quantity
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Weight
               </th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -184,30 +187,33 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            {#each labels as label}
+            {#each labels as label (label.id)}
               <tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {label.sscc}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {label.gtin}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {label.lot_number}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(label.created_at)}
+                  {formatProductionDate(label.production_date)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {label.quantity}
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {label.weight_pounds} lb
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex space-x-2">
                     <button
-                      on:click={() => downloadLabel(label.id)}
+                      onclick={() => downloadLabel(label.id)}
                       class="text-blue-600 hover:text-blue-900"
                     >
                       Download
                     </button>
                     <button
-                      on:click={() => deleteLabel(label.id)}
+                      onclick={() => deleteLabel(label.id)}
                       class="text-red-600 hover:text-red-900"
                     >
                       Delete
@@ -230,14 +236,14 @@
           </div>
           <div class="flex space-x-2">
             <button
-              on:click={() => changePage(currentPage - 1)}
+              onclick={() => changePage(currentPage - 1)}
               disabled={currentPage === 1}
               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
             <button
-              on:click={() => changePage(currentPage + 1)}
+              onclick={() => changePage(currentPage + 1)}
               disabled={currentPage === totalPages}
               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >

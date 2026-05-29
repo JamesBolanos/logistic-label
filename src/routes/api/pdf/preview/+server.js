@@ -2,50 +2,17 @@
 import { json } from '@sveltejs/kit';
 import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
+import { getLabelSettings } from '$lib/server/db/settings';
 import { generateSSCC } from '$lib/utils/gs1Utils';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import { env } from '$env/dynamic/private';
 
-// Directory to store preview PDFs
-const PREVIEW_DIR = env.PREVIEW_STORAGE_PATH || 'storage/preview';
-
-// Ensure the preview directory exists
-try {
-  fs.mkdirSync(PREVIEW_DIR, { recursive: true });
-} catch (err) {
-  console.error('Failed to create preview storage directory:', err);
-}
-
-// Clean up old preview files (run every hour)
-const PREVIEW_MAX_AGE = 3600000; // 1 hour in milliseconds
-setInterval(() => {
-  try {
-    const files = fs.readdirSync(PREVIEW_DIR);
-    const now = Date.now();
-    
-    files.forEach(file => {
-      const filePath = path.join(PREVIEW_DIR, file);
-      const stats = fs.statSync(filePath);
-      const fileAge = now - stats.mtimeMs;
-      
-      if (fileAge > PREVIEW_MAX_AGE) {
-        fs.unlinkSync(filePath);
-      }
-    });
-  } catch (err) {
-    console.error('Error cleaning up preview files:', err);
-  }
-}, PREVIEW_MAX_AGE);
-
-export async function POST({ request, locals, url }) {
+export async function POST({ request, locals }) {
   // Apply rate limiting
   const rateLimitResponse = pdfRateLimiter(request);
   if (rateLimitResponse) return rateLimitResponse;
 
-  if (!locals.user) {
+  const user = locals.user;
+  if (!user) {
     return json({ success: false, message: 'Authentication required' }, { status: 401 });
   }
   
@@ -69,8 +36,23 @@ export async function POST({ request, locals, url }) {
     // Sanitize form data
     const sanitizedData = sanitizeLabelForm(labelData);
     
-    // Generate an SSCC for preview
-    const sscc = generateSSCC();
+    const settings = await getLabelSettings(user.id);
+
+    if (!settings.is_configured) {
+      return json(
+        {
+          success: false,
+          message: 'Configure your GS1 Company Prefix in Settings before previewing labels.'
+        },
+        { status: 400 }
+      );
+    }
+
+    const sscc = generateSSCC({
+      gs1CompanyPrefix: settings.gs1_company_prefix,
+      extensionDigit: settings.extension_digit,
+      serialReference: settings.next_serial_reference
+    });
     
     // Prepare complete label data for preview
     const previewLabelData = {
@@ -82,26 +64,17 @@ export async function POST({ request, locals, url }) {
     
     // Generate PDF
     const pdfBuffer = await generateLogisticLabelPDF(previewLabelData, {
-      company_name: 'Your Company Name'
+      company_name: settings.company_name
     });
     
-    // Generate a unique filename
-    const hash = crypto.createHash('md5').update(JSON.stringify(previewLabelData)).digest('hex');
-    const filename = `preview_${hash}.pdf`;
-    const pdfPath = path.join(PREVIEW_DIR, filename);
-    
-    // Save the PDF to disk
-    fs.writeFileSync(pdfPath, pdfBuffer);
-    
-    // Get base URL from request
-    const protocol = url.protocol || 'http:';
-    const host = request.headers.get('host') || 'localhost:3000';
-    const baseUrl = `${protocol}//${host}`;
-    
-    // Return the preview URL
-    return json({ 
-      success: true,
-      previewUrl: `${baseUrl}/api/pdf/preview/${hash}`
+    return new Response(pdfBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'inline; filename="gs1_label_preview.pdf"',
+        'Content-Length': pdfBuffer.length.toString(),
+        'Cache-Control': 'no-store'
+      }
     });
   } catch (error) {
     console.error('Preview generation error:', error);

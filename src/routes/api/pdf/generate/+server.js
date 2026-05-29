@@ -1,22 +1,8 @@
 // src/routes/api/pdf/generate/+server.js
 import { json } from '@sveltejs/kit';
-import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
-import { createLabel, updateLabelPrinted } from '$lib/server/db/labels';
+import { createLabel } from '$lib/server/db/labels';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
-import path from 'path';
-import fs from 'fs';
-import { env } from '$env/dynamic/private';
-
-// Directory to store generated PDFs
-const PDF_DIR = env.PDF_STORAGE_PATH || 'storage/pdf';
-
-// Ensure the PDF directory exists
-try {
-  fs.mkdirSync(PDF_DIR, { recursive: true });
-} catch (err) {
-  console.error('Failed to create PDF storage directory:', err);
-}
 
 export async function POST({ request, locals }) {
   // Apply rate limiting
@@ -51,34 +37,28 @@ export async function POST({ request, locals }) {
     // Create label in database
     const label = await createLabel(sanitizedData, user.id);
     
-    // Generate PDF
-    const pdfBuffer = await generateLogisticLabelPDF(label, {
-      company_name: 'Your Company Name' // Could be configurable
-    });
-    
-    // Generate a unique filename
-    const timestamp = new Date().toISOString().replace(/[:.-]/g, '');
-    const filename = `label_${label.id}_${timestamp}.pdf`;
-    const pdfPath = path.join(PDF_DIR, filename);
-    
-    // Save the PDF to disk
-    fs.writeFileSync(pdfPath, pdfBuffer);
-    
-    // Update the label record with PDF path
-    await updateLabelPrinted(label.id, filename, user.id);
-    
     return json({ 
       success: true,
-      message: 'PDF generated successfully',
+      message: 'Label generated successfully',
       labelId: label.id
     });
   } catch (error) {
+    if (error.code === 'LABEL_SETTINGS_REQUIRED') {
+      return json(
+        {
+          success: false,
+          message: 'Configure your GS1 Company Prefix in Settings before generating labels.'
+        },
+        { status: 400 }
+      );
+    }
+
     console.error('PDF generation error:', error);
     
     return json(
       { 
         success: false, 
-        message: 'Failed to generate PDF. Please try again.' 
+        message: error.message || 'Failed to generate PDF. Please try again.'
       }, 
       { status: 500 }
     );

@@ -122,20 +122,6 @@ export function validateRegistrationForm(formData) {
     errors.email = 'Please enter a valid email address';
   }
   
-  // Validate Username
-  if (!formData.username) {
-    errors.username = 'Username is required';
-  } else if (formData.username.length < 3) {
-    errors.username = 'Username must be at least 3 characters';
-  } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-    errors.username = 'Username can only contain letters, numbers, and underscores';
-  }
-  
-  // Validate Full Name
-  if (!formData.full_name) {
-    errors.full_name = 'Full name is required';
-  }
-  
   // Validate Password
   if (!formData.password) {
     errors.password = 'Password is required';
