@@ -77,7 +77,7 @@ Rotate any database URL or OAuth secret that has been shared in chat, logs, or i
 - Generates 4x6 PDF labels with vector GS1-128 barcode rendering.
 - Preview PDFs are stored under `storage/preview`; generated PDFs are stored under `storage/pdf`.
 - SSCC allocation and nested logistic unit behavior should follow the documented GS1 rules in `docs/GS1_REQUIREMENTS.md`.
-- The GS1 Logistic Label Guideline PDF is stored at `docs/GS1_Logistic_Label_Guideline.pdf`, with app-specific analysis in `docs/GS1_LOGISTIC_LABEL_GUIDE.md`.
+- The GS1 Logistic Label Guideline PDF is stored at `docs/GS1_Logistic_Label_Guideline.pdf`; the public source is https://www.gs1.org/docs/tl/GS1_Logistic_Label_Guideline.pdf, with app-specific analysis in `docs/GS1_LOGISTIC_LABEL_GUIDE.md`.
 - Scanner validation and any formal GS1 certification still need physical/test-suite verification before real production use.
 
 ## CSP and reCAPTCHA
