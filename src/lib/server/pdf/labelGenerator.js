@@ -8,33 +8,26 @@ export async function generateLogisticLabelPDF(labelData, options = {}) {
   const elements = buildGs1Elements(labelData);
   const content = [];
 
-  drawText(content, options.company_name || labelData.company_name || 'COMPANY NAME', MARGIN, 405, 15, true);
+  drawCenteredText(content, options.company_name || labelData.company_name || 'COMPANY NAME', PAGE_WIDTH / 2, 405, 15, true);
   drawLine(content, MARGIN, 382, PAGE_WIDTH - MARGIN, 382);
 
-  drawText(content, 'GTIN:', MARGIN, 360, 10, true);
-  drawText(content, labelData.gtin, 88, 360, 10);
-  drawText(content, 'LOT:', MARGIN, 340, 10, true);
-  drawText(content, labelData.lot_number, 88, 340, 10);
-  drawText(content, 'PROD DATE:', MARGIN, 320, 10, true);
-  drawText(content, formatDisplayDate(labelData.production_date), 88, 320, 10);
+  drawInfoField(content, 'SSCC', labelData.sscc, MARGIN, 360, 13);
+  drawInfoField(content, 'WEIGHT', `${labelData.weight_pounds} lb`, 210, 360, 11);
+  drawInfoField(content, 'GTIN', labelData.gtin, MARGIN, 324, 11);
+  drawInfoField(content, 'QTY', String(labelData.quantity), 160, 324, 11);
+  drawInfoField(content, 'PROD DATE', formatDisplayDate(labelData.production_date), MARGIN, 288, 11);
+  drawInfoField(content, 'LOT', labelData.lot_number, 160, 288, 11);
 
-  drawText(content, 'QTY:', 160, 360, 10, true);
-  drawText(content, String(labelData.quantity), 220, 360, 10);
-  drawText(content, 'WEIGHT:', 160, 340, 10, true);
-  drawText(content, `${labelData.weight_pounds} lb`, 220, 340, 10);
-  drawText(content, 'SSCC:', 160, 320, 10, true);
-  drawText(content, labelData.sscc, 195, 320, 8);
+  drawLine(content, MARGIN, 250, PAGE_WIDTH - MARGIN, 250);
 
-  drawLine(content, MARGIN, 295, PAGE_WIDTH - MARGIN, 295);
+  const itemElements = orderedElements(elements, ['01', '11', '10', '30']);
+  const ssccElements = elements.filter((item) => item.ai === '00');
 
-  drawBarcode(content, elements.filter((item) => item.ai === '00'), 42, 238, 204, 34);
-  drawText(content, humanReadable(elements.filter((item) => item.ai === '00')), 50, 222, 8);
+  drawBarcode(content, itemElements, 22, 168, 244, 42);
+  drawCenteredTextInWidth(content, humanReadable(itemElements), 22, 244, 150, 7);
 
-  drawBarcode(content, elements.filter((item) => ['01', '10', '11'].includes(item.ai)), 28, 155, 232, 36);
-  drawText(content, humanReadable(elements.filter((item) => ['01', '10', '11'].includes(item.ai))), 28, 139, 7);
-
-  drawBarcode(content, elements.filter((item) => ['30', '3201'].includes(item.ai)), 50, 72, 188, 36);
-  drawText(content, humanReadable(elements.filter((item) => ['30', '3201'].includes(item.ai))), 62, 56, 8);
+  drawBarcode(content, ssccElements, 42, 70, 204, 42);
+  drawCenteredTextInWidth(content, humanReadable(ssccElements), 42, 204, 52, 8);
 
   return createPdf(content.join('\n'));
 }
@@ -65,8 +58,32 @@ function drawBarcode(content, elements, x, y, width, height) {
   }
 }
 
+function orderedElements(elements, aiOrder) {
+  return aiOrder.map((ai) => elements.find((item) => item.ai === ai)).filter(Boolean);
+}
+
 function drawText(content, text, x, y, size = 10, bold = false) {
   content.push(`BT /${bold ? 'F2' : 'F1'} ${size} Tf ${x} ${y} Td (${escapePdf(String(text ?? ''))}) Tj ET`);
+}
+
+function drawInfoField(content, label, value, x, labelY, valueSize = 11) {
+  drawText(content, label, x, labelY, 8);
+  drawText(content, value, x, labelY - 16, valueSize, true);
+}
+
+function drawCenteredText(content, text, centerX, y, size = 10, bold = false) {
+  const value = String(text ?? '');
+  const x = centerX - estimateTextWidth(value, size, bold) / 2;
+  drawText(content, value, round(x), y, size, bold);
+}
+
+function drawCenteredTextInWidth(content, text, x, width, y, size = 10, bold = false) {
+  drawCenteredText(content, text, x + width / 2, y, size, bold);
+}
+
+function estimateTextWidth(text, size, bold = false) {
+  const averageGlyphWidth = bold ? 0.58 : 0.55;
+  return text.length * size * averageGlyphWidth;
 }
 
 function drawLine(content, x1, y1, x2, y2) {
