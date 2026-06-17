@@ -58,6 +58,7 @@
 
 ## Known gaps / next steps
 - Configure production `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google OAuth credentials, and Neon URL in Vercel.
+- For Google OAuth in production, set `BETTER_AUTH_URL=https://www.sscc-labels.com` and register both `https://www.sscc-labels.com/api/auth/callback/google` and `https://sscc-labels.com/api/auth/callback/google` as authorized redirect URIs in Google Cloud.
 - Add email delivery for verification and password reset flows.
 - Add Apple OAuth when the developer account/callback requirements are ready.
 - Implement SSCC allocation safeguards, including preventing SSCC reallocation for at least one year after shipment date.

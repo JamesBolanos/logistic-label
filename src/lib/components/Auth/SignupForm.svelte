@@ -15,6 +15,7 @@
   let formError = $state('');
   let formSuccess = $state('');
   let captchaVerified = $state(false);
+  let captchaToken = $state('');
 
   async function handleSubmit() {
     const validation = validateRegistrationForm({ 
@@ -43,7 +44,8 @@
         email,
         password,
         name: getDefaultName(email),
-        callbackURL: '/dashboard'
+        callbackURL: '/dashboard',
+        captchaToken
       });
 
       if (error) {
@@ -76,8 +78,9 @@
     }
   }
 
-  function onCaptchaVerify(isVerified) {
-    captchaVerified = isVerified;
+  function onCaptchaVerify({ verified, token }) {
+    captchaVerified = verified;
+    captchaToken = token;
   }
 
   function getDefaultName(emailAddress) {
@@ -175,7 +178,7 @@
 
     {#if !dev}
       <div class="my-4">
-        <Captcha on:verify={onCaptchaVerify} />
+        <Captcha onverify={onCaptchaVerify} />
       </div>
     {/if}
 

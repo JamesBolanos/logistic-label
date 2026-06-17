@@ -18,6 +18,7 @@
     let errors = $state({});
     let formError = $state('');
     let captchaVerified = $state(false);
+    let captchaToken = $state('');
     
     // Handle form submission
     async function handleSubmit() {
@@ -44,7 +45,8 @@
           email,
           password,
           rememberMe,
-          callbackURL: returnUrl
+          callbackURL: returnUrl,
+          captchaToken
         });
 
         if (error) {
@@ -79,8 +81,9 @@
     }
     
     // Handle captcha verification
-    function onCaptchaVerify(isVerified) {
-      captchaVerified = isVerified;
+    function onCaptchaVerify({ verified, token }) {
+      captchaVerified = verified;
+      captchaToken = token;
     }
   </script>
   
@@ -169,7 +172,7 @@
       <!-- Captcha -->
       {#if !dev}
         <div class="my-4">
-          <Captcha on:verify={onCaptchaVerify} />
+          <Captcha onverify={onCaptchaVerify} />
         </div>
       {/if}
       

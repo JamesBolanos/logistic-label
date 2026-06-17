@@ -2,8 +2,10 @@ import { building } from '$app/environment';
 import { redirect } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { auth } from '$lib/server/auth/betterAuth';
+import { verifyRecaptchaToken } from '$lib/server/auth/recaptcha';
 
 const PROTECTED_PATHS = ['/dashboard', '/labels', '/settings'];
+const CAPTCHA_AUTH_PATHS = new Set(['/api/auth/sign-in/email', '/api/auth/sign-up/email']);
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -28,7 +30,13 @@ export async function handle({ event, resolve }) {
   }
 
   if (event.url.pathname.startsWith('/api/auth/')) {
-    return auth.handler(event.request);
+    const captchaRequest = await verifyAuthCaptcha(event);
+
+    if (captchaRequest instanceof Response) {
+      return captchaRequest;
+    }
+
+    return auth.handler(captchaRequest ?? event.request);
   }
 
   const session = await auth.api.getSession({
@@ -53,6 +61,46 @@ export async function handle({ event, resolve }) {
     event,
     resolve: resolveWithSecurityHeaders,
     building
+  });
+}
+
+async function verifyAuthCaptcha(event) {
+  if (event.request.method !== 'POST' || !CAPTCHA_AUTH_PATHS.has(event.url.pathname)) {
+    return null;
+  }
+
+  let body;
+
+  try {
+    body = await event.request.json();
+  } catch {
+    return jsonBadRequest('Invalid authentication request.');
+  }
+
+  const { captchaToken, ...authBody } = body;
+  const result = await verifyRecaptchaToken(captchaToken, event.getClientAddress?.());
+
+  if (!result.success) {
+    return new Response(JSON.stringify({ message: result.message }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  const headers = new Headers(event.request.headers);
+  headers.delete('content-length');
+
+  return new Request(event.request.url, {
+    method: event.request.method,
+    headers,
+    body: JSON.stringify(authBody)
+  });
+}
+
+function jsonBadRequest(message) {
+  return new Response(JSON.stringify({ success: false, message }), {
+    status: 400,
+    headers: { 'Content-Type': 'application/json' }
   });
 }
 

@@ -1,17 +1,23 @@
 <!-- src/lib/components/Auth/Captcha.svelte -->
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { dev } from '$app/environment';
+  import { env } from '$env/dynamic/public';
+  import { onMount } from 'svelte';
 
-  const dispatch = createEventDispatcher();
+  const RECAPTCHA_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 
-  export let siteKey = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Google reCAPTCHA test key for development
+  let {
+    siteKey = env.PUBLIC_RECAPTCHA_SITE_KEY || (dev ? RECAPTCHA_TEST_SITE_KEY : ''),
+    onverify = () => {}
+  } = $props();
 
-  let captchaLoaded = false;
+  let captchaLoaded = $state(false);
   let captchaId = null;
-  let captchaContainer;
+  let captchaContainer = $state();
 
   onMount(() => {
     if (typeof window === 'undefined') return;
+    if (!siteKey) return;
 
     if (window.grecaptcha) {
       captchaLoaded = true;
@@ -46,13 +52,13 @@
     // Reset an existing widget before re-rendering
     if (captchaId !== null) {
       window.grecaptcha.reset(captchaId);
-      dispatch('verify', false);
+      onverify({ verified: false, token: '' });
     }
 
     captchaId = window.grecaptcha.render(captchaContainer, {
       sitekey: siteKey,
-      callback: () => dispatch('verify', true),
-      'expired-callback': () => dispatch('verify', false)
+      callback: (token) => onverify({ verified: true, token }),
+      'expired-callback': () => onverify({ verified: false, token: '' })
     });
   }
 
@@ -67,7 +73,7 @@
     <button
       type="button"
       class="text-sm text-blue-600 hover:text-blue-500"
-      on:click={refreshCaptcha}
+      onclick={refreshCaptcha}
       aria-label="Refresh captcha"
     >
       Refresh
@@ -75,8 +81,12 @@
   </div>
 
   <div class="rounded-md border border-gray-200 p-2">
-    <div bind:this={captchaContainer} class="flex justify-center"></div>
-    {#if !captchaLoaded}
+    {#if siteKey}
+      <div bind:this={captchaContainer} class="flex justify-center"></div>
+    {:else}
+      <p class="text-sm text-red-600 text-center">Captcha is not configured.</p>
+    {/if}
+    {#if siteKey && !captchaLoaded}
       <p class="mt-2 text-xs text-gray-500 text-center">Loading captcha...</p>
     {/if}
   </div>

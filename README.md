@@ -16,6 +16,22 @@ npm run dev -- --host --port 5173
 For Google sign-in, configure a Google OAuth client with this callback URL:
 `http://localhost:5173/api/auth/callback/google` locally, and `<production-origin>/api/auth/callback/google` in production.
 
+For the production domain, set Vercel `BETTER_AUTH_URL` to `https://www.sscc-labels.com` and register the exact Google OAuth URLs below:
+
+Authorized JavaScript origins:
+```text
+https://www.sscc-labels.com
+https://sscc-labels.com
+```
+
+Authorized redirect URIs:
+```text
+https://www.sscc-labels.com/api/auth/callback/google
+https://sscc-labels.com/api/auth/callback/google
+```
+
+Google requires redirect URIs to match exactly, including protocol, domain, `www`, path, and trailing slash.
+
 ## Tech stack
 - SvelteKit (Svelte 5), Vite
 - Tailwind CSS v4 (via `src/app.css`), custom theme tokens
@@ -39,6 +55,8 @@ BETTER_AUTH_SECRET="replace-with-a-long-random-secret"
 BETTER_AUTH_URL="http://localhost:5173"
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
+PUBLIC_RECAPTCHA_SITE_KEY=""
+RECAPTCHA_SECRET_KEY=""
 PDF_STORAGE_PATH="storage/pdf"
 PREVIEW_STORAGE_PATH="storage/preview"
 ```
@@ -64,6 +82,8 @@ Rotate any database URL or OAuth secret that has been shared in chat, logs, or i
 
 ## CSP and reCAPTCHA
 - CSP in `src/app.html` allows Google reCAPTCHA. Security headers (X-Frame-Options, etc.) set via `src/hooks.server.js`.
+- Production must use a real Google reCAPTCHA v2 Checkbox site key in `PUBLIC_RECAPTCHA_SITE_KEY` and secret key in `RECAPTCHA_SECRET_KEY`. Register both `www.sscc-labels.com` and `sscc-labels.com` in Google reCAPTCHA Admin, then add both keys to Vercel Production environment variables and redeploy.
+- The public Google test key is used only in local development when `PUBLIC_RECAPTCHA_SITE_KEY` is not set. If production shows "Captcha is not configured", the Vercel environment variable is missing.
 
 ## What is missing / next steps
 - Email verification/password reset email delivery
