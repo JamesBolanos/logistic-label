@@ -1,0 +1,198 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quality gates
+        run: npm run quality
+
+  e2e:
+    name: E2E
+    needs: quality
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Set test branch expiration
+        id: expiration
+        shell: bash
+        run: echo "expires_at=$(date -u --date '+1 day' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+
+      - name: Request temporary Neon branch
+        id: request_neon_branch
+        shell: bash
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          BRANCH_NAME: test/ci-${{ github.run_id }}-${{ github.run_attempt }}
+          EXPIRES_AT: ${{ steps.expiration.outputs.expires_at }}
+        run: |
+          response_file="$RUNNER_TEMP/neon-response.json"
+          request_file="$RUNNER_TEMP/neon-request.json"
+          branches_file="$RUNNER_TEMP/neon-branches.json"
+
+          report_neon_error() {
+            local status="$1"
+            local response="$2"
+            local code
+            local message
+
+            code="$(jq -r '.code // "unknown"' "$response")"
+            message="$(jq -r '.message // "No message returned"' "$response" | tr '\r\n' '  ')"
+            echo "Neon API error (HTTP $status): code=$code message=$message"
+          }
+
+          list_status="$(curl --silent --show-error \
+            --output "$branches_file" \
+            --write-out '%{http_code}' \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $NEON_API_KEY" \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches?search=test-base&limit=100")"
+
+          if [[ "$list_status" != "200" ]]; then
+            report_neon_error "$list_status" "$branches_file"
+            exit 1
+          fi
+
+          parent_id="$(jq -r '[.branches[] | select(.name == "test-base")][0].id // empty' "$branches_file")"
+          if [[ -z "$parent_id" ]]; then
+            echo 'Neon API error: parent branch test-base was not found.'
+            exit 1
+          fi
+
+          jq --null-input \
+            --arg branch_name "$BRANCH_NAME" \
+            --arg parent_id "$parent_id" \
+            --arg expires_at "$EXPIRES_AT" \
+            '{
+              endpoints: [{ type: "read_write" }],
+              branch: {
+                name: $branch_name,
+                parent_id: $parent_id,
+                expires_at: $expires_at
+              }
+            }' > "$request_file"
+
+          create_status="$(curl --silent --show-error \
+            --request POST \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "authorization: Bearer $NEON_API_KEY" \
+            --data-binary "@$request_file" \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches")"
+
+          if [[ "$create_status" != "201" ]]; then
+            report_neon_error "$create_status" "$response_file"
+            exit 1
+          fi
+
+          branch_id="$(jq -r '.branch.id // empty' "$response_file")"
+          if [[ -z "$branch_id" ]]; then
+            echo 'Neon API error: branch creation succeeded without returning a branch ID.'
+            exit 1
+          fi
+
+          echo "branch_id=$branch_id" >> "$GITHUB_OUTPUT"
+          rm -f "$request_file" "$response_file" "$branches_file"
+
+      - name: Load temporary Neon branch connection
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          parent_branch: test-base
+          branch_name: test/ci-${{ github.run_id }}-${{ github.run_attempt }}
+          expires_at: ${{ steps.expiration.outputs.expires_at }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Create ephemeral authentication secret
+        shell: bash
+        run: |
+          auth_secret="$(openssl rand -hex 32)"
+          echo "::add-mask::$auth_secret"
+          echo "BETTER_AUTH_SECRET=$auth_secret" >> "$GITHUB_ENV"
+
+      - name: Apply committed migrations
+        run: npm run db:migrate
+        env:
+          LOGISTIC_LABEL_DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+          DATABASE_ENVIRONMENT: nonproduction
+          LOGISTIC_LABEL_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          EXPECTED_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+
+      - name: Run Playwright E2E test
+        run: npm run test:e2e
+        env:
+          LOGISTIC_LABEL_DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+          DATABASE_ENVIRONMENT: nonproduction
+          LOGISTIC_LABEL_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          EXPECTED_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          BETTER_AUTH_URL: http://127.0.0.1:5173
+          E2E_TEST_RUN_ID: ci-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload Playwright failure report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Delete temporary Neon branch
+        if: always() && (steps.create_neon_branch.outputs.branch_id != '' || steps.request_neon_branch.outputs.branch_id != '')
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          branch: ${{ steps.create_neon_branch.outputs.branch_id || steps.request_neon_branch.outputs.branch_id }}
+          api_key: ${{ secrets.NEON_API_KEY }}

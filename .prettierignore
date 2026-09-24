@@ -1,0 +1,20 @@
+node_modules/
+.svelte-kit/
+.output/
+build/
+coverage/
+playwright-report/
+test-results/
+storage/
+usage_log/
+.vercel/
+.netlify/
+.wrangler/
+package-lock.json
+drizzle/meta/
+*.pdf
+*.png
+
+# These files contain active test-cleanup work that predates formatter adoption.
+tests/helpers/cleanupTestUser.js
+tests/label-preview.spec.js

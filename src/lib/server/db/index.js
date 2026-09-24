@@ -2,12 +2,33 @@ import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { env } from '$env/dynamic/private';
 import * as schema from './schema.js';
+import {
+  assertDatabaseEnvironment,
+  resolveExpectedDatabaseEnvironment
+} from './databaseEnvironment.js';
 
-const connectionString = env.LOGISTIC_LABEL_DATABASE_URL;
+const rawConnectionString = env.LOGISTIC_LABEL_DATABASE_URL;
 
-if (!connectionString) {
-  console.warn('LOGISTIC_LABEL_DATABASE_URL is not set. Database-backed features will fail until it is configured.');
+if (!rawConnectionString) {
+  console.warn(
+    'LOGISTIC_LABEL_DATABASE_URL is not set. Database-backed features will fail until it is configured.'
+  );
 }
+
+const connectionString = rawConnectionString
+  ? assertDatabaseEnvironment(
+      {
+        databaseUrl: rawConnectionString,
+        databaseEnvironment: env.DATABASE_ENVIRONMENT,
+        neonProjectId: env.LOGISTIC_LABEL_NEON_PROJECT_ID,
+        expectedNeonProjectId: env.EXPECTED_NEON_PROJECT_ID
+      },
+      {
+        expectedEnvironment: resolveExpectedDatabaseEnvironment(env.VERCEL_ENV, env.APP_ENV),
+        operation: 'Application database initialization'
+      }
+    )
+  : null;
 
 const sql = connectionString ? neon(connectionString) : null;
 

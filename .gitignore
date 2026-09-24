@@ -9,6 +9,10 @@ node_modules
 /build
 /storage
 /.playwright-mcp
+/usage_log/
+/playwright-report/
+/test-results/
+/coverage/
 
 # OS
 .DS_Store

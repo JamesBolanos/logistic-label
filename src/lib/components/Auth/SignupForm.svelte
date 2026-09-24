@@ -56,7 +56,7 @@
 
       formSuccess = 'Account created successfully! Redirecting...';
       setTimeout(() => goto('/dashboard'), 1000);
-    } catch (error) {
+    } catch {
       formError = 'An unexpected error occurred. Please try again.';
       isLoading = false;
     }

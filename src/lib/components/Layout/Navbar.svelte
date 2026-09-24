@@ -13,7 +13,7 @@
     async function handleLogout() {
       try {
         await authClient.signOut();
-        goto('/login');
+        await goto('/login', { invalidateAll: true });
       } catch (error) {
         console.error('Logout error:', error);
       }
