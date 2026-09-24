@@ -323,10 +323,15 @@ jobs:
         shell: bash
         env:
           BRANCH_NAME: ${{ steps.target.outputs.branch_name }}
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_API_KEY: ${{ inputs.database_migration_target == 'production' && secrets.NEON_PRODUCTION_API_KEY || secrets.NEON_API_KEY }}
           NEON_PROJECT_ID: ${{ steps.target.outputs.project_id }}
         run: |
           response_file="$RUNNER_TEMP/neon-branches.json"
+
+          if [[ -z "$NEON_API_KEY" ]]; then
+            echo "The Neon API key for $BRANCH_NAME is not configured."
+            exit 1
+          fi
 
           status="$(curl --silent --show-error \
             --output "$response_file" \
@@ -355,7 +360,7 @@ jobs:
         with:
           project_id: ${{ steps.target.outputs.project_id }}
           branch_name: ${{ steps.target.outputs.branch_name }}
-          api_key: ${{ secrets.NEON_API_KEY }}
+          api_key: ${{ inputs.database_migration_target == 'production' && secrets.NEON_PRODUCTION_API_KEY || secrets.NEON_API_KEY }}
 
       - name: Refuse unexpected branch creation
         shell: bash

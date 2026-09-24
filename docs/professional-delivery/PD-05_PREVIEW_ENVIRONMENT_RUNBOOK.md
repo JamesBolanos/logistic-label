@@ -73,6 +73,8 @@ Use the existing build cache unless the failure specifically indicates stale bui
 
 Selecting `none` runs the ordinary manually dispatched quality workflow. Database migration jobs do not run on pushes or pull requests. The existing database environment and Neon project-identity guards still apply to both targets. Never print connection strings or commit pulled environment files.
 
+Use separate project-scoped GitHub Actions secrets: `NEON_API_KEY` for the non-production project and `NEON_PRODUCTION_API_KEY` for the production project. This keeps the E2E and staging credential unable to discover or modify production resources.
+
 Do not let a pull-request preview apply migrations automatically to shared staging. If concurrent or incompatible schema versions must be reviewed, create one temporary Neon branch manually, use branch-specific Vercel variables, and delete the branch after the review.
 
 ## Credential Rotation
