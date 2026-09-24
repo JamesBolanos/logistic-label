@@ -3,11 +3,31 @@ import { json } from '@sveltejs/kit';
 import { createLabel } from '$lib/server/db/labels';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
+import {
+  durationSince,
+  getOperationId,
+  recordOperationalEvent
+} from '$lib/server/analytics/operationalEvents.js';
 
 export async function POST({ request, locals }) {
+  const startedAt = Date.now();
+  const operationId = getOperationId(request);
+
   // Apply rate limiting
   const rateLimitResponse = pdfRateLimiter(request);
-  if (rateLimitResponse) return rateLimitResponse;
+  if (rateLimitResponse) {
+    if (locals.user) {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: locals.user.id,
+        operationId,
+        workflowStep: 'label_save',
+        errorCategory: 'rate_limited',
+        durationMs: durationSince(startedAt)
+      });
+    }
+    return rateLimitResponse;
+  }
 
   const user = locals.user;
   if (!user) {
@@ -21,6 +41,15 @@ export async function POST({ request, locals }) {
     // Validate form data
     const validation = validateLabelForm(labelData);
     if (!validation.isValid) {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: user.id,
+        operationId,
+        workflowStep: 'label_save',
+        errorCategory: 'validation',
+        durationMs: durationSince(startedAt)
+      });
+
       return json(
         { 
           success: false, 
@@ -35,7 +64,7 @@ export async function POST({ request, locals }) {
     const sanitizedData = sanitizeLabelForm(labelData);
     
     // Create label in database
-    const label = await createLabel(sanitizedData, user.id);
+    const label = await createLabel(sanitizedData, user.id, { operationId, startedAt });
     
     return json({ 
       success: true,
@@ -53,6 +82,15 @@ export async function POST({ request, locals }) {
     });
   } catch (error) {
     if (error.code === 'LABEL_SETTINGS_REQUIRED') {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: user.id,
+        operationId,
+        workflowStep: 'label_save',
+        errorCategory: 'settings_required',
+        durationMs: durationSince(startedAt)
+      });
+
       return json(
         {
           success: false,
@@ -63,6 +101,15 @@ export async function POST({ request, locals }) {
     }
 
     console.error('Label creation error:', error);
+
+    await recordOperationalEvent({
+      eventName: 'workflow_failed',
+      userId: user.id,
+      operationId,
+      workflowStep: 'label_save',
+      errorCategory: 'database',
+      durationMs: durationSince(startedAt)
+    });
     
     return json(
       { 

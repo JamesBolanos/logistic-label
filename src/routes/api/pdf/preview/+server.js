@@ -5,11 +5,31 @@ import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/for
 import { getLabelSettings } from '$lib/server/db/settings';
 import { generateSSCC } from '$lib/utils/gs1Utils';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
+import {
+  durationSince,
+  getOperationId,
+  recordOperationalEvent
+} from '$lib/server/analytics/operationalEvents.js';
 
 export async function POST({ request, locals }) {
+  const startedAt = Date.now();
+  const operationId = getOperationId(request);
+
   // Apply rate limiting
   const rateLimitResponse = pdfRateLimiter(request);
-  if (rateLimitResponse) return rateLimitResponse;
+  if (rateLimitResponse) {
+    if (locals.user) {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: locals.user.id,
+        operationId,
+        workflowStep: 'label_preview',
+        errorCategory: 'rate_limited',
+        durationMs: durationSince(startedAt)
+      });
+    }
+    return rateLimitResponse;
+  }
 
   const user = locals.user;
   if (!user) {
@@ -23,6 +43,15 @@ export async function POST({ request, locals }) {
     // Validate form data
     const validation = validateLabelForm(labelData);
     if (!validation.isValid) {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: user.id,
+        operationId,
+        workflowStep: 'label_preview',
+        errorCategory: 'validation',
+        durationMs: durationSince(startedAt)
+      });
+
       return json(
         { 
           success: false, 
@@ -39,6 +68,15 @@ export async function POST({ request, locals }) {
     const settings = await getLabelSettings(user.id);
 
     if (!settings.is_configured) {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: user.id,
+        operationId,
+        workflowStep: 'label_preview',
+        errorCategory: 'settings_required',
+        durationMs: durationSince(startedAt)
+      });
+
       return json(
         {
           success: false,
@@ -66,6 +104,16 @@ export async function POST({ request, locals }) {
     const pdfBuffer = await generateLogisticLabelPDF(previewLabelData, {
       company_name: settings.company_name
     });
+
+    await recordOperationalEvent({
+      eventName: 'label_preview_succeeded',
+      userId: user.id,
+      operationId,
+      labelType: 'homogeneous_unit',
+      labelSize: '4x6',
+      templateVersion: 'v1',
+      durationMs: durationSince(startedAt)
+    });
     
     return new Response(pdfBuffer, {
       status: 200,
@@ -78,6 +126,15 @@ export async function POST({ request, locals }) {
     });
   } catch (error) {
     console.error('Preview generation error:', error);
+
+    await recordOperationalEvent({
+      eventName: 'workflow_failed',
+      userId: user.id,
+      operationId,
+      workflowStep: 'label_preview',
+      errorCategory: error.code === 'LABEL_SETTINGS_REQUIRED' ? 'settings_required' : 'generation',
+      durationMs: durationSince(startedAt)
+    });
     
     return json(
       { 

@@ -5,7 +5,7 @@
       items: [
         'User account information, including email, username, and authentication data',
         'Business data you submit, such as labels, documents, and label metadata',
-        'Usage data, including logs, device details, and product interactions'
+        'Usage data, including page navigation, controlled workflow outcomes, and product interactions'
       ]
     },
     {
@@ -48,6 +48,14 @@
         'Retention may be extended where required by law',
         'Data is securely deleted when it is no longer needed'
       ]
+    },
+    {
+      title: 'Product Analytics',
+      items: [
+        'Google Analytics is used in production to understand navigation and feature use',
+        'Analytics events exclude emails, company names, label contents, product identifiers, and raw error messages',
+        'Saved labels, PDF responses, browser downloads, and physical printing are treated as different outcomes'
+      ]
     }
   ];
 </script>
@@ -73,7 +81,7 @@
             This page outlines how the GS1-128 Logistic Label Generator collects,
             uses, and protects user and business data.
           </p>
-          <p class="mt-3 text-sm text-gray-500">Last updated: May 28, 2026</p>
+          <p class="mt-3 text-sm text-gray-500">Last updated: September 24, 2026</p>
         </div>
 
         <div class="rounded-lg bg-blue-50 border border-blue-100 px-5 py-4 lg:w-72">

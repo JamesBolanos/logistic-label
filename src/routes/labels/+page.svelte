@@ -5,6 +5,11 @@
     import LabelForm from '$lib/components/Labels/LabelForm.svelte';
     import LabelPreview from '$lib/components/Labels/LabelPreview.svelte';
     import LabelHistory from '$lib/components/Labels/LabelHistory.svelte';
+    import {
+      createOperationId,
+      trackProductEvent
+    } from '$lib/analytics/client.js';
+    import { classifyHttpFailure } from '$lib/analytics/events.js';
     
     // State
     let labelData = $state(null);
@@ -45,6 +50,10 @@
     // Generate PDF
     async function generatePDF() {
       if (!labelData) return;
+
+      const startedAt = Date.now();
+      let responseStatus = null;
+      let workflowStep = 'label_save';
       
       isGenerating = true;
       error = null;
@@ -54,10 +63,12 @@
         const response = await fetch('/api/pdf/generate', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Operation-ID': createOperationId()
           },
           body: JSON.stringify(labelData)
         });
+        responseStatus = response.status;
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -66,14 +77,36 @@
         
         const data = await response.json();
         generatedLabelId = data.labelId;
-        
-        const pdfResponse = await fetch(`/api/pdf/download/${generatedLabelId}`);
+
+        trackProductEvent('label_saved', {
+          label_type: 'homogeneous_unit',
+          label_size: '4x6',
+          template_version: 'v1',
+          duration_ms: Date.now() - startedAt
+        });
+
+        workflowStep = 'pdf_response';
+        const pdfStartedAt = Date.now();
+        const pdfResponse = await fetch(`/api/pdf/download/${generatedLabelId}`, {
+          headers: {
+            'X-Operation-ID': createOperationId(),
+            'X-Download-Source': 'new_label'
+          }
+        });
+        responseStatus = pdfResponse.status;
 
         if (!pdfResponse.ok) {
           throw new Error('Label was saved, but the PDF download failed');
         }
 
         const blob = await pdfResponse.blob();
+        trackProductEvent('pdf_response_succeeded', {
+          format: 'pdf',
+          source: 'new_label',
+          duration_ms: Date.now() - pdfStartedAt
+        });
+
+        workflowStep = 'pdf_download';
         const url = window.URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
@@ -82,12 +115,22 @@
         anchor.click();
         anchor.remove();
         window.URL.revokeObjectURL(url);
+        trackProductEvent('pdf_download_started', {
+          format: 'pdf',
+          source: 'new_label'
+        });
         
         historyVersion += 1;
         success = 'Label generated successfully and saved to history.';
       } catch (err) {
         console.error('PDF generation error:', err);
         error = err.message || 'Error generating label';
+        trackProductEvent('workflow_failed', {
+          step: workflowStep,
+          error_category:
+            responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
+          duration_ms: Date.now() - startedAt
+        });
       } finally {
         isGenerating = false;
       }

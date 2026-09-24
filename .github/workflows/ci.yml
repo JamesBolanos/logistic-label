@@ -6,6 +6,20 @@ on:
     branches:
       - master
   workflow_dispatch:
+    inputs:
+      database_migration_target:
+        description: Database migration to run from this reviewed commit
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - staging
+          - production
+      confirm_production_migration:
+        description: Type APPLY_PRODUCTION_MIGRATIONS when selecting production
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -17,6 +31,7 @@ concurrency:
 jobs:
   quality:
     name: Quality
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.database_migration_target == 'none' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
@@ -242,3 +257,139 @@ jobs:
           fi
 
           rm -f "$response_file"
+
+  migrate-database:
+    name: Migrate ${{ inputs.database_migration_target }} database
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.database_migration_target != 'none' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Validate migration request
+        id: target
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirm_production_migration }}
+          NONPRODUCTION_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          PRODUCTION_PROJECT_ID: ${{ vars.NEON_PRODUCTION_PROJECT_ID }}
+          REF_NAME: ${{ github.ref_name }}
+          TARGET: ${{ inputs.database_migration_target }}
+        run: |
+          case "$TARGET" in
+            staging)
+              if [[ "$REF_NAME" != "staging" ]]; then
+                echo 'Staging migrations must run from the staging Git branch.'
+                exit 1
+              fi
+
+              project_id="$NONPRODUCTION_PROJECT_ID"
+              branch_name='staging'
+              database_environment='nonproduction'
+              migration_target='nonproduction'
+              ;;
+            production)
+              if [[ "$REF_NAME" != "staging" && "$REF_NAME" != "master" ]]; then
+                echo 'Production migrations must run from the reviewed staging or master Git branch.'
+                exit 1
+              fi
+
+              if [[ "$CONFIRMATION" != "APPLY_PRODUCTION_MIGRATIONS" ]]; then
+                echo 'Production migration confirmation is missing or invalid.'
+                exit 1
+              fi
+
+              project_id="$PRODUCTION_PROJECT_ID"
+              branch_name='main'
+              database_environment='production'
+              migration_target='production'
+              ;;
+            *)
+              echo "Unsupported database migration target: $TARGET"
+              exit 1
+              ;;
+          esac
+
+          if [[ -z "$project_id" ]]; then
+            echo "The GitHub repository variable for $TARGET is not configured."
+            exit 1
+          fi
+
+          echo "project_id=$project_id" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$branch_name" >> "$GITHUB_OUTPUT"
+          echo "database_environment=$database_environment" >> "$GITHUB_OUTPUT"
+          echo "migration_target=$migration_target" >> "$GITHUB_OUTPUT"
+
+      - name: Verify existing Neon branch
+        shell: bash
+        env:
+          BRANCH_NAME: ${{ steps.target.outputs.branch_name }}
+          NEON_API_KEY: ${{ inputs.database_migration_target == 'production' && secrets.NEON_PRODUCTION_API_KEY || secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ steps.target.outputs.project_id }}
+        run: |
+          response_file="$RUNNER_TEMP/neon-branches.json"
+
+          if [[ -z "$NEON_API_KEY" ]]; then
+            echo "The Neon API key for $BRANCH_NAME is not configured."
+            exit 1
+          fi
+
+          status="$(curl --silent --show-error \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $NEON_API_KEY" \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches?search=$BRANCH_NAME&limit=100")"
+
+          if [[ "$status" != "200" ]]; then
+            message="$(jq -r '.message // "No message returned"' "$response_file" | tr '\r\n' '  ')"
+            echo "Neon API error (HTTP $status): $message"
+            exit 1
+          fi
+
+          branch_id="$(jq -r --arg name "$BRANCH_NAME" '[.branches[] | select(.name == $name)][0].id // empty' "$response_file")"
+          if [[ -z "$branch_id" ]]; then
+            echo "The existing Neon branch named $BRANCH_NAME was not found. No branch was created."
+            exit 1
+          fi
+
+          rm -f "$response_file"
+
+      - name: Load existing Neon branch connection
+        id: neon
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ steps.target.outputs.project_id }}
+          branch_name: ${{ steps.target.outputs.branch_name }}
+          api_key: ${{ inputs.database_migration_target == 'production' && secrets.NEON_PRODUCTION_API_KEY || secrets.NEON_API_KEY }}
+
+      - name: Refuse unexpected branch creation
+        shell: bash
+        env:
+          BRANCH_CREATED: ${{ steps.neon.outputs.created }}
+        run: |
+          if [[ "$BRANCH_CREATED" != "false" ]]; then
+            echo 'The migration workflow expected an existing branch but Neon reported a new branch.'
+            exit 1
+          fi
+
+      - name: Check out reviewed migration
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply committed migrations
+        run: npm run db:migrate
+        env:
+          LOGISTIC_LABEL_DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+          DATABASE_ENVIRONMENT: ${{ steps.target.outputs.database_environment }}
+          LOGISTIC_LABEL_NEON_PROJECT_ID: ${{ steps.target.outputs.project_id }}
+          EXPECTED_NEON_PROJECT_ID: ${{ steps.target.outputs.project_id }}
+          MIGRATION_TARGET: ${{ steps.target.outputs.migration_target }}
+          CONFIRM_PRODUCTION_MIGRATION: ${{ inputs.confirm_production_migration }}

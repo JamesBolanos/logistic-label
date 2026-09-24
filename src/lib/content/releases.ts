@@ -8,17 +8,31 @@ export interface ReleaseUpdate {
   status: ReleaseStatus;
   title: string;
   benefit: string;
+  featureKey: string;
   href?: string;
   linkLabel?: string;
 }
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-09-24-usage-tracking-foundation',
+    publishedAt: '2026-09-24',
+    category: 'improvement',
+    status: 'published',
+    title: 'Usage signals now guide improvements',
+    benefit:
+      'Successful workflow milestones and controlled failure categories can now show where the label journey needs improvement without sending label contents to analytics.',
+    featureKey: 'usage_tracking',
+    href: '/privacy',
+    linkLabel: 'Review analytics privacy'
+  },
+  {
     id: '2026-09-24-whats-new-panel',
     publishedAt: '2026-09-24',
     category: 'new feature',
     status: 'published',
     title: "What's new is now visible",
+    featureKey: 'release_history',
     benefit:
       'See recently released fixes, improvements, and features from your dashboard and review the complete update history.',
     href: '/updates',

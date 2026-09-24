@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { createTestUserEmail, deleteTestUser } from './helpers/cleanupTestUser.js';
+import {
+  createTestUserEmail,
+  deleteTestUser,
+  getOperationalEventNames
+} from './helpers/cleanupTestUser.js';
 
 test('signed-in user can generate a label preview', async ({ page }, testInfo) => {
   const testRunId = /** @type {{ testRunId?: string }} */ (testInfo.config.metadata).testRunId;
@@ -34,6 +38,9 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
     await page.getByRole('link', { name: 'View all updates' }).click();
     await expect(page).toHaveURL(/\/updates$/);
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
+
+    const invalidPreviewResponse = await page.request.post('/api/pdf/preview', { data: {} });
+    expect(invalidPreviewResponse.status()).toBe(400);
 
     await page.goto('/settings');
     await page.getByLabel('Company Name').fill('Preview Test Company');
@@ -71,6 +78,20 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
       timeout: 10000
     });
     await expect(page.getByRole('cell', { name: '00012345600012' })).toBeVisible();
+
+    await expect
+      .poll(() => getOperationalEventNames(email))
+      .toEqual(
+        expect.arrayContaining([
+          'sign_up',
+          'login',
+          'company_settings_saved',
+          'label_preview_succeeded',
+          'label_saved',
+          'pdf_response_succeeded',
+          'workflow_failed'
+        ])
+      );
   } finally {
     await deleteTestUser(email, { requireExisting: accountCreationConfirmed });
   }

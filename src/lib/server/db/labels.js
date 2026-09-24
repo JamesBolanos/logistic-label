@@ -3,8 +3,12 @@ import { allocateSSCC } from '$lib/server/db/settings';
 import { validateSSCC } from '$lib/utils/gs1Utils';
 import { db } from '$lib/server/db';
 import { logisticLabel } from '$lib/server/db/schema.js';
+import {
+  durationSince,
+  recordOperationalEvent
+} from '$lib/server/analytics/operationalEvents.js';
 
-export async function createLabel(data, userId) {
+export async function createLabel(data, userId, telemetry = {}) {
   ensureDatabase();
 
   const sscc = data.sscc || await allocateSSCC(userId);
@@ -25,6 +29,16 @@ export async function createLabel(data, userId) {
       sscc
     })
     .returning();
+
+  await recordOperationalEvent({
+    eventName: 'label_saved',
+    userId,
+    operationId: telemetry.operationId,
+    labelType: 'homogeneous_unit',
+    labelSize: '4x6',
+    templateVersion: 'v1',
+    durationMs: telemetry.startedAt ? durationSince(telemetry.startedAt) : undefined
+  });
 
   return toApiLabel(label);
 }

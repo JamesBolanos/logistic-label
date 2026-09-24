@@ -1,6 +1,11 @@
 <!-- src/lib/components/Labels/LabelHistory.svelte -->
 <script>
     import { onMount } from 'svelte';
+    import {
+      createOperationId,
+      trackProductEvent
+    } from '$lib/analytics/client.js';
+    import { classifyHttpFailure } from '$lib/analytics/events.js';
     
     // State
     let labels = $state([]);
@@ -73,9 +78,18 @@
     
     // Download a label PDF
     async function downloadLabel(id) {
+      const startedAt = Date.now();
+      let responseStatus = null;
+
       try {
         // Get the PDF
-        const response = await fetch(`/api/pdf/download/${id}`);
+        const response = await fetch(`/api/pdf/download/${id}`, {
+          headers: {
+            'X-Operation-ID': createOperationId(),
+            'X-Download-Source': 'history'
+          }
+        });
+        responseStatus = response.status;
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -84,6 +98,12 @@
         
         // Create a blob and download
         const blob = await response.blob();
+        trackProductEvent('pdf_response_succeeded', {
+          format: 'pdf',
+          source: 'history',
+          duration_ms: Date.now() - startedAt
+        });
+
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -91,8 +111,18 @@
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
+        trackProductEvent('pdf_download_started', {
+          format: 'pdf',
+          source: 'history'
+        });
       } catch (err) {
         console.error('Error downloading label:', err);
+        trackProductEvent('workflow_failed', {
+          step: 'pdf_download',
+          error_category:
+            responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
+          duration_ms: Date.now() - startedAt
+        });
         alert('Failed to download label: ' + err.message);
       }
     }

@@ -7,7 +7,7 @@ This repository uses a lightweight pull-request workflow that is practical for a
 1. Use Node.js 24 and npm 11 (`nvm use` when nvm is available).
 2. Run `npm ci` so the installed tree matches `package-lock.json`.
 3. Copy `.env.example` to `.env.local` and use development-only credentials.
-4. Never point local commands, tests, seeds, or migrations at the Production Neon project.
+4. Never point routine local commands, tests, or seeds at the Production Neon project. Apply production migrations only through the guarded release procedure.
 
 Database commands validate the environment marker and Neon project identity before connecting. CI creates its E2E database from the non-production `test-base` branch and deletes it after the run. Local E2E remains opt-in and must use an explicitly isolated non-production target.
 
@@ -15,7 +15,7 @@ Database commands validate the environment marker and Neon project identity befo
 
 1. Create a short-lived branch from `master` using a descriptive name such as `fix/captcha-error` or `delivery/add-ci`.
 2. Keep a change focused on one outcome. Update documentation with behavior or operational changes.
-3. For a schema change, edit the Drizzle schema, generate SQL with `npm run db:generate`, and review the schema, SQL, and snapshot together. Do not use `drizzle-kit push` for shared or Production databases.
+3. For a schema change, edit the Drizzle schema, generate SQL with `npm run db:generate`, and review the schema, SQL, and snapshot together. Follow the guarded procedure in `docs/professional-delivery/PD-05_PREVIEW_ENVIRONMENT_RUNBOOK.md`; do not use `drizzle-kit push` for shared or Production databases.
 4. Run `npm run quality` before opening the pull request.
 5. Open a pull request even when working alone. Review its diff and CI evidence, use a Vercel preview when hosted review adds value, complete the checklist, and merge only after required checks pass.
 
@@ -46,4 +46,4 @@ For each update, review the release notes and peer requirements, run `npm run qu
 
 Assess risk from the user's perspective: authentication and account linking, data ownership, SSCC allocation, PDF/barcode correctness, migrations, configuration, and deployment behavior. Record the checks that provide evidence for the changed risk.
 
-Add a release-note entry when a user can observe the change. Internal refactoring, test-only work, and documentation-only work normally do not need a user-facing entry. The What's New delivery mechanism will be implemented in the product work plan; until then, describe the intended note in the pull request.
+Add a published entry to the file-backed What's New history when a user can observe the change. Internal refactoring, test-only work, and documentation-only work normally do not need a user-facing entry.

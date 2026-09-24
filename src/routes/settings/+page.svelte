@@ -1,5 +1,10 @@
 <script>
   import { onMount } from 'svelte';
+  import {
+    createOperationId,
+    trackProductEvent
+  } from '$lib/analytics/client.js';
+  import { classifyHttpFailure } from '$lib/analytics/events.js';
 
   const defaultSettings = {
     company_name: 'Company Name',
@@ -43,6 +48,8 @@
   }
 
   async function saveSettings() {
+    const startedAt = Date.now();
+    let responseStatus = null;
     isSaving = true;
     errors = {};
     formError = '';
@@ -52,10 +59,12 @@
       const response = await fetch('/api/settings', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Operation-ID': createOperationId()
         },
         body: JSON.stringify(formData)
       });
+      responseStatus = response.status;
       const data = await response.json();
 
       if (!response.ok) {
@@ -70,8 +79,15 @@
         next_serial_reference: data.settings.next_serial_reference
       };
       statusMessage = 'Label settings saved.';
+      trackProductEvent('company_settings_saved', { setup_type: data.setupType });
     } catch (error) {
       formError = error.message || 'Failed to save settings';
+      trackProductEvent('workflow_failed', {
+        step: 'settings_save',
+        error_category:
+          responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
+        duration_ms: Date.now() - startedAt
+      });
     } finally {
       isSaving = false;
     }

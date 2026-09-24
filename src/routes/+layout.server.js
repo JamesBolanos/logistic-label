@@ -1,7 +1,12 @@
+import { env } from '$env/dynamic/private';
+
+const DEFAULT_GOOGLE_ANALYTICS_ID = 'G-WWFKCEM8Q1';
+
 export async function load({ locals }) {
   const displayName = getDisplayName(locals.user);
 
   return {
+    analyticsMeasurementId: getAnalyticsMeasurementId(),
     user: locals.user
       ? {
           id: locals.user.id,
@@ -12,6 +17,14 @@ export async function load({ locals }) {
         }
       : null
   };
+}
+
+function getAnalyticsMeasurementId() {
+  const deploymentEnvironment = env.VERCEL_ENV || env.APP_ENV;
+  if (deploymentEnvironment !== 'production') return null;
+
+  const measurementId = String(env.GOOGLE_ANALYTICS_ID || DEFAULT_GOOGLE_ANALYTICS_ID).trim();
+  return /^G-[A-Z0-9]+$/.test(measurementId) ? measurementId : null;
 }
 
 function getDisplayName(user) {

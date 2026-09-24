@@ -13,7 +13,8 @@ const updates: ReleaseUpdate[] = [
     category: 'improvement',
     status: 'published',
     title: 'Older improvement',
-    benefit: 'An older published change.'
+    benefit: 'An older published change.',
+    featureKey: 'older_improvement'
   },
   {
     id: '2026-09-24-draft',
@@ -21,7 +22,8 @@ const updates: ReleaseUpdate[] = [
     category: 'new feature',
     status: 'draft',
     title: 'Unreleased work',
-    benefit: 'This must remain hidden.'
+    benefit: 'This must remain hidden.',
+    featureKey: 'unreleased_work'
   },
   {
     id: '2026-09-24-fix',
@@ -29,7 +31,8 @@ const updates: ReleaseUpdate[] = [
     category: 'fix',
     status: 'published',
     title: 'Recent fix',
-    benefit: 'The newest published change.'
+    benefit: 'The newest published change.',
+    featureKey: 'recent_fix'
   }
 ];
 

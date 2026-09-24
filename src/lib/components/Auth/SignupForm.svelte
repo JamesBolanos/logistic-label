@@ -3,6 +3,7 @@
   import { goto } from '$app/navigation';
   import { dev } from '$app/environment';
   import { authClient } from '$lib/auth-client';
+  import { trackProductEvent } from '$lib/analytics/client.js';
   import { validateRegistrationForm } from '$lib/validation/formValidation';
   import Captcha from './Captcha.svelte';
 
@@ -18,6 +19,7 @@
   let captchaToken = $state('');
 
   async function handleSubmit() {
+    const startedAt = Date.now();
     const validation = validateRegistrationForm({ 
       email, 
       password, 
@@ -26,11 +28,21 @@
 
     if (!validation.isValid) {
       errors = validation.errors;
+      trackProductEvent('workflow_failed', {
+        step: 'sign_up',
+        error_category: 'validation',
+        duration_ms: Date.now() - startedAt
+      });
       return;
     }
 
     if (!dev && !captchaVerified) {
       formError = 'Please complete the captcha verification';
+      trackProductEvent('workflow_failed', {
+        step: 'sign_up',
+        error_category: 'validation',
+        duration_ms: Date.now() - startedAt
+      });
       return;
     }
 
@@ -50,14 +62,25 @@
 
       if (error) {
         formError = error.message || 'Registration failed. Please try again.';
+        trackProductEvent('workflow_failed', {
+          step: 'sign_up',
+          error_category: 'validation',
+          duration_ms: Date.now() - startedAt
+        });
         isLoading = false;
         return;
       }
 
+      trackProductEvent('sign_up', { method: 'email' });
       formSuccess = 'Account created successfully! Redirecting...';
       setTimeout(() => goto('/dashboard'), 1000);
     } catch {
       formError = 'An unexpected error occurred. Please try again.';
+      trackProductEvent('workflow_failed', {
+        step: 'sign_up',
+        error_category: 'network',
+        duration_ms: Date.now() - startedAt
+      });
       isLoading = false;
     }
   }
@@ -69,10 +92,14 @@
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: '/dashboard'
+        callbackURL: '/dashboard?authMethod=google'
       });
     } catch (error) {
       console.error('Google sign-in error', error);
+      trackProductEvent('workflow_failed', {
+        step: 'login',
+        error_category: 'network'
+      });
       formError = 'Unable to start Google sign-in. Please try again.';
       isSocialLoading = false;
     }
