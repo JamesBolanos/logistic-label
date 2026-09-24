@@ -72,7 +72,7 @@ jobs:
           parent_branch: test-base
           branch_name: test/ci-${{ github.run_id }}-${{ github.run_attempt }}
           expires_at: ${{ steps.expiration.outputs.expires_at }}
-          suspend_timeout: 60
+          suspend_timeout: 300
           api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Create ephemeral authentication secret
