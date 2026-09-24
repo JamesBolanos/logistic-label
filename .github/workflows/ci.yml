@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quality gates
+        run: npm run quality
+
+  e2e:
+    name: E2E
+    needs: quality
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Set test branch expiration
+        id: expiration
+        shell: bash
+        run: echo "expires_at=$(date -u --date '+1 day' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+
+      - name: Create temporary Neon branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          parent_branch: test-base
+          branch_name: test/ci-${{ github.run_id }}-${{ github.run_attempt }}
+          expires_at: ${{ steps.expiration.outputs.expires_at }}
+          suspend_timeout: 60
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Create ephemeral authentication secret
+        shell: bash
+        run: |
+          auth_secret="$(openssl rand -hex 32)"
+          echo "::add-mask::$auth_secret"
+          echo "BETTER_AUTH_SECRET=$auth_secret" >> "$GITHUB_ENV"
+
+      - name: Apply committed migrations
+        run: npm run db:migrate
+        env:
+          LOGISTIC_LABEL_DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+          DATABASE_ENVIRONMENT: nonproduction
+          LOGISTIC_LABEL_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          EXPECTED_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+
+      - name: Run Playwright E2E test
+        run: npm run test:e2e
+        env:
+          LOGISTIC_LABEL_DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+          DATABASE_ENVIRONMENT: nonproduction
+          LOGISTIC_LABEL_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          EXPECTED_NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          BETTER_AUTH_URL: http://127.0.0.1:5173
+          E2E_TEST_RUN_ID: ci-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload Playwright failure report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Delete temporary Neon branch
+        if: always() && steps.create_neon_branch.outputs.branch_id != ''
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          branch: ${{ steps.create_neon_branch.outputs.branch_id }}
+          api_key: ${{ secrets.NEON_API_KEY }}

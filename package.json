@@ -1,39 +1,63 @@
 {
-	"name": "logistic-label",
-	"private": true,
-	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
-		"prepare": "svelte-kit sync || echo ''",
-		"test:e2e": "playwright test",
-		"test:e2e:headed": "playwright test --headed",
-		"test:e2e:ui": "playwright test --ui"
-
-	},
-	"devDependencies": {
-		"@playwright/test": "^1.60.0",
-		"@sveltejs/adapter-auto": "^4.0.0",
-		"@sveltejs/kit": "^2.16.0",
-		"@sveltejs/vite-plugin-svelte": "^5.0.0",
-		"@tailwindcss/vite": "^4.0.0",
-		"drizzle-kit": "^0.31.10",
-		"svelte": "^5.0.0",
-		"tailwindcss": "^4.0.0",
-		"vite": "^6.0.0"
-	},
-	"overrides": {
-		"cookie": "1.1.1"
-	},
-	"dependencies": {
-		"@better-auth/drizzle-adapter": "^1.6.11",
-		"@neondatabase/serverless": "^1.1.0",
-		"better-auth": "^1.6.11",
-		"drizzle-orm": "^0.45.2"
-	}
+  "name": "logistic-label",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "npm@11.9.0",
+  "engines": {
+    "node": "24.x",
+    "npm": "11.x"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write .prettierrc.json eslint.config.js jsconfig.json tsconfig.check.json package.json playwright.config.js src/lib/server/config src/lib/server/db/databaseEnvironment.ts tests/helpers tests/unit tests/*.spec.js docs/professional-delivery CONTRIBUTING.md .github/pull_request_template.md .github/workflows",
+    "format:check": "prettier --check .prettierrc.json eslint.config.js jsconfig.json tsconfig.check.json package.json playwright.config.js src/lib/server/config src/lib/server/db/databaseEnvironment.ts tests/helpers tests/unit tests/*.spec.js docs/professional-delivery CONTRIBUTING.md .github/pull_request_template.md .github/workflows",
+    "lint": "eslint .",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json && npm run check:js",
+    "check:js": "tsc --project ./tsconfig.check.json",
+    "test:unit": "vitest run tests/unit",
+    "quality": "npm run format:check && npm run lint && npm run check && npm run test:unit && npm run db:check && npm run build",
+    "db:check": "drizzle-kit check --dialect=postgresql --out=./drizzle",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "prepare": "svelte-kit sync || echo ''",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.60.0",
+    "@sveltejs/adapter-auto": "^4.0.0",
+    "@sveltejs/adapter-vercel": "^6.3.4",
+    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@tailwindcss/vite": "^4.0.0",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^10.11.0",
+    "eslint-plugin-svelte": "^3.23.0",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.8",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vite": "^6.4.3",
+    "vitest": "^5.0.1"
+  },
+  "overrides": {
+    "cookie": "1.1.1"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.7.5",
+    "@neondatabase/serverless": "^1.1.0",
+    "@opentelemetry/api": "^1.9.1",
+    "better-auth": "^1.7.5",
+    "drizzle-orm": "^0.45.3"
+  }
 }

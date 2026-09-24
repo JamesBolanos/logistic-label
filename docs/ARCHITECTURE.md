@@ -42,7 +42,7 @@
 ## Labels and PDF
 - `src/lib/server/pdf/labelGenerator.js` produces 4x6 PDF labels.
 - `src/lib/server/pdf/gs1Barcode.js` encodes supported GS1 application identifiers as Code 128 / GS1-128 bar patterns.
-- Preview PDFs are short-lived files under `storage/preview`; generated PDFs are under `storage/pdf`.
+- The active preview and download endpoints generate PDF responses on demand. A legacy hash-preview reader can read short-lived files from `PREVIEW_STORAGE_PATH`; the current application does not write generated PDFs to `storage/pdf`.
 - GS1 SSCC allocation, reuse, responsibility, and nested logistic unit rules are tracked in `docs/GS1_REQUIREMENTS.md`.
 - GS1 Logistic Label layout, AI combination, barcode sizing, placement, and verification guidance is summarized in `docs/GS1_LOGISTIC_LABEL_GUIDE.md`; the source PDF is checked in as `docs/GS1_Logistic_Label_Guideline.pdf`.
 
@@ -55,6 +55,7 @@
 ## CSP and security headers
 - CSP meta in `src/app.html` allows Google reCAPTCHA domains.
 - Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy) are set in `src/hooks.server.js` (server-side).
+- `src/lib/server/config/environment.js` validates required Production configuration at server startup. Vercel supplies `VERCEL_ENV`; other deployments can set `APP_ENV=production`.
 
 ## Known gaps / next steps
 - Configure production `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google OAuth credentials, and Neon URL in Vercel.

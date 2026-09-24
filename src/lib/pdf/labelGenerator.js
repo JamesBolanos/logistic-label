@@ -1,6 +1,6 @@
 // src/lib/server/pdf/labelGenerator.js
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { generateLogisticLabelBarcode, generateGS1Barcode } from './barcodeGenerator';
+import { generateGS1Barcode } from './barcodeGenerator';
 import { formatGS1Date } from '$lib/utils/gs1Utils';
 
 /**
@@ -43,8 +43,6 @@ export async function generateLogisticLabelPDF(labelData, options = {}) {
   // Calculate sections
   const headerHeight = pageHeight * 0.15; // Top 15%
   const midHeight = pageHeight * 0.35;    // Middle 35%
-  const barcodeHeight = pageHeight * 0.5; // Bottom 50%
-  
   // Draw header section (company info)
   page.drawText(company_name, {
     x: margin,

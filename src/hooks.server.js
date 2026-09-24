@@ -3,6 +3,9 @@ import { redirect } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { auth } from '$lib/server/auth/betterAuth';
 import { verifyRecaptchaToken } from '$lib/server/auth/recaptcha';
+import { validateServerEnvironment } from '$lib/server/config/environment';
+
+validateServerEnvironment();
 
 const PROTECTED_PATHS = ['/dashboard', '/labels', '/settings'];
 const CAPTCHA_AUTH_PATHS = new Set(['/api/auth/sign-in/email', '/api/auth/sign-up/email']);

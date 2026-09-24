@@ -1,6 +1,7 @@
 // src/lib/utils/gs1Utils.js
 
 // GS1 mod-10 check digit for GTINs, SSCCs, and other numeric GS1 keys.
+/** @param {string | number} valueWithoutCheckDigit */
 export function calculateCheckDigit(valueWithoutCheckDigit) {
   const digits = String(valueWithoutCheckDigit).split('').map(Number);
   const sum = digits.reduce((acc, digit, idx) => {
@@ -11,6 +12,7 @@ export function calculateCheckDigit(valueWithoutCheckDigit) {
   return mod === 0 ? 0 : 10 - mod;
 }
 
+/** @param {string} gtin */
 export function validateGTIN(gtin) {
   if (!/^\d{14}$/.test(gtin)) return false;
   const body = gtin.slice(0, 13);
@@ -18,10 +20,12 @@ export function validateGTIN(gtin) {
   return calculateCheckDigit(body) === check;
 }
 
+/** @param {string} prefix */
 export function validateGS1CompanyPrefix(prefix) {
   return /^\d{4,12}$/.test(prefix || '');
 }
 
+/** @param {string} sscc */
 export function validateSSCC(sscc) {
   if (!/^\d{18}$/.test(sscc || '')) return false;
   const body = sscc.slice(0, 17);
@@ -29,10 +33,12 @@ export function validateSSCC(sscc) {
   return calculateCheckDigit(body) === check;
 }
 
+/** @param {string} lot */
 export function validateLotNumber(lot) {
   return /^[A-Za-z0-9]{1,20}$/.test(lot || '');
 }
 
+/** @param {string | number | Date} dateStr */
 export function formatGS1Date(dateStr) {
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return '';
@@ -42,12 +48,21 @@ export function formatGS1Date(dateStr) {
   return `${yy}${mm}${dd}`;
 }
 
+/**
+ * @typedef {object} SSCCOptions
+ * @property {string | number} [gs1CompanyPrefix]
+ * @property {string | number} [serialReference]
+ * @property {string | number} [extensionDigit]
+ */
+
+/** @param {SSCCOptions | string} [options] */
 export function generateSSCC(options = {}) {
+  const normalizedOptions = typeof options === 'string' ? { gs1CompanyPrefix: options } : options;
   const {
     gs1CompanyPrefix = '',
     serialReference = 1,
     extensionDigit = '0'
-  } = typeof options === 'string' ? { gs1CompanyPrefix: options } : options;
+  } = normalizedOptions;
 
   const prefix = String(gs1CompanyPrefix).replace(/\D/g, '');
 
@@ -57,7 +72,7 @@ export function generateSSCC(options = {}) {
 
   const extension = String(extensionDigit).replace(/\D/g, '').slice(0, 1) || '0';
   const serialDigits = 16 - prefix.length;
-  const serial = String(Number.parseInt(serialReference, 10) || 0).padStart(serialDigits, '0');
+  const serial = String(Number.parseInt(String(serialReference), 10) || 0).padStart(serialDigits, '0');
 
   if (!/^\d$/.test(extension)) {
     throw new Error('SSCC extension digit must be a single digit');
