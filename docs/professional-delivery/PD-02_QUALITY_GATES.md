@@ -23,7 +23,7 @@ The first Vitest suite verifies a published GS1 check-digit example, valid SSCC 
 
 ## Generated artifacts
 
-`.gitignore` now excludes Playwright reports, test results, coverage, local storage, environment files, and usage reports. Some Playwright report files were already tracked and have active changes associated with the account-cleanup test work. They were left untouched here to preserve that work; removing those tracked artifacts remains the final PD-02 repository-hygiene item.
+`.gitignore` now excludes Playwright reports, test results, coverage, local storage, environment files, and usage reports. Previously tracked Playwright reports and test results were removed after the account-cleanup test work was verified, completing the PD-02 repository-hygiene item.
 
 ## Known warnings and exceptions
 
