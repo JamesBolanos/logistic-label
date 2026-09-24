@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -45,10 +45,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -191,8 +191,27 @@ jobs:
 
       - name: Delete temporary Neon branch
         if: always() && (steps.create_neon_branch.outputs.branch_id != '' || steps.request_neon_branch.outputs.branch_id != '')
-        uses: neondatabase/delete-branch-action@v3
-        with:
-          project_id: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
-          branch: ${{ steps.create_neon_branch.outputs.branch_id || steps.request_neon_branch.outputs.branch_id }}
-          api_key: ${{ secrets.NEON_API_KEY }}
+        shell: bash
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_NONPRODUCTION_PROJECT_ID }}
+          BRANCH_ID: ${{ steps.create_neon_branch.outputs.branch_id || steps.request_neon_branch.outputs.branch_id }}
+        run: |
+          response_file="$RUNNER_TEMP/neon-delete-response.json"
+
+          delete_status="$(curl --silent --show-error \
+            --request DELETE \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $NEON_API_KEY" \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches/$BRANCH_ID")"
+
+          if [[ "$delete_status" != "200" ]]; then
+            code="$(jq -r '.code // "unknown"' "$response_file")"
+            message="$(jq -r '.message // "No message returned"' "$response_file" | tr '\r\n' '  ')"
+            echo "Neon API error (HTTP $delete_status): code=$code message=$message"
+            exit 1
+          fi
+
+          rm -f "$response_file"
