@@ -65,20 +65,13 @@ Use the existing build cache unless the failure specifically indicates stale bui
 
 1. Generate and review the committed Drizzle migration locally.
 2. Let GitHub Actions apply the migration and run E2E tests on its disposable Neon branch.
-3. Load the reviewed staging credentials from an ignored environment file and apply the migration with `MIGRATION_TARGET=nonproduction npm run db:migrate`.
-4. Redeploy and smoke-test `staging.sscc-labels.com`.
-5. Load the production credentials from an ignored environment file. Confirm that the database environment marker and Neon project ID are the production values.
-6. Apply only the reviewed, committed migration with:
+3. Promote the reviewed commit to the `staging` Git branch and wait for its Vercel deployment.
+4. In GitHub, open **Actions → CI → Run workflow**, select the `staging` branch, choose `staging` as the database migration target, and run it. The guarded job uses the repository's Neon API credential to load the existing `staging` branch; it refuses to create a missing branch.
+5. Redeploy if needed and smoke-test `staging.sscc-labels.com`.
+6. From the same reviewed `staging` commit, run the workflow again with the `production` target and enter `APPLY_PRODUCTION_MIGRATIONS` in the confirmation field. The production GitHub project variable, exact confirmation, database environment, and Neon project identity must all agree before Drizzle connects.
+7. Verify the production migration completed before merging or promoting application code that requires the new schema.
 
-   ```sh
-   MIGRATION_TARGET=production \
-   CONFIRM_PRODUCTION_MIGRATION=APPLY_PRODUCTION_MIGRATIONS \
-   npm run db:migrate
-   ```
-
-7. Verify the migration completed before promoting application code that requires the new schema. Delete the temporary environment file after the release check.
-
-The default migration target is non-production. Selecting production without the exact confirmation phrase fails before Drizzle connects. The existing database environment and Neon project-identity guards still apply to both targets. Never print connection strings or commit pulled environment files.
+Selecting `none` runs the ordinary manually dispatched quality workflow. Database migration jobs do not run on pushes or pull requests. The existing database environment and Neon project-identity guards still apply to both targets. Never print connection strings or commit pulled environment files.
 
 Do not let a pull-request preview apply migrations automatically to shared staging. If concurrent or incompatible schema versions must be reviewed, create one temporary Neon branch manually, use branch-specific Vercel variables, and delete the branch after the review.
 
