@@ -29,9 +29,15 @@ export function validateServerEnvironment() {
     throw new Error(`Production configuration is incomplete. Missing: ${missing.join(', ')}`);
   }
 
+  const betterAuthUrl = privateEnv.BETTER_AUTH_URL;
+
+  if (!betterAuthUrl) {
+    throw new Error('Production configuration is incomplete. Missing: BETTER_AUTH_URL');
+  }
+
   let authUrl;
   try {
-    authUrl = new URL(privateEnv.BETTER_AUTH_URL);
+    authUrl = new URL(betterAuthUrl);
   } catch {
     throw new Error(
       'Production configuration is invalid. BETTER_AUTH_URL must be an absolute URL.'
