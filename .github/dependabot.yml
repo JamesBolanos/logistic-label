@@ -24,6 +24,9 @@ updates:
       - dependency-name: '@sveltejs/vite-plugin-svelte'
         update-types:
           - version-update:semver-major
+      - dependency-name: vite
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
