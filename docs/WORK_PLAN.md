@@ -4,7 +4,7 @@ Goal: provide a dependable free logistics label tool and attract requests for ta
 
 ## Foundation Fast-Track
 
-Professional Delivery is the active foundation epic for the current session. It temporarily precedes the user-facing delivery board below and does not add functional requirements. The executable task list, sequencing, and acceptance criteria are in [`docs/PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md). Product work resumes in the existing priority order after the foundation exit criteria pass.
+The operational delivery foundation is established: reproducible local checks, GitHub CI, isolated E2E data, stable staging, production/non-production database separation, and dependency maintenance are working. Remaining monitoring, recovery, migration, and security hardening stays visible in [`docs/PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md) and no longer blocks incremental product work.
 
 ## Delivery Board
 
@@ -12,7 +12,7 @@ This is the planning checklist. Unchecked items are outstanding work, not implem
 
 | Order | Workstream | Status | Outcome to verify |
 |---|---|---|---|
-| 1 | What's new panel | Next to deliver | Users can discover every released fix, improvement, and new feature |
+| 1 | What's new panel | Delivered; analytics follows in priority 2 | Users can discover every released fix, improvement, and new feature |
 | 2 | Event checklist and statistics | Planned | See where users stop, which operations fail, and which released features they use |
 | 3 | Fixes | Needs completion and verification | Correct labels, reliable authentication/downloads, and isolated tests with cleanup |
 | 4 | Improvements | Planned; refine with feedback | Make existing workflows easier and prepare evidence for future decisions |
@@ -34,7 +34,7 @@ The app already has useful foundations:
 - A 4x6 PDF target.
 - Company settings and prefix-based SSCC generation.
 - A Google Analytics base tag; explicit product events and the GA property configuration still need review.
-- A Playwright workflow with cleanup changes that need failure-path and database-isolation verification.
+- A Playwright workflow that creates and cleans up an isolated Neon branch for eligible E2E runs.
 
 The main gap is that the current workflow is too fixed. It assumes every label has GTIN, lot, production date, quantity, and weight. GS1 says the only mandatory element for a GS1 Logistic Label is the SSCC. Other data depends on the logistic unit type and valid AI combinations.
 
@@ -70,9 +70,9 @@ Keep private user evidence in `usage_log/` or other private records. Link a back
 
 Use a lightweight visual workflow: **Backlog → Analysis → Ready → In progress → Review → Released → Outcome reviewed**. Record blocked items and their dependency visibly. Choose a specific agile framework and cadence when useful; this plan does not prescribe Scrum roles or fixed sprints.
 
-- [ ] Refine the next small item within the agreed priority order, with a clear need, scope, acceptance criteria, and dependencies.
-- [ ] Deliver and verify a usable increment; keep work in progress small.
-- [ ] Include a dated What's new entry for every released change, grouping related small changes into one release when appropriate.
+- [x] Refine the next small item within the agreed priority order, with a clear need, scope, acceptance criteria, and dependencies.
+- [x] Deliver and verify a usable increment; keep work in progress small.
+- [x] Include a dated What's new entry for every released change, grouping related small changes into one release when appropriate.
 - [ ] Validate the tracking required for that increment. The initial panel uses content/UI verification; its analytics follow in priority 2.
 - [ ] Review stakeholder feedback and available metrics after release, then adjust the backlog and working approach.
 
@@ -82,13 +82,13 @@ The workflow above adapts the agile principles of incremental delivery, collabor
 
 First deliverable: make every released fix, improvement, and new feature visible to users, with a clear explanation of its benefit.
 
-- [ ] Add a compact "What's new" panel on the signed-in dashboard, with a link to the full release history.
-- [ ] Give each update a stable release ID, publication date, change category (`fix`, `improvement`, or `new feature`), short title, user-facing benefit, and relevant feature/instruction link.
-- [ ] Start with a small file-backed release list; distinguish drafts from published updates and publish only capabilities that are available.
-- [ ] Show recent releases first and preserve older entries in the history. Keep planned roadmap items separate from released features.
-- [ ] Make updates readable on mobile and accessible by keyboard; keep label creation easy to reach.
-- [ ] Verify published/draft visibility, release ordering, links, and the empty state. Panel analytics are delivered under priority 2 and do not block this first release.
-- [ ] Include a dated release note for every shipped change and add the relevant measurement check once event tracking is available.
+- [x] Add a compact "What's new" panel on the signed-in dashboard, with a link to the full release history.
+- [x] Give each update a stable release ID, publication date, change category (`fix`, `improvement`, or `new feature`), short title, user-facing benefit, and relevant feature/instruction link.
+- [x] Start with a small file-backed release list; distinguish drafts from published updates and publish only capabilities that are available.
+- [x] Show recent releases first and preserve older entries in the history. Keep planned roadmap items separate from released features.
+- [x] Make updates readable on mobile and accessible by keyboard; keep label creation easy to reach.
+- [x] Verify published/draft visibility, release ordering, links, and the empty state. Panel analytics are delivered under priority 2 and do not block this first release.
+- [x] Include a dated release note for every shipped change and add the relevant measurement check once event tracking is available.
 
 ## 2. Event Checklist and Statistics
 

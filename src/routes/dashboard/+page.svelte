@@ -2,6 +2,10 @@
 <script>
     import { onMount } from 'svelte';
     import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
+    import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
+    import { getRecentPublishedReleases } from '$lib/content/releases.js';
+
+    const recentUpdates = getRecentPublishedReleases(2);
     
     // Stats
     let stats = $state({
@@ -96,6 +100,8 @@
             </div>
           </div>
         </section>
+
+        <WhatsNewPanel updates={recentUpdates} />
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
