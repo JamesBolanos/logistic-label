@@ -29,7 +29,7 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
     await expect(page).toHaveURL(/\/dashboard|\/labels/, { timeout: 10000 });
 
     await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: "What's new" })).toBeVisible();
+    await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
     await expect(page.getByText("What's new is now visible")).toBeVisible();
     await page.getByRole('link', { name: 'View all updates' }).click();
     await expect(page).toHaveURL(/\/updates$/);
