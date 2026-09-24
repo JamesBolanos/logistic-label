@@ -43,7 +43,7 @@ The Vercel project uses this **Ignored Build Step** command:
 case "$VERCEL_GIT_COMMIT_REF" in dependabot/*) exit 0 ;; *) exit 1 ;; esac
 ```
 
-Vercel interprets exit code `0` as canceling the build and exit code `1` as continuing. Dependabot pull requests use GitHub Actions as their validation evidence. Feature and fix branches continue to receive Vercel previews when a hosted review is useful.
+Vercel interprets exit code `0` as canceling the build and exit code `1` as continuing. Dependabot pull requests run the secret-free GitHub Quality job and skip Neon-backed E2E because GitHub does not expose ordinary Actions secrets to Dependabot. Reproduce a selected dependency update on a maintainer branch when it needs browser/database validation. Feature and fix branches continue to receive Vercel previews when a hosted review is useful.
 
 All Vercel Preview deployments use the shared `staging` database unless a temporary database is created and assigned manually for a specific high-risk change. Do not run destructive tests or automatic schema migrations from arbitrary preview builds against shared staging.
 
