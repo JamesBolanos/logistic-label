@@ -48,25 +48,23 @@ For this epic, a task is Done only when:
 
 ## Current Baseline
 
-Already present:
+Established foundation:
 
-- `package-lock.json` and npm scripts for development, build, Drizzle migrations, and Playwright.
-- Version-controlled Drizzle migrations.
-- A Playwright configuration and one end-to-end label journey.
-- README environment and authentication guidance.
-- Architecture and GS1 requirement documents.
-- A working Vercel production deployment.
+- Node.js 24 and npm 11 are pinned, and the lockfile is reproducible.
+- Formatting, linting, Svelte/type checking, unit tests, Drizzle checks, and the production build run through one quality command.
+- GitHub Actions runs Quality on every pull request and isolated Playwright E2E on eligible code changes.
+- E2E uses a guarded disposable Neon branch derived from `test-base` and deletes it after the run.
+- Vercel uses the explicit SvelteKit Vercel adapter, a stable staging domain, and separate production/non-production database scopes.
+- Dependabot runs weekly without automatic merge; incompatible major toolchain updates are deferred until their peer ecosystem supports them.
+- Generated Playwright and local environment artifacts are ignored.
 
-Outstanding foundation gaps:
+Remaining foundation gaps:
 
-- No repository-pinned Node version or declared package-manager version.
-- No formatter, linter, Svelte/type-check, or unit-test command.
-- No continuous-integration workflow.
-- End-to-end tests do not yet have a proven isolated database and complete failure-path cleanup.
-- `adapter-auto` is still used instead of an explicit production adapter.
-- Generated Playwright artifacts are present in the tracked working tree.
-- No documented release, migration, rollback, backup/restore, incident, dependency-update, or vulnerability-reporting procedure.
-- No application error-monitoring and operational logging standard.
+- Expand database integration and business-rule coverage beyond the current critical browser journey.
+- Complete guarded staging/production migration and release procedures.
+- Rehearse application rollback, database forward recovery, and non-production restore.
+- Add application error monitoring, structured operational logs, availability checks, and incident runbooks.
+- Add the security policy, secret-rotation procedure, and recurring access/security review.
 
 ## Agreed Delivery Architecture
 
@@ -108,7 +106,7 @@ Neon non-production project
 
 Preview and test environments must never inherit or query production user data. Vercel Preview uses manually managed credentials for the fixed non-production `staging` branch. Vercel Production uses the separately connected production Neon resource. The application verifies the environment marker and Neon project identity before accepting either connection.
 
-Do not connect the non-production Neon resource to all Vercel Preview deployments. That integration creates one persistent Neon branch per Git branch, even when a change does not affect the database. This exceeds the useful branch budget on the free plan and duplicates the disposable database isolation already provided by GitHub Actions. Dependabot branches skip the Vercel build through the project's Ignored Build Step; GitHub Actions remains their required validation. A feature preview may use the shared staging database when hosted review is valuable. Create a temporary isolated preview database manually only for a change that cannot safely share staging, and delete it after review.
+Do not connect the non-production Neon resource to all Vercel Preview deployments. That integration creates one persistent Neon branch per Git branch, even when a change does not affect the database. This exceeds the useful branch budget on the free plan and duplicates the disposable database isolation already provided by GitHub Actions. Dependabot branches skip the Vercel build and secret-backed E2E; their required validation is the secret-free Quality job. Reproduce a dependency update on a maintainer branch when it needs browser/database validation. A feature preview may use the shared staging database when hosted review is valuable. Create a temporary isolated preview database manually only for a change that cannot safely share staging, and delete it after review.
 
 Use Google's official reCAPTCHA test configuration and preview-only authentication secrets for ephemeral previews. Use the stable staging domain for complete Google OAuth, CAPTCHA-domain, cookie, and callback verification because dynamic preview URLs cannot be registered as exact OAuth callbacks safely.
 
@@ -229,13 +227,14 @@ Acceptance criteria:
 
 Purpose: prevent changes from bypassing the agreed quality gates.
 
-- [ ] Add a GitHub Actions workflow triggered for pull requests and `master`, the current production/default branch.
-- [ ] Use the pinned Node/npm versions and `npm ci`; cache only safe dependency data.
-- [ ] Run formatting, linting, Svelte/type checking, unit tests, `drizzle-kit check`, fresh-database migration validation, incremental migration validation, and the production build.
-- [ ] Run integration and Playwright tests against an ephemeral or otherwise isolated Postgres database.
-- [ ] Upload test traces/reports only on failure with a defined retention period.
-- [ ] Add dependency caching and job concurrency cancellation without hiding failures.
-- [ ] Keep deployment ownership in Vercel's Git integration; do not deploy the application a second time from GitHub Actions.
+- [x] Add a GitHub Actions workflow triggered for pull requests and `master`, the current production/default branch.
+- [x] Use the pinned Node/npm versions and `npm ci`; cache only safe dependency data.
+- [x] Run formatting, linting, Svelte/type checking, unit tests, `drizzle-kit check`, and the production build.
+- [ ] Add fresh-database and incremental migration-history validation.
+- [x] Run Playwright tests against an ephemeral Neon database for eligible application changes.
+- [x] Upload test traces/reports only on failure with a defined retention period.
+- [x] Add dependency caching and job concurrency cancellation without hiding failures.
+- [x] Keep deployment ownership in Vercel's Git integration; do not deploy the application a second time from GitHub Actions.
 - [ ] Trigger the deployed-preview Playwright/smoke job when Vercel reports the preview ready, and associate its result with the originating commit.
 - [ ] Protect the default branch so required checks and review must pass before merge.
 - [ ] Add a visible CI status badge after the workflow is stable.
@@ -251,7 +250,7 @@ Acceptance criteria:
 
 Purpose: make a release a controlled procedure rather than an implicit platform action.
 
-- [ ] Record an ADR for the agreed GitHub/Vercel/Neon/Drizzle responsibilities, confirm Vercel as the current deployment target, and replace `adapter-auto` with the explicit supported SvelteKit adapter.
+- [ ] Record an ADR for the agreed GitHub/Vercel/Neon/Drizzle responsibilities and confirm Vercel as the current deployment target. The explicit supported SvelteKit Vercel adapter is configured.
 - [x] Create separate Neon production and non-production projects. Keep non-production `main`, `test-base`, and `staging` branches with synthetic data only.
 - [x] Connect Vercel Preview to the fixed non-production `staging` branch through manually scoped variables and Vercel Production to the separate production Neon resource; enforce the boundary with environment and project-identity guards.
 - [x] Disable automatic per-preview Neon branching. Use disposable CI branches for automated isolation and create a manual temporary preview branch only when a specific change requires it.
@@ -299,11 +298,11 @@ Acceptance criteria:
 
 Purpose: keep the foundation healthy after the fast-track ends.
 
-- [ ] Add automated dependency-update pull requests with grouping and a controlled schedule.
+- [x] Add automated dependency-update pull requests with grouping and a controlled schedule.
 - [ ] Enable dependency and secret scanning available for the repository host.
 - [ ] Add `SECURITY.md` with supported versions, private vulnerability-reporting instructions, response expectations, and prohibited disclosure of user data.
 - [ ] Review direct dependencies for maintenance, license, necessity, and replacement cost; record high-impact choices in ADRs.
-- [ ] Define patch, minor, and major update rules and how security updates are expedited.
+- [x] Define patch, minor, and major update rules and how security updates are expedited.
 - [ ] Verify production secrets are scoped to the smallest environment and document a rotation/revocation checklist.
 - [ ] Review HTTP security headers, authentication rate limits, session/cookie settings, authorization boundaries, and database least privilege.
 
