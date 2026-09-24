@@ -19,10 +19,37 @@ jobs:
     name: Quality
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      run_e2e: ${{ steps.e2e_scope.outputs.run_e2e }}
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Determine E2E scope
+        id: e2e_scope
+        shell: bash
+        run: |
+          run_e2e=true
+
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]] && git rev-parse HEAD^ >/dev/null 2>&1; then
+            run_e2e=false
+
+            while IFS= read -r changed_file; do
+              case "$changed_file" in
+                docs/* | *.md) ;;
+                *)
+                  run_e2e=true
+                  break
+                  ;;
+              esac
+            done < <(git diff --name-only HEAD^ HEAD)
+          fi
+
+          echo "run_e2e=$run_e2e" >> "$GITHUB_OUTPUT"
+          echo "Run E2E: $run_e2e"
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -39,7 +66,7 @@ jobs:
   e2e:
     name: E2E
     needs: quality
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: ${{ needs.quality.outputs.run_e2e == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
