@@ -1,5 +1,15 @@
 import { relations } from 'drizzle-orm';
-import { boolean, index, integer, numeric, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  integer,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar
+} from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -105,13 +115,50 @@ export const labelSettings = pgTable('label_settings', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
 
+export const operationalEvent = pgTable(
+  'operational_event',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    eventName: varchar('event_name', { length: 64 }).notNull(),
+    operationId: varchar('operation_id', { length: 128 }),
+    authMethod: varchar('auth_method', { length: 20 }),
+    setupType: varchar('setup_type', { length: 20 }),
+    workflowStep: varchar('workflow_step', { length: 40 }),
+    errorCategory: varchar('error_category', { length: 40 }),
+    documentFormat: varchar('document_format', { length: 12 }),
+    downloadSource: varchar('download_source', { length: 20 }),
+    labelType: varchar('label_type', { length: 30 }),
+    labelSize: varchar('label_size', { length: 12 }),
+    templateVersion: varchar('template_version', { length: 30 }),
+    durationMs: integer('duration_ms'),
+    isInternal: boolean('is_internal').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    uniqueIndex('operational_event_name_operation_uidx').on(table.eventName, table.operationId),
+    index('operational_event_user_created_idx').on(table.userId, table.createdAt),
+    index('operational_event_name_created_idx').on(table.eventName, table.createdAt)
+  ]
+);
+
 export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
   labels: many(logisticLabel),
+  operationalEvents: many(operationalEvent),
   labelSettings: one(labelSettings, {
     fields: [user.id],
     references: [labelSettings.userId]
+  })
+}));
+
+export const operationalEventRelations = relations(operationalEvent, ({ one }) => ({
+  user: one(user, {
+    fields: [operationalEvent.userId],
+    references: [user.id]
   })
 }));
 

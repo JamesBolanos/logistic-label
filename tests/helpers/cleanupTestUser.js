@@ -58,7 +58,8 @@ export async function deleteTestUser(email, { requireExisting = false } = {}) {
       (SELECT count(*) FROM "account" WHERE "user_id" = ${userId}) AS accounts,
       (SELECT count(*) FROM "session" WHERE "user_id" = ${userId}) AS sessions,
       (SELECT count(*) FROM "label_settings" WHERE "user_id" = ${userId}) AS label_settings,
-      (SELECT count(*) FROM "logistic_label" WHERE "user_id" = ${userId}) AS logistic_labels
+      (SELECT count(*) FROM "logistic_label" WHERE "user_id" = ${userId}) AS logistic_labels,
+      (SELECT count(*) FROM "operational_event" WHERE "user_id" = ${userId}) AS operational_events
   `;
 
   const remainingCount = Object.values(remainingRecords).reduce(
@@ -71,4 +72,20 @@ export async function deleteTestUser(email, { requireExisting = false } = {}) {
   }
 
   return true;
+}
+
+export async function getOperationalEventNames(email) {
+  if (!testUserEmailPattern.test(email)) {
+    throw new Error(`Refusing to inspect a non-test user: ${email}`);
+  }
+
+  const rows = await sql`
+    SELECT event."event_name"
+    FROM "operational_event" AS event
+    INNER JOIN "user" AS account ON account."id" = event."user_id"
+    WHERE account."email" = ${email}
+    ORDER BY event."created_at", event."id"
+  `;
+
+  return rows.map((row) => row.event_name);
 }

@@ -3,6 +3,7 @@
     import { goto } from '$app/navigation';
     import { dev } from '$app/environment';
     import { authClient } from '$lib/auth-client';
+    import { trackProductEvent } from '$lib/analytics/client.js';
     import { validateLoginForm } from '$lib/validation/formValidation';
     import Captcha from './Captcha.svelte';
     
@@ -22,17 +23,28 @@
     
     // Handle form submission
     async function handleSubmit() {
+      const startedAt = Date.now();
       // Client-side validation
       const validation = validateLoginForm({ email, password });
       
       if (!validation.isValid) {
         errors = validation.errors;
+        trackProductEvent('workflow_failed', {
+          step: 'login',
+          error_category: 'validation',
+          duration_ms: Date.now() - startedAt
+        });
         return;
       }
       
       // Check if captcha is verified (skip in development)
       if (!dev && !captchaVerified) {
         formError = 'Please complete the captcha verification';
+        trackProductEvent('workflow_failed', {
+          step: 'login',
+          error_category: 'validation',
+          duration_ms: Date.now() - startedAt
+        });
         return;
       }
       
@@ -51,13 +63,24 @@
 
         if (error) {
           formError = error.message || 'Login failed. Please check your credentials.';
+          trackProductEvent('workflow_failed', {
+            step: 'login',
+            error_category: 'authentication',
+            duration_ms: Date.now() - startedAt
+          });
           return;
         }
-        
+
+        trackProductEvent('login', { method: 'email' });
         goto(returnUrl);
       } catch (error) {
         console.error('LoginForm fetch error', error);
         formError = 'An unexpected error occurred. Please try again.';
+        trackProductEvent('workflow_failed', {
+          step: 'login',
+          error_category: 'network',
+          duration_ms: Date.now() - startedAt
+        });
       } finally {
         // Ensure the button unfreezes even if navigation is blocked
         isLoading = false;
@@ -71,10 +94,14 @@
       try {
         await authClient.signIn.social({
           provider: 'google',
-          callbackURL: returnUrl
+          callbackURL: `${returnUrl}${returnUrl.includes('?') ? '&' : '?'}authMethod=google`
         });
       } catch (error) {
         console.error('Google sign-in error', error);
+        trackProductEvent('workflow_failed', {
+          step: 'login',
+          error_category: 'network'
+        });
         formError = 'Unable to start Google sign-in. Please try again.';
         isSocialLoading = false;
       }

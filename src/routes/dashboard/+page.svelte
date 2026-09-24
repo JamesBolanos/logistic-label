@@ -4,6 +4,7 @@
     import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
     import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
     import { getRecentPublishedReleases } from '$lib/content/releases.js';
+    import { trackProductEvent } from '$lib/analytics/client.js';
 
     const recentUpdates = getRecentPublishedReleases(2);
     
@@ -22,6 +23,13 @@
     
     // Load dashboard data on mount
     onMount(async () => {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('authMethod') === 'google') {
+        trackProductEvent('login', { method: 'google' });
+        url.searchParams.delete('authMethod');
+        window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+      }
+
       try {
         // Get dashboard stats
         const response = await fetch('/api/dashboard');
@@ -86,6 +94,8 @@
               <div class="flex flex-col gap-3 sm:flex-row lg:flex-shrink-0">
                 <a
                   href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
+                  onclick={() =>
+                    trackProductEvent('custom_contact_clicked', { placement: 'dashboard' })}
                   class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Contact Me

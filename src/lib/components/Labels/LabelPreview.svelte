@@ -1,6 +1,11 @@
 <!-- src/lib/components/Labels/LabelPreview.svelte -->
 <script>
     import { onDestroy } from 'svelte';
+    import {
+      createOperationId,
+      trackProductEvent
+    } from '$lib/analytics/client.js';
+    import { classifyHttpFailure } from '$lib/analytics/events.js';
 
     // Props
     let { labelData = null, previewUrl = $bindable(null) } = $props();
@@ -23,6 +28,9 @@
     // Generate a preview of the label
     async function generatePreview() {
       if (!labelData) return;
+
+      const startedAt = Date.now();
+      let responseStatus = null;
       
       isLoading = true;
       error = null;
@@ -32,10 +40,12 @@
         const response = await fetch('/api/pdf/preview', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Operation-ID': createOperationId()
           },
           body: JSON.stringify(labelData)
         });
+        responseStatus = response.status;
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -46,9 +56,21 @@
         revokePreviewUrl();
         objectUrl = URL.createObjectURL(pdf);
         previewUrl = `${objectUrl}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
+        trackProductEvent('label_preview_succeeded', {
+          label_type: 'homogeneous_unit',
+          label_size: '4x6',
+          template_version: 'v1',
+          duration_ms: Date.now() - startedAt
+        });
       } catch (err) {
         console.error('Preview generation error:', err);
         error = err.message || 'Error generating preview';
+        trackProductEvent('workflow_failed', {
+          step: 'label_preview',
+          error_category:
+            responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
+          duration_ms: Date.now() - startedAt
+        });
       } finally {
         isLoading = false;
       }

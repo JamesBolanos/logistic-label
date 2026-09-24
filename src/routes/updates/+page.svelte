@@ -1,5 +1,6 @@
 <script>
   import { formatReleaseDate, getPublishedReleases } from '$lib/content/releases.js';
+  import { observeReleaseUpdate, trackProductEvent } from '$lib/analytics/client.js';
 
   const updates = getPublishedReleases();
 
@@ -35,7 +36,10 @@
   {:else}
     <ol class="space-y-5">
       {#each updates as update (update.id)}
-        <li class="rounded-lg border border-gray-200 bg-white p-6 shadow">
+        <li
+          class="rounded-lg border border-gray-200 bg-white p-6 shadow"
+          use:observeReleaseUpdate={update}
+        >
           <div class="flex flex-wrap items-center gap-2">
             <span
               class={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${categoryClass(update.category)}`}
@@ -52,6 +56,11 @@
             <a
               class="mt-4 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700 focus:rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               href={update.href}
+              onclick={() =>
+                trackProductEvent('release_cta_clicked', {
+                  release_id: update.id,
+                  feature_key: update.featureKey
+                })}
             >
               {update.linkLabel}
             </a>

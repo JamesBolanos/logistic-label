@@ -1,19 +1,21 @@
 <!-- src/routes/+layout.svelte -->
 <script>
-	import Navbar from '$lib/components/Layout/Navbar.svelte';
-	import Footer from '$lib/components/Layout/Footer.svelte';
-	import '../app.css';
-	
-	// Get child component
-	let { children } = $props();
-  </script>
-  
-  <div class="flex flex-col min-h-screen">
-	<Navbar />
-	
-	<main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8">
-	  {@render children()}
-	</main>
-	
-	<Footer />
-  </div>
+  import GoogleAnalytics from '$lib/components/Analytics/GoogleAnalytics.svelte';
+  import Footer from '$lib/components/Layout/Footer.svelte';
+  import Navbar from '$lib/components/Layout/Navbar.svelte';
+  import '../app.css';
+
+  let { data, children } = $props();
+</script>
+
+<GoogleAnalytics measurementId={data.analyticsMeasurementId} />
+
+<div class="flex min-h-screen flex-col">
+  <Navbar />
+
+  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+    {@render children()}
+  </main>
+
+  <Footer />
+</div>

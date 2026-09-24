@@ -13,7 +13,7 @@ This is the planning checklist. Unchecked items are outstanding work, not implem
 | Order | Workstream | Status | Outcome to verify |
 |---|---|---|---|
 | 1 | What's new panel | Delivered; analytics follows in priority 2 | Users can discover every released fix, improvement, and new feature |
-| 2 | Event checklist and statistics | Planned | See where users stop, which operations fail, and which released features they use |
+| 2 | Event checklist and statistics | In progress; tracking foundation implemented, GA4 verification pending | See where users stop, which operations fail, and which released features they use |
 | 3 | Fixes | Needs completion and verification | Correct labels, reliable authentication/downloads, and isolated tests with cleanup |
 | 4 | Improvements | Planned; refine with feedback | Make existing workflows easier and prepare evidence for future decisions |
 | 5 | New features, including Excel export | Backlog; scope through analysis | Add capabilities that address a defined user or business need |
@@ -33,7 +33,7 @@ The app already has useful foundations:
 - SSCC storage.
 - A 4x6 PDF target.
 - Company settings and prefix-based SSCC generation.
-- A Google Analytics base tag; explicit product events and the GA property configuration still need review.
+- Production-only GA4 navigation and allowlisted product events, plus persisted operational events; GA4 property and DebugView verification remain.
 - A Playwright workflow that creates and cleans up an isolated Neon branch for eligible E2E runs.
 
 The main gap is that the current workflow is too fixed. It assumes every label has GTIN, lot, production date, quantity, and weight. GS1 says the only mandatory element for a GS1 Logistic Label is the SSCC. Other data depends on the logistic unit type and valid AI combinations.
@@ -94,11 +94,11 @@ First deliverable: make every released fix, improvement, and new feature visible
 
 ### Measurement Definitions
 
-- [ ] Define the reporting window, time zone, and eligible signup cohorts. Compare users who have had enough time to complete the measured step.
-- [ ] Separate owner accounts, confirmed automated tests, suspected tests, and other users. Keep account identities in private records rather than this tracked plan.
-- [ ] Count distinct users reaching successful milestones as well as attempts and retries. Show counts alongside percentages for small cohorts.
-- [ ] Keep saved labels, successful PDF responses, browser download attempts, and physical prints distinct. Do not infer printing from a download or the current `printed` flag.
-- [ ] Define repeat creators as users saving labels on later dates; do not label this as all returning website visitors.
+- [x] Define the reporting window, time zone, and eligible signup cohorts. Compare users who have had enough time to complete the measured step.
+- [x] Separate owner accounts, confirmed automated tests, suspected tests, and other users. Keep account identities in private records rather than this tracked plan.
+- [x] Count distinct users reaching successful milestones as well as attempts and retries. Show counts alongside percentages for small cohorts.
+- [x] Keep saved labels, successful PDF responses, browser download attempts, and physical prints distinct. Do not infer printing from a download or the current `printed` flag.
+- [x] Define repeat creators as users saving labels on later dates; do not label this as all returning website visitors.
 
 ### Event Checklist
 
@@ -119,9 +119,9 @@ Event names below are proposed contracts. Establish one recording point per even
 | `release_cta_clicked` | The user follows an update's feature or instruction link | Release ID, feature key |
 
 - [ ] Review the existing GA4 property and base tag, including page views during SvelteKit navigation and duplicate-event handling.
-- [ ] Add success and failure events at the defined recording points. Standardize operation IDs where needed to distinguish retries from separate jobs.
-- [ ] Use GA4 for acquisition and navigation; use persisted application records and operational events for account/label totals and workflow outcomes.
-- [ ] Keep emails, company names, raw label contents, free-text inquiries, and raw error messages out of GA event payloads. Use controlled categories and non-identifying attributes.
+- [x] Add success and failure events at the defined recording points. Standardize operation IDs where needed to distinguish retries from separate jobs.
+- [x] Use GA4 for acquisition and navigation; use persisted application records and operational events for account/label totals and workflow outcomes.
+- [x] Keep emails, company names, raw label contents, free-text inquiries, and raw error messages out of GA event payloads. Use controlled categories and non-identifying attributes.
 - [ ] Validate events against successful operations and deliberately failed operations; analytics failures must not interrupt label creation.
 - [ ] Reconcile the measured milestones with database records and verify test-account exclusions.
 - [ ] Instrument the already-released What's new panel and compare distinct viewers, feature-link users, and subsequent successful feature use. Clicks alone do not establish adoption or causation.

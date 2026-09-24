@@ -4,6 +4,8 @@ import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { getRequestEvent } from '$app/server';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
+import { resolveAuthMethod } from '$lib/analytics/events.js';
+import { recordOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
 import { db, schema } from '$lib/server/db';
 
 if (!db) {
@@ -45,6 +47,32 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID || '',
       clientSecret: env.GOOGLE_CLIENT_SECRET || ''
+    }
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        async after(user, context) {
+          await recordOperationalEvent({
+            eventName: 'sign_up',
+            userId: user.id,
+            operationId: `sign-up:${user.id}`,
+            authMethod: resolveAuthMethod(context?.path)
+          });
+        }
+      }
+    },
+    session: {
+      create: {
+        async after(session, context) {
+          await recordOperationalEvent({
+            eventName: 'login',
+            userId: session.userId,
+            operationId: `login:${session.id}`,
+            authMethod: resolveAuthMethod(context?.path)
+          });
+        }
+      }
     }
   },
   plugins: [sveltekitCookies(getRequestEvent)]
