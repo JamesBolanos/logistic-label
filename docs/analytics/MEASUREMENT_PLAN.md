@@ -10,7 +10,7 @@ Measure whether people reach a useful logistic-label outcome, where workflows fa
 - Default views use rolling 7-day and 30-day windows. Query boundaries are inclusive at the start and exclusive at the end.
 - A signup belongs to a first-label cohort only after the account has had 24 hours to complete its first label.
 - Report distinct users and raw attempts together. Percentages for small cohorts always include their counts.
-- Exclude rows marked `is_internal`, including configured owner/test user IDs. E2E accounts and their events are deleted through the existing cascade cleanup.
+- Exclude rows marked `is_internal` and every ID in the combined owner/test exclusion set. E2E accounts and their events are deleted through the existing cascade cleanup.
 - A repeat creator has saved labels on at least two different calendar dates. This does not represent every returning website visitor.
 - A saved label, successful PDF response, and browser download action are different milestones. None proves that a file was saved or physically printed.
 
@@ -22,6 +22,14 @@ Measure whether people reach a useful logistic-label outcome, where workflows fa
 - Record success only after the responsible operation succeeds. Record one controlled failure category when it fails.
 - Analytics errors never change the application response or block the user workflow.
 - GA4 is enabled only when the deployment environment is `production`. Preview, local, and E2E environments do not send GA4 events.
+
+## Owner Access and Exclusions
+
+- `ANALYTICS_OWNER_USER_IDS` contains comma-separated internal user IDs allowed to open `/admin/statistics`. Access is checked on the server, and the response is private and not cached.
+- `ANALYTICS_EXCLUDED_USER_IDS` contains comma-separated internal IDs for confirmed manual test accounts. Owner IDs are automatically added to this exclusion set and do not need to be repeated.
+- Configure both values separately for staging and production because internal IDs can differ between databases. Treat the values as server-only secrets.
+- The dashboard uses aggregate counts only and never returns account identity fields. A configured excluded account also stops receiving the GA tag after its authenticated layout loads; pre-authentication GA activity still requires GA4 data filters when it must be removed.
+- Follow [Owner Statistics Runbook](./OWNER_STATISTICS_RUNBOOK.md) when configuring, verifying, or rotating these IDs.
 
 ## Event Contract
 
@@ -45,7 +53,8 @@ Do not send or store emails, names, company names, IP addresses, user-agent stri
 
 ## Validation
 
-- Unit tests verify event allowlists, controlled values, failure categories, and authentication-method resolution.
+- Unit tests verify event allowlists, controlled values, failure categories, authentication-method resolution, reporting windows, and owner/exclusion configuration.
 - Playwright verifies the real signup-to-download workflow against an isolated Neon branch. Account cleanup also removes the run's operational events.
+- Playwright verifies that a normal signed-in user receives a forbidden response from the owner statistics route.
 - Before production release, inspect GA4 DebugView for one successful journey and one deliberately failed operation.
 - Reconcile saved-label and signup milestones against their source database tables before using conversion rates for decisions.

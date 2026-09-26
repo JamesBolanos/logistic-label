@@ -7,7 +7,7 @@ import { validateServerEnvironment } from '$lib/server/config/environment';
 
 validateServerEnvironment();
 
-const PROTECTED_PATHS = ['/dashboard', '/labels', '/settings'];
+const PROTECTED_PATHS = ['/admin', '/dashboard', '/labels', '/settings'];
 const CAPTCHA_AUTH_PATHS = new Set(['/api/auth/sign-in/email', '/api/auth/sign-up/email']);
 
 /** @type {import('@sveltejs/kit').Handle} */

@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-09-25-private-usage-statistics',
+    publishedAt: '2026-09-25',
+    category: 'improvement',
+    status: 'published',
+    title: 'Product decisions now use aggregate statistics',
+    benefit:
+      'Private aggregate reporting now helps prioritize onboarding and reliability improvements while keeping emails, company names, and label contents out of the report.',
+    featureKey: 'owner_statistics',
+    href: '/privacy',
+    linkLabel: 'Review analytics privacy'
+  },
+  {
     id: '2026-09-24-usage-tracking-foundation',
     publishedAt: '2026-09-24',
     category: 'improvement',
