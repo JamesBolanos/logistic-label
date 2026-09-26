@@ -6,7 +6,8 @@ const MAX_REQUESTS = 100;
 const buckets = new Map();
 
 function isLimited(request) {
-  const key = request.headers.get('x-forwarded-for') || request.headers.get('cf-connecting-ip') || 'unknown';
+  const key =
+    request.headers.get('x-forwarded-for') || request.headers.get('cf-connecting-ip') || 'unknown';
   const now = Date.now();
   const bucket = buckets.get(key) || [];
   const recent = bucket.filter((timestamp) => now - timestamp < WINDOW_MS);

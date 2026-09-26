@@ -29,7 +29,8 @@
       title: 'Data Sharing',
       items: [
         'We do not sell or rent personal or business data',
-        'Service providers may process data for hosting, maintenance, or compliance',
+        'Service providers may process data for hosting, authentication, security email delivery, maintenance, or compliance',
+        'The transactional email provider processes the recipient address and delivery metadata when you request a password reset',
         'Data may be disclosed where required by law or to protect users and the service'
       ]
     },
@@ -62,10 +63,7 @@
 
 <svelte:head>
   <title>Privacy Policy - GS1-128 Logistic Label Generator</title>
-  <meta
-    name="description"
-    content="Privacy policy for the GS1-128 Logistic Label Generator."
-  />
+  <meta name="description" content="Privacy policy for the GS1-128 Logistic Label Generator." />
 </svelte:head>
 
 <div class="space-y-8">
@@ -73,22 +71,21 @@
     <div class="px-6 py-8 sm:px-8">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div class="max-w-3xl">
-          
           <h1 class="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
             How we protect your data
           </h1>
           <p class="mt-4 text-base leading-7 text-gray-600">
-            This page outlines how the GS1-128 Logistic Label Generator collects,
-            uses, and protects user and business data.
+            This page outlines how the GS1-128 Logistic Label Generator collects, uses, and protects
+            user and business data.
           </p>
-          <p class="mt-3 text-sm text-gray-500">Last updated: September 24, 2026</p>
+          <p class="mt-3 text-sm text-gray-500">Last updated: September 26, 2026</p>
         </div>
 
         <div class="rounded-lg bg-blue-50 border border-blue-100 px-5 py-4 lg:w-72">
           <p class="text-sm font-medium text-blue-900">Privacy standard</p>
           <p class="mt-2 text-sm leading-6 text-blue-800">
-            Account and label data are handled securely with attention to GDPR and
-            other privacy requirements.
+            Account and label data are handled securely with attention to GDPR and other privacy
+            requirements.
           </p>
         </div>
       </div>
@@ -119,7 +116,10 @@
     <div class="px-6 py-5 border-b border-gray-200 sm:px-8">
       <h2 class="text-lg font-medium text-gray-900">Contact</h2>
       <p class="mt-1 text-sm text-gray-500">
-        <a class="font-medium text-blue-600 hover:text-blue-500" href="mailto:jbolanosdiaz@gmail.com">
+        <a
+          class="font-medium text-blue-600 hover:text-blue-500"
+          href="mailto:jbolanosdiaz@gmail.com"
+        >
           Contact privacy support
         </a>
         with privacy questions or requests related to your data.

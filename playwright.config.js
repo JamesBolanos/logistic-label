@@ -19,6 +19,7 @@ export default defineConfig({
   testMatch: '**/*.spec.js',
   metadata: { testRunId },
   fullyParallel: false,
+  workers: 1,
   retries: process.env.CI ? 2 : 0,
   reporter: 'html',
   use: {

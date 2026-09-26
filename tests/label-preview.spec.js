@@ -11,7 +11,7 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
   let accountCreationConfirmed = false;
 
   try {
-    await page.goto('/signup');
+    await page.goto('/signup', { waitUntil: 'networkidle' });
 
     await page.getByLabel('Email Address').fill(email);
     await page.getByLabel('Password', { exact: true }).fill('Password123');
@@ -34,7 +34,11 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
 
     await page.goto('/dashboard');
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
-    await expect(page.getByText("What's new is now visible")).toBeVisible();
+    await expect(page.getByText('Password recovery is available')).toBeVisible();
+
+    const ownerStatisticsResponse = await page.request.get('/admin/statistics');
+    expect(ownerStatisticsResponse.status()).toBe(403);
+
     await page.getByRole('link', { name: 'View all updates' }).click();
     await expect(page).toHaveURL(/\/updates$/);
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();

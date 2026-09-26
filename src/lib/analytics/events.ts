@@ -9,7 +9,9 @@ export const productEventNames = [
   'workflow_failed',
   'custom_contact_clicked',
   'release_update_viewed',
-  'release_cta_clicked'
+  'release_cta_clicked',
+  'password_reset_requested',
+  'password_reset_succeeded'
 ] as const;
 
 export type ProductEventName = (typeof productEventNames)[number];
@@ -21,7 +23,9 @@ export const workflowSteps = [
   'label_preview',
   'label_save',
   'pdf_response',
-  'pdf_download'
+  'pdf_download',
+  'password_reset_request',
+  'password_reset'
 ] as const;
 
 export const failureCategories = [
@@ -53,7 +57,9 @@ const allowedParameters: Record<ProductEventName, readonly string[]> = {
   workflow_failed: ['step', 'error_category', 'duration_ms'],
   custom_contact_clicked: ['placement'],
   release_update_viewed: ['release_id', 'change_category', 'feature_key'],
-  release_cta_clicked: ['release_id', 'feature_key']
+  release_cta_clicked: ['release_id', 'feature_key'],
+  password_reset_requested: [],
+  password_reset_succeeded: []
 };
 
 const controlledValues: Record<string, ReadonlySet<string>> = {
