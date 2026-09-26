@@ -11,7 +11,7 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
   let accountCreationConfirmed = false;
 
   try {
-    await page.goto('/signup');
+    await page.goto('/signup', { waitUntil: 'networkidle' });
 
     await page.getByLabel('Email Address').fill(email);
     await page.getByLabel('Password', { exact: true }).fill('Password123');

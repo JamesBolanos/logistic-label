@@ -1,12 +1,14 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
+import { waitUntil } from '@vercel/functions';
 import { getRequestEvent } from '$app/server';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { resolveAuthMethod } from '$lib/analytics/events.js';
 import { recordOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
 import { db, schema } from '$lib/server/db';
+import { sendPasswordResetEmail } from '$lib/server/email/passwordReset.js';
 
 if (!db) {
   console.warn('Better Auth is configured, but LOGISTIC_LABEL_DATABASE_URL is missing.');
@@ -34,7 +36,13 @@ export const auth = betterAuth({
       : undefined,
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 8
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    resetPasswordTokenExpiresIn: 60 * 60,
+    revokeSessionsOnPasswordReset: true,
+    async sendResetPassword({ user, url }) {
+      await sendPasswordResetEmail({ to: user.email, resetUrl: url });
+    }
   },
   account: {
     accountLinking: {
@@ -75,5 +83,12 @@ export const auth = betterAuth({
       }
     }
   },
+  advanced: env.VERCEL
+    ? {
+        backgroundTasks: {
+          handler: waitUntil
+        }
+      }
+    : undefined,
   plugins: [sveltekitCookies(getRequestEvent)]
 });
