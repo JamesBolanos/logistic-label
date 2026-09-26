@@ -13,7 +13,7 @@ This is the planning checklist. Unchecked items are outstanding work, not implem
 | Order | Workstream | Status | Outcome to verify |
 |---|---|---|---|
 | 1 | What's new panel | Delivered; analytics follows in priority 2 | Users can discover every released fix, improvement, and new feature |
-| 2 | Event checklist and statistics | In progress; tracking foundation implemented, GA4 verification pending | See where users stop, which operations fail, and which released features they use |
+| 2 | Event checklist and statistics | In progress; tracking foundation and first owner dashboard implemented, release verification pending | See where users stop, which operations fail, and which released features they use |
 | 3 | Fixes | Needs completion and verification | Correct labels, reliable authentication/downloads, and isolated tests with cleanup |
 | 4 | Improvements | Planned; refine with feedback | Make existing workflows easier and prepare evidence for future decisions |
 | 5 | New features, including Excel export | Backlog; scope through analysis | Add capabilities that address a defined user or business need |
@@ -139,9 +139,10 @@ Event names below are proposed contracts. Establish one recording point per even
 | Next | Feature requests by distinct users, size, format, and printer | What belongs in the free tool or a tailored project? | Categorized request records |
 | Next | Inquiries → qualified requirements → proposals → accepted projects | Is the free tool generating paid implementation work? | Application or lightweight sales records |
 
-- [ ] Build an owner-only statistics page with date filters and cohort exclusions; enforce owner access on the server/API.
-- [ ] Start with six summary cards: new users, first-label users, weekly label creators, failed attempts, custom inquiries, and accepted projects. Show untracked metrics as unavailable rather than zero.
-- [ ] Add the completion funnel and the most frequent failure categories below the cards.
+- [x] Build an owner-only statistics page with rolling 7/30-day filters and cohort exclusions; enforce owner access on the server.
+- [x] Start with six summary cards: new users, first-label users, weekly label creators, failed attempts, custom inquiries, and accepted projects. Show untracked metrics as unavailable rather than zero.
+- [x] Add the completion funnel and the most frequent failure categories below the cards.
+- [ ] Configure environment-specific owner/test user IDs, verify the aggregate queries on staging, and reconcile staging/production results before using them for decisions.
 - [ ] Review Search Console queries, impressions, and clicks to identify useful content and landing-page improvements.
 - [ ] Save dated usage reports in `usage_log/`, including definitions, exclusions, and data limitations; preserve earlier snapshots for comparison.
 
