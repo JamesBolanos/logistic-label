@@ -4,11 +4,16 @@ import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { auth } from '$lib/server/auth/betterAuth';
 import { verifyRecaptchaToken } from '$lib/server/auth/recaptcha';
 import { validateServerEnvironment } from '$lib/server/config/environment';
+import { validatePasswordValue } from '$lib/validation/formValidation';
 
 validateServerEnvironment();
 
 const PROTECTED_PATHS = ['/dashboard', '/labels', '/settings'];
-const CAPTCHA_AUTH_PATHS = new Set(['/api/auth/sign-in/email', '/api/auth/sign-up/email']);
+const CAPTCHA_AUTH_PATHS = new Set([
+  '/api/auth/sign-in/email',
+  '/api/auth/sign-up/email',
+  '/api/auth/request-password-reset'
+]);
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -39,7 +44,13 @@ export async function handle({ event, resolve }) {
       return captchaRequest;
     }
 
-    return auth.handler(captchaRequest ?? event.request);
+    const passwordRequest = await enforcePasswordPolicy(captchaRequest ?? event.request);
+
+    if (passwordRequest instanceof Response) {
+      return passwordRequest;
+    }
+
+    return auth.handler(passwordRequest);
   }
 
   const session = await auth.api.getSession({
@@ -49,13 +60,24 @@ export async function handle({ event, resolve }) {
   event.locals.session = session?.session ?? null;
   event.locals.user = session?.user ?? null;
 
-  if (PROTECTED_PATHS.some((path) => event.url.pathname === path || event.url.pathname.startsWith(`${path}/`))) {
+  if (
+    PROTECTED_PATHS.some(
+      (path) => event.url.pathname === path || event.url.pathname.startsWith(`${path}/`)
+    )
+  ) {
     if (!event.locals.user) {
-      redirect(303, `/login?returnUrl=${encodeURIComponent(event.url.pathname + event.url.search)}`);
+      redirect(
+        303,
+        `/login?returnUrl=${encodeURIComponent(event.url.pathname + event.url.search)}`
+      );
     }
   }
 
-  if (event.url.pathname.startsWith('/api/') && !event.url.pathname.startsWith('/api/auth') && !event.locals.user) {
+  if (
+    event.url.pathname.startsWith('/api/') &&
+    !event.url.pathname.startsWith('/api/auth') &&
+    !event.locals.user
+  ) {
     return jsonUnauthorized();
   }
 
@@ -64,6 +86,41 @@ export async function handle({ event, resolve }) {
     event,
     resolve: resolveWithSecurityHeaders,
     building
+  });
+}
+
+async function enforcePasswordPolicy(request) {
+  const url = new URL(request.url);
+
+  if (request.method !== 'POST' || url.pathname !== '/api/auth/reset-password') {
+    return request;
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return jsonBadRequest('Invalid password reset request.');
+  }
+
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return jsonBadRequest('Invalid password reset request.');
+  }
+
+  const passwordError = validatePasswordValue(body.newPassword);
+
+  if (passwordError) {
+    return jsonBadRequest(passwordError);
+  }
+
+  const headers = new Headers(request.headers);
+  headers.delete('content-length');
+
+  return new Request(request.url, {
+    method: request.method,
+    headers,
+    body: JSON.stringify(body)
   });
 }
 
@@ -77,6 +134,10 @@ async function verifyAuthCaptcha(event) {
   try {
     body = await event.request.json();
   } catch {
+    return jsonBadRequest('Invalid authentication request.');
+  }
+
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return jsonBadRequest('Invalid authentication request.');
   }
 

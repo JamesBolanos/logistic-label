@@ -13,7 +13,9 @@ const REQUIRED_PRODUCTION_VARIABLES = [
   ['GOOGLE_CLIENT_ID', () => privateEnv.GOOGLE_CLIENT_ID],
   ['GOOGLE_CLIENT_SECRET', () => privateEnv.GOOGLE_CLIENT_SECRET],
   ['PUBLIC_RECAPTCHA_SITE_KEY', () => publicEnv.PUBLIC_RECAPTCHA_SITE_KEY],
-  ['RECAPTCHA_SECRET_KEY', () => privateEnv.RECAPTCHA_SECRET_KEY]
+  ['RECAPTCHA_SECRET_KEY', () => privateEnv.RECAPTCHA_SECRET_KEY],
+  ['RESEND_API_KEY', () => privateEnv.RESEND_API_KEY],
+  ['AUTH_EMAIL_FROM', () => privateEnv.AUTH_EMAIL_FROM]
 ];
 
 export function validateServerEnvironment() {

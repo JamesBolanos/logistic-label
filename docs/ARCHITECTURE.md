@@ -70,7 +70,7 @@
 
 - Configure production `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google OAuth credentials, and Neon URL in Vercel.
 - For Google OAuth in production, set `BETTER_AUTH_URL=https://www.sscc-labels.com` and register both `https://www.sscc-labels.com/api/auth/callback/google` and `https://sscc-labels.com/api/auth/callback/google` as authorized redirect URIs in Google Cloud.
-- Add email delivery for verification and password reset flows.
+- Configure and validate the Resend sending domain and environment-specific API keys for password recovery. Email verification remains a future flow.
 - Add Apple OAuth when the developer account/callback requirements are ready.
 - Implement SSCC allocation safeguards, including preventing SSCC reallocation for at least one year after shipment date.
 - Align the label form, API validation, barcode encoder, and PDF renderer with `docs/GS1_LOGISTIC_LABEL_GUIDE.md`.
