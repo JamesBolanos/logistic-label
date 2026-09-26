@@ -18,7 +18,7 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     id: '2026-09-26-password-recovery',
     publishedAt: '2026-09-26',
     category: 'fix',
-    status: 'draft',
+    status: 'published',
     title: 'Password recovery is available',
     benefit:
       'Request a secure, time-limited reset link from the sign-in page and choose a new password without support intervention.',

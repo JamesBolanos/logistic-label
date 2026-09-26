@@ -11,7 +11,7 @@ The browser always receives the same request confirmation whether an account exi
 1. Create a Resend account and add the sending domain `auth.sscc-labels.com`.
 2. Copy the DNS records shown by Resend into the Squarespace DNS manager exactly as provided. Resend supplies the record types, names, and values.
 3. Wait until Resend reports the domain as verified.
-4. Create separate Resend API keys for nonproduction and production when the account permits it. Grant only email-sending access and restrict each key to the verified domain when that option is available.
+4. Create a Resend API key. Use separate nonproduction and production keys when the account supports that separation; otherwise, use the same key in Vercel and control its availability through the Preview and Production scopes. Grant only email-sending access and restrict the key to the verified domain when that option is available.
 
 The application sender is:
 
@@ -25,12 +25,12 @@ Using a sending subdomain keeps authentication-email configuration separate from
 
 Add the same variable names with environment-specific values:
 
-| Variable          | Vercel type |               Preview |         Production |
-| ----------------- | ----------- | --------------------: | -----------------: |
-| `RESEND_API_KEY`  | Secret      | Nonproduction API key | Production API key |
-| `AUTH_EMAIL_FROM` | Config      |    Sender shown above | Sender shown above |
+| Variable          | Vercel type |            Preview |         Production |
+| ----------------- | ----------- | -----------------: | -----------------: |
+| `RESEND_API_KEY`  | Secret      |     Resend API key |     Resend API key |
+| `AUTH_EMAIL_FROM` | Config      | Sender shown above | Sender shown above |
 
-Keep `RESEND_API_KEY` out of local files, screenshots, logs, issues, and commits. After adding or changing the variables, redeploy the affected environment because an existing deployment does not receive new values automatically.
+The same Resend API key may be used in both Vercel scopes when the Resend account does not provide environment-specific keys. Keep it out of local files, screenshots, logs, issues, and commits. After adding or changing the variables, redeploy the affected environment because an existing deployment does not receive new values automatically.
 
 Production startup treats both variables as required. This prevents deploying a password-reset page that cannot deliver its email.
 
@@ -53,7 +53,7 @@ Do not paste a reset URL into tickets or logs. It contains a temporary credentia
 ## Operational checks
 
 - A user reports no email: check Resend delivery status, spam filtering, the verified domain, and the two Vercel variables. Do not confirm whether the address has an account.
-- Vercel logs a provider rejection: verify the API key scope and `AUTH_EMAIL_FROM` domain.
+- Vercel logs a provider rejection: verify that the Resend domain and all of its DNS records show `verified`, the API key belongs to that Resend account, and `AUTH_EMAIL_FROM` follows `Name <email@verified-domain>` or `email@verified-domain` format.
 - Every link is rejected: confirm `BETTER_AUTH_URL` matches the deployment origin and that the link is less than 60 minutes old.
 - reCAPTCHA blocks every request: verify the site and secret keys belong to the deployment domain.
 

@@ -34,7 +34,7 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
 
     await page.goto('/dashboard');
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
-    await expect(page.getByText("What's new is now visible")).toBeVisible();
+    await expect(page.getByText('Password recovery is available')).toBeVisible();
 
     const ownerStatisticsResponse = await page.request.get('/admin/statistics');
     expect(ownerStatisticsResponse.status()).toBe(403);

@@ -152,7 +152,8 @@ Event names below are proposed contracts. Establish one recording point per even
 - [ ] Correct barcode dimensions and validate representative printed labels with a scanner/verifier.
 - [ ] Retry a failed PDF fetch against the saved label instead of allocating another SSCC.
 - [ ] Clarify weight. If it means logistic gross weight, use logistic weight AIs such as `340n`, not trade item net weight `320n`.
-- [ ] Complete password recovery and handle returned Google sign-in errors.
+- [x] Complete password recovery.
+- [ ] Handle returned Google sign-in errors.
 - [ ] Resolve the unsupported history Delete action and correct date-only display across time zones.
 - [ ] Give automated tests an explicit isolated database and dedicated server; prevent accidental production use.
 - [ ] Verify account cleanup after success, failures immediately after signup, later failures, and timeouts; recover run-owned leftovers after interrupted tests.
