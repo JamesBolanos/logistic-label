@@ -5,6 +5,7 @@
     import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
     import { getRecentPublishedReleases } from '$lib/content/releases.js';
     import { trackProductEvent } from '$lib/analytics/client.js';
+    import { getLabelTypeName, getPackagingLevelName, LABEL_TYPES } from '$lib/labels/workflows.js';
 
     const recentUpdates = getRecentPublishedReleases(2);
     
@@ -251,7 +252,7 @@
             <div class="px-4 py-5 sm:p-6">
               <div class="flow-root">
                 <ul class="-mb-8">
-                  {#each recentLabels as label, index (label.id ?? `${label.gtin}-${label.lot_number}-${label.created_at}`)}
+                  {#each recentLabels as label, index (label.id)}
                     <li>
                       <div class="relative pb-8">
                         {#if index !== recentLabels.length - 1}
@@ -267,7 +268,16 @@
                           </div>
                           <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                             <div>
-                              <p class="text-sm text-gray-500">Created label for <span class="font-medium text-gray-900">GTIN: {label.gtin}</span> with lot number <span class="font-medium text-gray-900">{label.lot_number}</span></p>
+                              <p class="text-sm text-gray-500">
+                                Created <span class="font-medium text-gray-900">{getLabelTypeName(label.label_type)}</span>
+                                {#if label.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT}
+                                  for {label.quantity} {getPackagingLevelName(label.packaging_level, label.quantity)} with GTIN {label.gtin}
+                                {:else if label.label_type === LABEL_TYPES.SSCC_ONLY}
+                                  with SSCC {label.sscc}
+                                {:else if label.gtin}
+                                  for GTIN {label.gtin}
+                                {/if}
+                              </p>
                             </div>
                             <div class="text-right text-sm whitespace-nowrap text-gray-500">
                               <time datetime={label.created_at}>{formatDate(label.created_at)}</time>

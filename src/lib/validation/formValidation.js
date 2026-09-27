@@ -1,61 +1,58 @@
 // src/lib/validation/formValidation.js
-import { validateGTIN, validateLotNumber } from '$lib/utils/gs1Utils';
+import { normalizeGTIN, validateGTIN } from '$lib/utils/gs1Utils';
+import {
+  CURRENT_TEMPLATE_VERSION,
+  isPackagingLevel,
+  isSupportedLabelType,
+  LABEL_TYPES
+} from '$lib/labels/workflows.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_COMPLEXITY_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
 
 /**
  * @param {{
+ *   label_type?: string,
  *   gtin?: string,
- *   lot_number?: string,
- *   production_date?: string,
- *   quantity?: string,
- *   weight_pounds?: string
+ *   quantity?: string | number,
+ *   packaging_level?: string,
+ *   contents_are_homogeneous?: boolean
  * }} formData
  */
 export function validateLabelForm(formData) {
   const errors = {};
 
+  if (!isSupportedLabelType(formData?.label_type)) {
+    errors.label_type = 'Choose a supported label workflow';
+    return { isValid: false, errors };
+  }
+
+  if (formData.label_type === LABEL_TYPES.SSCC_ONLY) {
+    return { isValid: true, errors };
+  }
+
   if (!formData.gtin) {
-    errors.gtin = 'GTIN is required';
+    errors.gtin = 'Contained trade item GTIN is required';
   } else if (!validateGTIN(formData.gtin)) {
-    errors.gtin = 'Invalid GTIN format. Must be 14 digits with valid check digit';
+    errors.gtin = 'Enter a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14';
   }
 
-  if (!formData.lot_number) {
-    errors.lot_number = 'Lot number is required';
-  } else if (!validateLotNumber(formData.lot_number)) {
-    errors.lot_number = 'Invalid lot number. Must be 1-20 alphanumeric characters';
-  }
-
-  if (!formData.production_date) {
-    errors.production_date = 'Production date is required';
-  } else {
-    const date = new Date(formData.production_date);
-    if (Number.isNaN(date.getTime())) {
-      errors.production_date = 'Invalid production date format';
-    } else if (date > new Date()) {
-      errors.production_date = 'Production date cannot be in the future';
-    }
+  if (!isPackagingLevel(formData.packaging_level)) {
+    errors.packaging_level = 'Choose what the contained GTIN identifies';
   }
 
   if (!formData.quantity) {
-    errors.quantity = 'Quantity is required';
-  } else if (Number.isNaN(parseInt(formData.quantity)) || parseInt(formData.quantity) <= 0) {
-    errors.quantity = 'Quantity must be a positive number';
-  } else if (parseInt(formData.quantity) > 99999999) {
-    errors.quantity = 'Quantity too large, maximum is 99,999,999';
+    errors.quantity = 'Contained trade item count is required';
+  } else if (
+    !Number.isInteger(Number(formData.quantity)) ||
+    Number(formData.quantity) < 1 ||
+    Number(formData.quantity) > 9999
+  ) {
+    errors.quantity = 'Count must be a whole number from 1 to 9,999';
   }
 
-  if (!formData.weight_pounds) {
-    errors.weight_pounds = 'Weight is required';
-  } else if (
-    Number.isNaN(parseFloat(formData.weight_pounds)) ||
-    parseFloat(formData.weight_pounds) <= 0
-  ) {
-    errors.weight_pounds = 'Weight must be a positive number';
-  } else if (parseFloat(formData.weight_pounds) > 9999.9) {
-    errors.weight_pounds = 'Weight too large, maximum is 9,999.9 pounds';
+  if (formData.contents_are_homogeneous !== true) {
+    errors.contents_are_homogeneous = 'Confirm that every contained trade item has the same GTIN';
   }
 
   return {
@@ -66,20 +63,37 @@ export function validateLabelForm(formData) {
 
 /**
  * @param {{
+ *   label_type?: string,
  *   gtin?: string,
- *   lot_number?: string,
- *   production_date?: string,
- *   quantity?: string,
- *   weight_pounds?: string
+ *   quantity?: string | number,
+ *   packaging_level?: string
  * }} formData
  */
 export function sanitizeLabelForm(formData) {
+  const labelType = String(formData?.label_type || '').trim();
+
+  if (labelType === LABEL_TYPES.SSCC_ONLY) {
+    return {
+      label_type: labelType,
+      template_version: CURRENT_TEMPLATE_VERSION,
+      gtin: null,
+      lot_number: null,
+      production_date: null,
+      quantity: null,
+      weight_pounds: null,
+      packaging_level: null
+    };
+  }
+
   return {
-    gtin: (formData.gtin || '').trim(),
-    lot_number: (formData.lot_number || '').trim(),
-    production_date: (formData.production_date || '').trim(),
-    quantity: parseInt(formData.quantity || '0'),
-    weight_pounds: parseFloat(formData.weight_pounds || '0')
+    label_type: labelType,
+    template_version: CURRENT_TEMPLATE_VERSION,
+    gtin: normalizeGTIN(formData.gtin || ''),
+    lot_number: null,
+    production_date: null,
+    quantity: Number(formData.quantity),
+    weight_pounds: null,
+    packaging_level: String(formData.packaging_level || '').trim()
   };
 }
 

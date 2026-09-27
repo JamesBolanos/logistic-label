@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   calculateCheckDigit,
   generateSSCC,
+  normalizeGTIN,
+  validateGTIN,
   validateGS1CompanyPrefix,
   validateSSCC
 } from '../../src/lib/utils/gs1Utils.js';
@@ -33,5 +35,11 @@ describe('GS1 identifiers', () => {
     const invalidCheckDigit = valid.endsWith('9') ? '8' : '9';
 
     expect(validateSSCC(`${valid.slice(0, -1)}${invalidCheckDigit}`)).toBe(false);
+  });
+
+  it('validates assigned GTIN lengths and normalizes them for AI encoding', () => {
+    expect(validateGTIN('9501101530003')).toBe(true);
+    expect(normalizeGTIN('9501101530003')).toBe('09501101530003');
+    expect(validateGTIN('9501101530004')).toBe(false);
   });
 });

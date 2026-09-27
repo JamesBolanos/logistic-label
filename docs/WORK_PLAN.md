@@ -36,7 +36,7 @@ The app already has useful foundations:
 - Production-only GA4 navigation and allowlisted product events, plus persisted operational events; GA4 property and DebugView verification remain.
 - A Playwright workflow that creates and cleans up an isolated Neon branch for eligible E2E runs.
 
-The main gap is that the current workflow is too fixed. It assumes every label has GTIN, lot, production date, quantity, and weight. GS1 says the only mandatory element for a GS1 Logistic Label is the SSCC. Other data depends on the logistic unit type and valid AI combinations.
+The guided workflow now separates SSCC-only labels from homogeneous logistic units. Legacy records retain their original data and template version. The remaining correctness work includes physical print/scanner verification, SSCC reuse controls, and carefully scoped support for additional scenarios and data elements.
 
 ## Business Analysis and Agile Working Approach
 
@@ -149,12 +149,14 @@ Event names below are proposed contracts. Establish one recording point per even
 ## 3. Fixes
 
 - [x] Make SSCC allocation atomic and verify simultaneous label creation against an isolated database.
-- [ ] Correct barcode dimensions and validate representative printed labels with a scanner/verifier.
+- [x] Correct the generated 4x6 barcode dimensions, quiet zones, HRI, and SSCC placement for the two guided workflows.
+- [ ] Print and validate representative labels with a scanner/verifier.
 - [ ] Retry a failed PDF fetch against the saved label instead of allocating another SSCC.
 - [ ] Clarify weight. If it means logistic gross weight, use logistic weight AIs such as `340n`, not trade item net weight `320n`.
 - [x] Complete password recovery.
 - [ ] Handle returned Google sign-in errors.
-- [ ] Resolve the unsupported history Delete action and correct date-only display across time zones.
+- [x] Remove the unsupported history Delete action so saved SSCC records are not presented as disposable.
+- [ ] Correct date-only display across time zones wherever production dates are later reintroduced.
 - [ ] Give automated tests an explicit isolated database and dedicated server; prevent accidental production use.
 - [ ] Verify account cleanup after success, failures immediately after signup, later failures, and timeouts; recover run-owned leftovers after interrupted tests.
 
@@ -178,10 +180,10 @@ Refine and deliver these capabilities after priorities 1–4. Record the user ne
 
 Build on the existing generator with standards-guided label types.
 
-Build MVP around two label types:
+The guided MVP supports two label types. Their exact inputs and encoded data are documented in [`docs/labels/GUIDED_LABEL_WORKFLOWS.md`](./labels/GUIDED_LABEL_WORKFLOWS.md).
 
 - SSCC-only logistic label: the cleanest baseline and valid for many workflows. It proves SSCC allocation, GS1-128 barcode correctness, PDF layout, preview, history, and download.
-- Homogeneous logistic unit label: for a pallet/case group containing one trade item type. This should use the correct GS1 model, usually `AI (00)` SSCC, `AI (02)` CONTENT, and `AI (37)` COUNT, with optional lot/date when valid.
+- Homogeneous logistic unit label: for a pallet/case group containing one trade item type. This version uses `AI (00)` SSCC, `AI (02)` CONTENT, and `AI (37)` COUNT; lot/date remain outside the current scope.
 
 Label capability checklist (completed foundations are shown for context; correctness fixes are tracked under priority 3):
 
@@ -190,13 +192,13 @@ Label capability checklist (completed foundations are shown for context; correct
 - [x] SSCC check digit validation.
 - [x] Store SSCCs with unique values in label history; review retention and deletion safeguards below.
 - [ ] One-year minimum SSCC reuse prevention logic, including retention and deletion behavior.
-- [ ] Label type selector: `SSCC-only` or `Homogeneous unit`.
-- [ ] Allow SSCC-only labels without requiring GTIN, lot, date, quantity, or weight; validate additional fields according to the selected label type.
-- [ ] AI-aware validation shared by UI/API/PDF.
+- [x] Label type selector: `SSCC-only` or `Homogeneous unit`; show later scenarios as unavailable rather than accepting ambiguous data.
+- [x] Allow SSCC-only labels without requiring GTIN, lot, date, quantity, or weight; validate additional fields according to the selected label type.
+- [x] AI-aware validation shared by UI/API/PDF for `AI (00)` and the homogeneous `AI (02)` plus `AI (37)` association.
 - [ ] PDF layout aligned to GS1 building blocks and physical barcode dimensions; choose sufficient label space for each supported data combination.
 - [x] SSCC barcode as the lowest barcode.
 - [x] HRI below each barcode.
-- [ ] Review data titles and issuer information for each supported label type.
+- [x] Review data titles and issuer information for each supported label type.
 - [ ] Basic verification report before download: label type, AIs used, check digits, required associations, warnings.
 - [ ] Extend existing SSCC/GTIN/lot search with created-date filtering.
 

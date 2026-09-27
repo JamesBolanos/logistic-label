@@ -18,9 +18,9 @@ export async function createLabel(data, userId, telemetry = {}) {
     eventName: 'label_saved',
     userId,
     operationId: telemetry.operationId,
-    labelType: 'homogeneous_unit',
+    labelType: data.label_type,
     labelSize: '4x6',
-    templateVersion: 'v1',
+    templateVersion: data.template_version,
     durationMs: telemetry.startedAt ? durationSince(telemetry.startedAt) : undefined
   });
 
@@ -51,11 +51,14 @@ async function insertLabel(data, userId, sscc, { ignoreSSCCConflict = false } = 
 
   const insert = db.insert(logisticLabel).values({
     userId,
-    gtin: data.gtin,
-    lotNumber: data.lot_number,
-    productionDate: data.production_date,
-    quantity: data.quantity,
-    weightPounds: String(data.weight_pounds),
+    labelType: data.label_type,
+    templateVersion: data.template_version,
+    gtin: data.gtin || null,
+    packagingLevel: data.packaging_level || null,
+    lotNumber: data.lot_number || null,
+    productionDate: data.production_date || null,
+    quantity: data.quantity ?? null,
+    weightPounds: data.weight_pounds == null ? null : String(data.weight_pounds),
     sscc
   });
 
@@ -174,11 +177,14 @@ function toApiLabel(label) {
   return {
     id: label.id,
     user_id: label.userId,
+    label_type: label.labelType,
+    template_version: label.templateVersion,
     gtin: label.gtin,
+    packaging_level: label.packagingLevel,
     lot_number: label.lotNumber,
     production_date: label.productionDate,
     quantity: label.quantity,
-    weight_pounds: Number(label.weightPounds),
+    weight_pounds: label.weightPounds == null ? null : Number(label.weightPounds),
     sscc: label.sscc,
     created_at: label.createdAt?.toISOString?.() || label.createdAt,
     printed: label.printed,

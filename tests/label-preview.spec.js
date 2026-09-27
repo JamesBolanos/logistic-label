@@ -5,7 +5,7 @@ import {
   getOperationalEventNames
 } from './helpers/cleanupTestUser.js';
 
-test('signed-in user can generate a label preview', async ({ page }, testInfo) => {
+test('signed-in user can generate both guided label scenarios', async ({ page }, testInfo) => {
   const testRunId = /** @type {{ testRunId?: string }} */ (testInfo.config.metadata).testRunId;
   const email = createTestUserEmail(testRunId);
   let accountCreationConfirmed = false;
@@ -56,32 +56,78 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
 
     await page.goto('/labels');
 
-    await page.getByLabel('GTIN (14 digits)').fill('00012345600012');
-    await page.getByLabel('Lot Number').fill('LOT123ABC');
-    await page.getByLabel('Production Date').fill('2026-05-24');
-    await page.getByLabel('Quantity').fill('12');
-    await page.getByLabel('Weight (lbs)').fill('10.5');
+    await expect(page.getByRole('button', { name: /Logistic unit that is a trade item/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Mixed-pallet content workflow/ })).toBeDisabled();
 
-    const previewResponsePromise = page.waitForResponse((response) => {
+    await page.getByRole('button', { name: /SSCC-only label/ }).click();
+    await expect(page.getByText('The barcode will contain only AI (00)')).toBeVisible();
+
+    const ssccPreviewResponsePromise = page.waitForResponse((response) => {
       const requestUrl = new URL(response.url());
       return requestUrl.pathname === '/api/pdf/preview' && response.request().method() === 'POST';
     });
 
-    await page.getByRole('button', { name: 'Preview Label' }).click();
+    await page.getByRole('button', { name: 'Review label' }).click();
 
-    const previewResponse = await previewResponsePromise;
-    expect(previewResponse.ok()).toBe(true);
+    const ssccPreviewResponse = await ssccPreviewResponsePromise;
+    expect(ssccPreviewResponse.ok()).toBe(true);
+    const ssccPreviewPdf = (await ssccPreviewResponse.body()).toString('utf8');
+    expect(ssccPreviewPdf).toContain('\\(00\\)');
+    expect(ssccPreviewPdf).not.toContain('\\(02\\)');
+    expect(ssccPreviewPdf).not.toContain('\\(37\\)');
 
     const previewFrame = page.locator('iframe[title="Label Preview"]');
 
     await expect(previewFrame).toBeVisible({ timeout: 10000 });
     await expect(previewFrame).toHaveAttribute('src', /^blob:/);
 
-    await page.getByRole('button', { name: 'Generate PDF Label' }).click();
+    await page.getByRole('button', { name: 'Generate and save label' }).click();
     await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
       timeout: 10000
     });
-    await expect(page.getByRole('cell', { name: '00012345600012' })).toBeVisible();
+    await expect(page.getByText('SSCC-only', { exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Change workflow' }).click();
+    await page.getByRole('button', { name: /Homogeneous logistic unit/ }).click();
+    await page.getByLabel('Contained trade item GTIN').fill('00012345600012');
+    await page.getByLabel('What does this GTIN identify?').selectOption('case');
+    await page.getByLabel('Number of trade items identified by this GTIN').fill('12');
+    await page
+      .getByLabel(
+        'I confirm that every trade item counted on this logistic unit has the same GTIN entered above.'
+      )
+      .check();
+
+    const homogeneousPreviewResponsePromise = page.waitForResponse((response) => {
+      const requestUrl = new URL(response.url());
+      return requestUrl.pathname === '/api/pdf/preview' && response.request().method() === 'POST';
+    });
+
+    await page.getByRole('button', { name: 'Review label' }).click();
+
+    const homogeneousPreviewResponse = await homogeneousPreviewResponsePromise;
+    expect(homogeneousPreviewResponse.ok()).toBe(true);
+    const homogeneousPreviewPdf = (await homogeneousPreviewResponse.body()).toString('utf8');
+    expect(homogeneousPreviewPdf).toContain('\\(00\\)');
+    expect(homogeneousPreviewPdf).toContain('\\(02\\)00012345600012\\(37\\)12');
+
+    await page.getByRole('button', { name: 'Generate and save label' }).click();
+    await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
+      timeout: 10000
+    });
+    await expect(page.getByText('Homogeneous unit', { exact: true })).toBeVisible();
+    await expect(page.getByText('GTIN 00012345600012')).toBeVisible();
+
+    const maximumCountPreviewResponse = await page.request.post('/api/pdf/preview', {
+      data: {
+        label_type: 'homogeneous_unit',
+        gtin: '00012345600012',
+        packaging_level: 'case',
+        quantity: 9999,
+        contents_are_homogeneous: true
+      }
+    });
+    expect(maximumCountPreviewResponse.ok()).toBe(true);
 
     const resetSettingsResponse = await page.request.post('/api/settings', {
       data: {
@@ -95,14 +141,14 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
 
     const concurrentLabelCount = 8;
     const concurrentResponses = await Promise.all(
-      Array.from({ length: concurrentLabelCount }, (_, index) =>
+      Array.from({ length: concurrentLabelCount }, () =>
         page.request.post('/api/labels/create', {
           data: {
+            label_type: 'homogeneous_unit',
             gtin: '00012345600012',
-            lot_number: `RACE${index + 1}`,
-            production_date: '2026-05-24',
+            packaging_level: 'case',
             quantity: 12,
-            weight_pounds: 10.5
+            contents_are_homogeneous: true
           }
         })
       )
@@ -117,18 +163,20 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
     );
     const concurrentSSCCs = concurrentLabels.map((label) => label.sscc);
     expect(new Set(concurrentSSCCs).size).toBe(concurrentLabelCount);
+    expect(concurrentLabels.every((label) => label.label_type === 'homogeneous_unit')).toBe(true);
+    expect(concurrentLabels.every((label) => label.template_version === 'v2')).toBe(true);
 
     const settingsResponse = await page.request.get('/api/settings');
     expect(settingsResponse.ok()).toBe(true);
     const settingsBody = await settingsResponse.json();
-    expect(settingsBody.settings.next_serial_reference).toBe(10);
+    expect(settingsBody.settings.next_serial_reference).toBe(11);
 
     const labelsResponse = await page.request.get('/api/labels/list?limit=100');
     expect(labelsResponse.ok()).toBe(true);
     const labelsBody = await labelsResponse.json();
-    expect(labelsBody.labels).toHaveLength(concurrentLabelCount + 1);
+    expect(labelsBody.labels).toHaveLength(concurrentLabelCount + 2);
     expect(new Set(labelsBody.labels.map((label) => label.sscc)).size).toBe(
-      concurrentLabelCount + 1
+      concurrentLabelCount + 2
     );
 
     await expect

@@ -14,10 +14,21 @@ export function calculateCheckDigit(valueWithoutCheckDigit) {
 
 /** @param {string} gtin */
 export function validateGTIN(gtin) {
-  if (!/^\d{14}$/.test(gtin)) return false;
-  const body = gtin.slice(0, 13);
-  const check = Number(gtin[13]);
+  const value = String(gtin || '').trim();
+  if (!/^(?:\d{8}|\d{12}|\d{13}|\d{14})$/.test(value)) return false;
+  const body = value.slice(0, -1);
+  const check = Number(value.at(-1));
   return calculateCheckDigit(body) === check;
+}
+
+/** @param {string} gtin */
+export function normalizeGTIN(gtin) {
+  const value = String(gtin || '').trim();
+  if (!validateGTIN(value)) {
+    throw new Error('GTIN must be a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14');
+  }
+
+  return value.padStart(14, '0');
 }
 
 /** @param {string} prefix */
@@ -58,11 +69,7 @@ export function formatGS1Date(dateStr) {
 /** @param {SSCCOptions | string} [options] */
 export function generateSSCC(options = {}) {
   const normalizedOptions = typeof options === 'string' ? { gs1CompanyPrefix: options } : options;
-  const {
-    gs1CompanyPrefix = '',
-    serialReference = 1,
-    extensionDigit = '0'
-  } = normalizedOptions;
+  const { gs1CompanyPrefix = '', serialReference = 1, extensionDigit = '0' } = normalizedOptions;
 
   const prefix = String(gs1CompanyPrefix).replace(/\D/g, '');
 
@@ -72,7 +79,10 @@ export function generateSSCC(options = {}) {
 
   const extension = String(extensionDigit).replace(/\D/g, '').slice(0, 1) || '0';
   const serialDigits = 16 - prefix.length;
-  const serial = String(Number.parseInt(String(serialReference), 10) || 0).padStart(serialDigits, '0');
+  const serial = String(Number.parseInt(String(serialReference), 10) || 0).padStart(
+    serialDigits,
+    '0'
+  );
 
   if (!/^\d$/.test(extension)) {
     throw new Error('SSCC extension digit must be a single digit');
@@ -89,6 +99,7 @@ export function generateSSCC(options = {}) {
 export default {
   calculateCheckDigit,
   validateGTIN,
+  normalizeGTIN,
   validateGS1CompanyPrefix,
   validateSSCC,
   validateLotNumber,

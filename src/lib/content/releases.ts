@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-09-27-guided-label-workflows',
+    publishedAt: '2026-09-27',
+    category: 'improvement',
+    status: 'published',
+    title: 'Labels now begin with a clear logistics scenario',
+    benefit:
+      'Choose an SSCC-only label or a homogeneous logistic unit so the form and barcode encode data with one explicit meaning.',
+    featureKey: 'guided_label_workflows',
+    href: '/labels',
+    linkLabel: 'Create a guided label'
+  },
+  {
     id: '2026-09-27-atomic-sscc-allocation',
     publishedAt: '2026-09-27',
     category: 'fix',

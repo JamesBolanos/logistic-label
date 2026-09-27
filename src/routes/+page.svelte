@@ -6,8 +6,8 @@
     
     const features = [
       {
-        title: 'Free GS1-128 label generation',
-        description: 'Use the tool to create SSCC and GS1-128 logistic labels for common shipping and warehouse needs.',
+        title: 'Two guided label workflows',
+        description: 'Create an SSCC-only label or identify homogeneous contents with a contained GTIN and an unambiguous trade-item count.',
         icon: 'check'
       },
       {
@@ -51,7 +51,7 @@
           SSCC Labels
         </h1>
         <p class="mt-6 text-xl max-w-2xl mx-auto">
-          Use this free tool to generate GS1-128 logistic labels for common SSCC workflows.
+          Create an SSCC-only label or a homogeneous logistic-unit label through a guided workflow.
         </p>
         <p class="mt-4 text-base text-blue-100 max-w-2xl mx-auto">
           I will keep improving it and adding label formats, printer support, and workflow features. It also works as a preview for teams that need a tailored private solution.
@@ -162,15 +162,12 @@
           <li>Warehouse workflows, user roles, and integrations</li>
         </ul>
         <p class="mt-4">
-          The sample focuses on common GS1 logistic label data such as:
+          The guided generator currently supports:
         </p>
         <ul class="mt-2">
-          <li>GTIN (Global Trade Item Number)</li>
-          <li>Lot/Batch numbers</li>
-          <li>Production dates</li>
-          <li>Quantity information</li>
-          <li>Weight measurements</li>
-          <li>SSCC (Serial Shipping Container Code)</li>
+          <li>SSCC-only logistic units using AI (00)</li>
+          <li>Homogeneous logistic units using AI (02) CONTENT and AI (37) COUNT</li>
+          <li>A separate AI (00) SSCC barcode as the lowest barcode on the label</li>
         </ul>
       </div>
     </div>

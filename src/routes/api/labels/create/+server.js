@@ -33,11 +33,11 @@ export async function POST({ request, locals }) {
   if (!user) {
     return json({ success: false, message: 'Authentication required' }, { status: 401 });
   }
-  
+
   try {
     // Parse label data from request
     const labelData = await request.json();
-    
+
     // Validate form data
     const validation = validateLabelForm(labelData);
     if (!validation.isValid) {
@@ -51,27 +51,30 @@ export async function POST({ request, locals }) {
       });
 
       return json(
-        { 
-          success: false, 
-          message: 'Invalid label data', 
-          errors: validation.errors 
-        }, 
+        {
+          success: false,
+          message: 'Invalid label data',
+          errors: validation.errors
+        },
         { status: 400 }
       );
     }
-    
+
     // Sanitize form data
     const sanitizedData = sanitizeLabelForm(labelData);
-    
+
     // Create label in database
     const label = await createLabel(sanitizedData, user.id, { operationId, startedAt });
-    
-    return json({ 
+
+    return json({
       success: true,
       message: 'Label created successfully',
       label: {
         id: label.id,
+        label_type: label.label_type,
+        template_version: label.template_version,
         gtin: label.gtin,
+        packaging_level: label.packaging_level,
         lot_number: label.lot_number,
         production_date: label.production_date,
         quantity: label.quantity,
@@ -129,12 +132,12 @@ export async function POST({ request, locals }) {
       errorCategory: 'database',
       durationMs: durationSince(startedAt)
     });
-    
+
     return json(
-      { 
-        success: false, 
-        message: 'Failed to create label. Please try again.' 
-      }, 
+      {
+        success: false,
+        message: 'Failed to create label. Please try again.'
+      },
       { status: 500 }
     );
   }
