@@ -148,7 +148,7 @@ Event names below are proposed contracts. Establish one recording point per even
 
 ## 3. Fixes
 
-- [ ] Make SSCC allocation atomic and verify simultaneous label creation against an isolated database.
+- [x] Make SSCC allocation atomic and verify simultaneous label creation against an isolated database.
 - [ ] Correct barcode dimensions and validate representative printed labels with a scanner/verifier.
 - [ ] Retry a failed PDF fetch against the saved label instead of allocating another SSCC.
 - [ ] Clarify weight. If it means logistic gross weight, use logistic weight AIs such as `340n`, not trade item net weight `320n`.

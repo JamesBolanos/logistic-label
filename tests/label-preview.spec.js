@@ -83,6 +83,54 @@ test('signed-in user can generate a label preview', async ({ page }, testInfo) =
     });
     await expect(page.getByRole('cell', { name: '00012345600012' })).toBeVisible();
 
+    const resetSettingsResponse = await page.request.post('/api/settings', {
+      data: {
+        company_name: 'Preview Test Company',
+        gs1_company_prefix: '1234567',
+        extension_digit: '0',
+        next_serial_reference: 1
+      }
+    });
+    expect(resetSettingsResponse.ok()).toBe(true);
+
+    const concurrentLabelCount = 8;
+    const concurrentResponses = await Promise.all(
+      Array.from({ length: concurrentLabelCount }, (_, index) =>
+        page.request.post('/api/labels/create', {
+          data: {
+            gtin: '00012345600012',
+            lot_number: `RACE${index + 1}`,
+            production_date: '2026-05-24',
+            quantity: 12,
+            weight_pounds: 10.5
+          }
+        })
+      )
+    );
+
+    for (const response of concurrentResponses) {
+      expect(response.ok()).toBe(true);
+    }
+
+    const concurrentLabels = await Promise.all(
+      concurrentResponses.map(async (response) => (await response.json()).label)
+    );
+    const concurrentSSCCs = concurrentLabels.map((label) => label.sscc);
+    expect(new Set(concurrentSSCCs).size).toBe(concurrentLabelCount);
+
+    const settingsResponse = await page.request.get('/api/settings');
+    expect(settingsResponse.ok()).toBe(true);
+    const settingsBody = await settingsResponse.json();
+    expect(settingsBody.settings.next_serial_reference).toBe(10);
+
+    const labelsResponse = await page.request.get('/api/labels/list?limit=100');
+    expect(labelsResponse.ok()).toBe(true);
+    const labelsBody = await labelsResponse.json();
+    expect(labelsBody.labels).toHaveLength(concurrentLabelCount + 1);
+    expect(new Set(labelsBody.labels.map((label) => label.sscc)).size).toBe(
+      concurrentLabelCount + 1
+    );
+
     await expect
       .poll(() => getOperationalEventNames(email))
       .toEqual(

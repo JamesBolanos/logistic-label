@@ -15,6 +15,16 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-09-27-atomic-sscc-allocation',
+    publishedAt: '2026-09-27',
+    category: 'fix',
+    status: 'published',
+    title: 'Simultaneous label creation is safer',
+    benefit:
+      'Each label now reserves its SSCC serial in the database, preventing simultaneous requests from receiving the same number.',
+    featureKey: 'atomic_sscc_allocation'
+  },
+  {
     id: '2026-09-26-password-recovery',
     publishedAt: '2026-09-26',
     category: 'fix',

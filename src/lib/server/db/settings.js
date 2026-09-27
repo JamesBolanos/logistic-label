@@ -1,12 +1,16 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { labelSettings, logisticLabel } from '$lib/server/db/schema.js';
+import { labelSettings } from '$lib/server/db/schema.js';
 import { generateSSCC, validateGS1CompanyPrefix } from '$lib/utils/gs1Utils';
 
 export async function getLabelSettings(userId) {
   ensureDatabase();
 
-  const [settings] = await db.select().from(labelSettings).where(eq(labelSettings.userId, userId)).limit(1);
+  const [settings] = await db
+    .select()
+    .from(labelSettings)
+    .where(eq(labelSettings.userId, userId))
+    .limit(1);
   return settings ? toApiSettings(settings) : getDefaultSettings(userId);
 }
 
@@ -50,58 +54,56 @@ export async function upsertLabelSettings(userId, data) {
 export async function allocateSSCC(userId) {
   ensureDatabase();
 
-  const settings = await getExistingSettings(userId);
+  const [settings] = await db
+    .update(labelSettings)
+    .set({
+      nextSerialReference: sql`${labelSettings.nextSerialReference} + 1`,
+      updatedAt: new Date()
+    })
+    .where(
+      and(
+        eq(labelSettings.userId, userId),
+        isNotNull(labelSettings.gs1CompanyPrefix),
+        sql`${labelSettings.nextSerialReference} <= power(10, 16 - char_length(${labelSettings.gs1CompanyPrefix})) - 1`
+      )
+    )
+    .returning({
+      gs1CompanyPrefix: labelSettings.gs1CompanyPrefix,
+      extensionDigit: labelSettings.extensionDigit,
+      nextSerialReference: labelSettings.nextSerialReference
+    });
 
-  if (!settings?.gs1CompanyPrefix) {
-    const error = new Error('Configure your GS1 Company Prefix before generating labels.');
-    error.code = 'LABEL_SETTINGS_REQUIRED';
+  if (!settings) {
+    const existingSettings = await getExistingSettings(userId);
+
+    if (!existingSettings?.gs1CompanyPrefix) {
+      const error = new Error('Configure your GS1 Company Prefix before generating labels.');
+      error.code = 'LABEL_SETTINGS_REQUIRED';
+      throw error;
+    }
+
+    const error = new Error(
+      'The SSCC serial range is exhausted for this GS1 Company Prefix and extension digit.'
+    );
+    error.code = 'SSCC_SERIAL_EXHAUSTED';
     throw error;
   }
 
-  let serialReference = settings.nextSerialReference;
-  let sscc = null;
-
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    const candidate = generateSSCC({
-      gs1CompanyPrefix: settings.gs1CompanyPrefix,
-      serialReference,
-      extensionDigit: settings.extensionDigit
-    });
-
-    const [existing] = await db
-      .select({ id: logisticLabel.id })
-      .from(logisticLabel)
-      .where(eq(logisticLabel.sscc, candidate))
-      .limit(1);
-
-    if (!existing) {
-      sscc = candidate;
-      break;
-    }
-
-    serialReference += 1;
-  }
-
-  if (!sscc) {
-    throw new Error('Unable to allocate an unused SSCC. Increase the next serial reference in Settings.');
-  }
-
-  await db
-    .update(labelSettings)
-    .set({
-      nextSerialReference: serialReference + 1,
-      updatedAt: new Date()
-    })
-    .where(eq(labelSettings.userId, userId));
-
-  return sscc;
+  return generateSSCC({
+    gs1CompanyPrefix: settings.gs1CompanyPrefix,
+    serialReference: settings.nextSerialReference - 1,
+    extensionDigit: settings.extensionDigit
+  });
 }
 
 export function sanitizeSettings(data) {
   return {
     company_name: String(data?.company_name || '').trim() || 'Company Name',
     gs1_company_prefix: String(data?.gs1_company_prefix || '').replace(/\D/g, ''),
-    extension_digit: String(data?.extension_digit ?? '0').replace(/\D/g, '').slice(0, 1) || '0',
+    extension_digit:
+      String(data?.extension_digit ?? '0')
+        .replace(/\D/g, '')
+        .slice(0, 1) || '0',
     next_serial_reference: Math.max(1, Number.parseInt(data?.next_serial_reference || 1, 10) || 1)
   };
 }
@@ -139,7 +141,11 @@ export function validateLabelSettings(settings) {
 }
 
 async function getExistingSettings(userId) {
-  const [settings] = await db.select().from(labelSettings).where(eq(labelSettings.userId, userId)).limit(1);
+  const [settings] = await db
+    .select()
+    .from(labelSettings)
+    .where(eq(labelSettings.userId, userId))
+    .limit(1);
   return settings || null;
 }
 
