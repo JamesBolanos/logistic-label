@@ -92,16 +92,16 @@
 
   <section
     aria-label="Reporting context"
-    class="rounded-lg border {statistics.configuration.excludedUserCount > 0
+    class="rounded-lg border {statistics.configuration.excludedOwnerCount > 0
       ? 'border-green-200 bg-green-50 text-green-800'
       : 'border-amber-200 bg-amber-50 text-amber-800'} px-4 py-3 text-sm"
   >
-    {#if statistics.configuration.excludedUserCount > 0}
-      {statistics.configuration.excludedUserCount} configured owner/test
-      {statistics.configuration.excludedUserCount === 1 ? 'account is' : 'accounts are'} excluded.
+    {#if statistics.configuration.excludedOwnerCount > 0}
+      {statistics.configuration.excludedOwnerCount} configured owner
+      {statistics.configuration.excludedOwnerCount === 1 ? 'account is' : 'accounts are'} excluded.
     {:else}
-      Owner/test account IDs are not configured yet. Treat the totals as provisional until
-      exclusions are set.
+      Owner account IDs are not configured yet. Treat the totals as provisional until owner access
+      is configured.
     {/if}
     {#if statistics.dataCoverageStart}
       Operational-event coverage begins {formatDate(statistics.dataCoverageStart)}.

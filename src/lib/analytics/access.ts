@@ -15,9 +15,3 @@ export function isConfiguredAnalyticsOwner(
 ): boolean {
   return Boolean(userId && parseAnalyticsUserIds(configuredUserIds).includes(userId));
 }
-
-export function combineAnalyticsUserIds(
-  ...configuredLists: Array<string | null | undefined>
-): string[] {
-  return [...new Set(configuredLists.flatMap(parseAnalyticsUserIds))];
-}

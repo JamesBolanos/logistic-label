@@ -1,8 +1,5 @@
 import { env } from '$env/dynamic/private';
-import {
-  isAnalyticsExcluded,
-  isAnalyticsOwner
-} from '$lib/server/analytics/access.js';
+import { isAnalyticsOwner } from '$lib/server/analytics/access.js';
 
 const DEFAULT_GOOGLE_ANALYTICS_ID = 'G-WWFKCEM8Q1';
 
@@ -11,9 +8,7 @@ export async function load({ locals }) {
   const analyticsOwner = isAnalyticsOwner(locals.user?.id);
 
   return {
-    analyticsMeasurementId: isAnalyticsExcluded(locals.user?.id)
-      ? null
-      : getAnalyticsMeasurementId(),
+    analyticsMeasurementId: analyticsOwner ? null : getAnalyticsMeasurementId(),
     isAnalyticsOwner: analyticsOwner,
     user: locals.user
       ? {
