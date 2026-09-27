@@ -3,32 +3,16 @@ import { allocateSSCC } from '$lib/server/db/settings';
 import { validateSSCC } from '$lib/utils/gs1Utils';
 import { db } from '$lib/server/db';
 import { logisticLabel } from '$lib/server/db/schema.js';
-import {
-  durationSince,
-  recordOperationalEvent
-} from '$lib/server/analytics/operationalEvents.js';
+import { durationSince, recordOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
+
+const MAX_SSCC_ALLOCATION_ATTEMPTS = 100;
 
 export async function createLabel(data, userId, telemetry = {}) {
   ensureDatabase();
 
-  const sscc = data.sscc || await allocateSSCC(userId);
-
-  if (!validateSSCC(sscc)) {
-    throw new Error('Invalid SSCC check digit');
-  }
-
-  const [label] = await db
-    .insert(logisticLabel)
-    .values({
-      userId,
-      gtin: data.gtin,
-      lotNumber: data.lot_number,
-      productionDate: data.production_date,
-      quantity: data.quantity,
-      weightPounds: String(data.weight_pounds),
-      sscc
-    })
-    .returning();
+  const label = data.sscc
+    ? await insertLabel(data, userId, data.sscc)
+    : await insertLabelWithAllocatedSSCC(data, userId);
 
   await recordOperationalEvent({
     eventName: 'label_saved',
@@ -41,6 +25,45 @@ export async function createLabel(data, userId, telemetry = {}) {
   });
 
   return toApiLabel(label);
+}
+
+async function insertLabelWithAllocatedSSCC(data, userId) {
+  for (let attempt = 0; attempt < MAX_SSCC_ALLOCATION_ATTEMPTS; attempt += 1) {
+    const sscc = await allocateSSCC(userId);
+    const label = await insertLabel(data, userId, sscc, { ignoreSSCCConflict: true });
+
+    if (label) {
+      return label;
+    }
+  }
+
+  const error = new Error(
+    'Unable to allocate an unused SSCC. Review the next serial reference in Settings.'
+  );
+  error.code = 'SSCC_ALLOCATION_FAILED';
+  throw error;
+}
+
+async function insertLabel(data, userId, sscc, { ignoreSSCCConflict = false } = {}) {
+  if (!validateSSCC(sscc)) {
+    throw new Error('Invalid SSCC check digit');
+  }
+
+  const insert = db.insert(logisticLabel).values({
+    userId,
+    gtin: data.gtin,
+    lotNumber: data.lot_number,
+    productionDate: data.production_date,
+    quantity: data.quantity,
+    weightPounds: String(data.weight_pounds),
+    sscc
+  });
+
+  const [label] = ignoreSSCCConflict
+    ? await insert.onConflictDoNothing({ target: logisticLabel.sscc }).returning()
+    : await insert.returning();
+
+  return label || null;
 }
 
 export async function updateLabelPrinted(id, filename, userId) {

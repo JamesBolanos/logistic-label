@@ -100,6 +100,25 @@ export async function POST({ request, locals }) {
       );
     }
 
+    if (error.code === 'SSCC_SERIAL_EXHAUSTED' || error.code === 'SSCC_ALLOCATION_FAILED') {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: user.id,
+        operationId,
+        workflowStep: 'label_save',
+        errorCategory: 'database',
+        durationMs: durationSince(startedAt)
+      });
+
+      return json(
+        {
+          success: false,
+          message: 'Unable to allocate a new SSCC. Review the serial reference in Settings.'
+        },
+        { status: 409 }
+      );
+    }
+
     console.error('Label creation error:', error);
 
     await recordOperationalEvent({
