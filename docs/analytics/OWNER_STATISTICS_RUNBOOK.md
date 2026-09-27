@@ -26,23 +26,22 @@ Configure each deployment against the user IDs stored in that deployment's datab
 
 ## Configure Vercel
 
-Create these server-only variables independently in Preview and Production:
+Create this server-only variable independently in Preview and Production:
 
 - `ANALYTICS_OWNER_USER_IDS`: comma-separated IDs allowed to open the page.
-- `ANALYTICS_EXCLUDED_USER_IDS`: comma-separated IDs for confirmed manual test accounts.
 
-Use Vercel's **Secret** type. Owner IDs are automatically excluded from every dashboard query and do not need to be repeated in the second variable. Redeploy the relevant commit after changing either value because an existing deployment keeps its previous environment snapshot.
+Use Vercel's **Secret** type. Owner IDs are automatically excluded from every dashboard query. Redeploy the relevant commit after changing the value because an existing deployment keeps its previous environment snapshot.
 
 ## Verify a Release
 
 1. Sign in to the target deployment with the configured owner account.
 2. Confirm **Statistics** appears in desktop and mobile navigation.
 3. Open `/admin/statistics` and verify both 7-day and 30-day views load.
-4. Confirm the exclusion count matches the distinct IDs across both variables.
+4. Confirm the excluded-owner count matches the distinct IDs in `ANALYTICS_OWNER_USER_IDS`.
 5. Confirm the page contains aggregate counts and controlled failure categories only; it must not show emails, names, company data, label identifiers, or raw errors.
 6. Sign in with a normal account and confirm a direct request to `/admin/statistics` returns `403`.
 7. Compare signup and saved-label totals with aggregate SQL for the same rolling interval before using the report for a product decision.
 
 ## Maintenance
 
-Update the variables and redeploy when an owner or test account is deleted or recreated. Review the list before each dated usage report. Removing an ID changes future event classification and dashboard query exclusions; it does not rewrite an existing event's `is_internal` value.
+Update the variable and redeploy when an owner account is deleted or recreated. Review the list before each dated usage report. Removing an ID changes future event classification and dashboard query exclusions; it does not rewrite an existing event's `is_internal` value.

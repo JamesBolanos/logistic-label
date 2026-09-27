@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { db } from '$lib/server/db';
 import { operationalEvent } from '$lib/server/db/schema.js';
 import { isProductEventName } from '$lib/analytics/events.js';
-import { getAnalyticsExcludedUserIds } from '$lib/server/analytics/access.js';
+import { getAnalyticsOwnerUserIds } from '$lib/server/analytics/access.js';
 
 const OPERATION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:_-]{0,127}$/;
 
@@ -49,7 +49,7 @@ export async function recordOperationalEvent(input) {
         labelSize: allow(input.labelSize, ['4x6']),
         templateVersion: allow(input.templateVersion, ['v1']),
         durationMs: normalizeDuration(input.durationMs),
-        isInternal: new Set(getAnalyticsExcludedUserIds()).has(input.userId)
+        isInternal: new Set(getAnalyticsOwnerUserIds()).has(input.userId)
       })
       .onConflictDoNothing();
 

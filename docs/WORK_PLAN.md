@@ -123,7 +123,7 @@ Event names below are proposed contracts. Establish one recording point per even
 - [x] Use GA4 for acquisition and navigation; use persisted application records and operational events for account/label totals and workflow outcomes.
 - [x] Keep emails, company names, raw label contents, free-text inquiries, and raw error messages out of GA event payloads. Use controlled categories and non-identifying attributes.
 - [ ] Validate events against successful operations and deliberately failed operations; analytics failures must not interrupt label creation.
-- [ ] Reconcile the measured milestones with database records and verify test-account exclusions.
+- [ ] Reconcile the measured milestones with database records, verify owner exclusion, and confirm automated test data remains confined to nonproduction databases.
 - [ ] Instrument the already-released What's new panel and compare distinct viewers, feature-link users, and subsequent successful feature use. Clicks alone do not establish adoption or causation.
 
 ### Owner Dashboard
@@ -142,7 +142,7 @@ Event names below are proposed contracts. Establish one recording point per even
 - [x] Build an owner-only statistics page with rolling 7/30-day filters and cohort exclusions; enforce owner access on the server.
 - [x] Start with six summary cards: new users, first-label users, weekly label creators, failed attempts, custom inquiries, and accepted projects. Show untracked metrics as unavailable rather than zero.
 - [x] Add the completion funnel and the most frequent failure categories below the cards.
-- [ ] Configure environment-specific owner/test user IDs, verify the aggregate queries on staging, and reconcile staging/production results before using them for decisions.
+- [ ] Configure environment-specific owner user IDs, verify the aggregate queries on staging, and reconcile staging/production results before using them for decisions.
 - [ ] Review Search Console queries, impressions, and clicks to identify useful content and landing-page improvements.
 - [ ] Save dated usage reports in `usage_log/`, including definitions, exclusions, and data limitations; preserve earlier snapshots for comparison.
 

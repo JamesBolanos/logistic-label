@@ -1,6 +1,6 @@
 import { and, count, countDistinct, eq, gte, inArray, lt, min, notInArray } from 'drizzle-orm';
 import { createRollingWindow, percentage } from '$lib/analytics/statistics.js';
-import { getAnalyticsExcludedUserIds } from '$lib/server/analytics/access.js';
+import { getAnalyticsOwnerUserIds } from '$lib/server/analytics/access.js';
 import { db } from '$lib/server/db';
 import { labelSettings, logisticLabel, operationalEvent, user } from '$lib/server/db/schema.js';
 
@@ -11,10 +11,10 @@ export async function getOwnerStatistics(days, now = new Date()) {
 
   const { start, end } = createRollingWindow(days, now);
   const weeklyStart = new Date(end.getTime() - 7 * DAY_MS);
-  const excludedUserIds = getAnalyticsExcludedUserIds();
-  const userExclusion = excludeConfiguredUsers(user.id, excludedUserIds);
-  const labelExclusion = excludeConfiguredUsers(logisticLabel.userId, excludedUserIds);
-  const eventExclusion = excludeConfiguredUsers(operationalEvent.userId, excludedUserIds);
+  const ownerUserIds = getAnalyticsOwnerUserIds();
+  const userExclusion = excludeOwners(user.id, ownerUserIds);
+  const labelExclusion = excludeOwners(logisticLabel.userId, ownerUserIds);
+  const eventExclusion = excludeOwners(operationalEvent.userId, ownerUserIds);
 
   const [
     [newUsers],
@@ -87,7 +87,7 @@ export async function getOwnerStatistics(days, now = new Date()) {
   const firstLabelUsers = firstLabelRows.filter(({ firstLabelAt }) =>
     isWithinWindow(firstLabelAt, start, end)
   ).length;
-  const funnel = await getSignupFunnel({ start, end, now, excludedUserIds });
+  const funnel = await getSignupFunnel({ start, end, now, ownerUserIds });
 
   return {
     days,
@@ -97,7 +97,7 @@ export async function getOwnerStatistics(days, now = new Date()) {
       timeZone: 'America/Managua'
     },
     configuration: {
-      excludedUserCount: excludedUserIds.length
+      excludedOwnerCount: ownerUserIds.length
     },
     summary: {
       newUsers: Number(newUsers?.value || 0),
@@ -120,7 +120,7 @@ export async function getOwnerStatistics(days, now = new Date()) {
   };
 }
 
-async function getSignupFunnel({ start, end, now, excludedUserIds }) {
+async function getSignupFunnel({ start, end, now, ownerUserIds }) {
   const eligibleEnd = new Date(Math.min(end.getTime(), now.getTime() - DAY_MS));
 
   if (eligibleEnd <= start) {
@@ -134,7 +134,7 @@ async function getSignupFunnel({ start, end, now, excludedUserIds }) {
       and(
         gte(user.createdAt, start),
         lt(user.createdAt, eligibleEnd),
-        excludeConfiguredUsers(user.id, excludedUserIds)
+        excludeOwners(user.id, ownerUserIds)
       )
     );
   const cohortUserIds = cohort.map(({ id }) => id);
@@ -200,8 +200,8 @@ function funnelStep(label, value, total) {
   return { label, value, percentage: percentage(value, total) };
 }
 
-function excludeConfiguredUsers(column, excludedUserIds) {
-  return excludedUserIds.length > 0 ? notInArray(column, excludedUserIds) : undefined;
+function excludeOwners(column, ownerUserIds) {
+  return ownerUserIds.length > 0 ? notInArray(column, ownerUserIds) : undefined;
 }
 
 function isWithinWindow(value, start, end) {
