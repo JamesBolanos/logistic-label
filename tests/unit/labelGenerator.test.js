@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { generateLogisticLabelPDF } from '../../src/lib/server/pdf/labelGenerator.js';
+import {
+  generateLogisticLabelPDF,
+  validateGuidedLabelBarcodeFit
+} from '../../src/lib/server/pdf/labelGenerator.js';
 
 describe('guided label PDF rendering', () => {
   it('renders homogeneous traceability fields and their GS1 human-readable data', async () => {
@@ -28,5 +31,22 @@ describe('guided label PDF rendering', () => {
     expect(content).toContain('\\(00\\)012345670000000015');
     expect(content).not.toContain('HOMOGENEOUS LOGISTIC UNIT');
     expect(content).not.toContain('Contained trade item level');
+  });
+
+  it('fits a three-digit homogeneous count on a compliant four-inch label', async () => {
+    const label = {
+      label_type: 'homogeneous_unit',
+      template_version: 'v2',
+      print_layout: '4x6_single',
+      sscc: '012345670000000015',
+      gtin: '07433200838006',
+      packaging_level: 'each',
+      quantity: 120
+    };
+
+    expect(() => validateGuidedLabelBarcodeFit(label)).not.toThrow();
+
+    const pdf = await generateLogisticLabelPDF(label, { company_name: 'PDF Test Company' });
+    expect(pdf.toString('utf8')).toContain('\\(02\\)07433200838006\\(37\\)120');
   });
 });

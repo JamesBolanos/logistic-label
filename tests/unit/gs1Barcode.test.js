@@ -37,6 +37,20 @@ describe('guided GS1-128 barcode data', () => {
     expect(getBarcodeModules(elements.slice(1))).not.toHaveLength(0);
   });
 
+  it('starts numeric GS1 data in Code Set C to preserve the compliant barcode width', () => {
+    const elements = buildGs1Elements({
+      label_type: 'homogeneous_unit',
+      gtin: '07433200838006',
+      quantity: 120
+    }).filter((item) => item.ai === '02' || item.ai === '37');
+
+    const modules = getBarcodeModules(elements);
+    const totalModules = modules.reduce((total, module) => total + module.width, 0);
+
+    expect(modules.slice(0, 6).map((module) => module.width)).toEqual([2, 1, 1, 2, 3, 2]);
+    expect(totalModules).toBe(178);
+  });
+
   it('adds the selected GS1 date and lot after the fixed content elements', () => {
     const elements = buildGs1Elements({
       label_type: 'homogeneous_unit',

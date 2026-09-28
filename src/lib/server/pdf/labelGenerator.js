@@ -179,10 +179,13 @@ export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elem
     if (!group.elements.length) continue;
     if (calculateBarcodeGeometry(group.elements).requiredWidth <= PAGE_WIDTH) continue;
 
+    const suggestion =
+      group.name === 'optional lot and date'
+        ? 'Use a shorter lot number or remove one optional traceability field.'
+        : 'Review the GTIN and quantity values.';
+
     throw Object.assign(
-      new Error(
-        `The ${group.name} barcode is too wide for a compliant 4 × 6 label. Use a shorter lot number.`
-      ),
+      new Error(`The ${group.name} barcode is too wide for a compliant 4 × 6 label. ${suggestion}`),
       { code: 'BARCODE_TOO_WIDE' }
     );
   }

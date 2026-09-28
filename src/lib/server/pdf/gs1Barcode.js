@@ -109,6 +109,7 @@ const CODE128_PATTERNS = [
 ];
 
 const START_B = 104;
+const START_C = 105;
 const CODE_C = 99;
 const CODE_B = 100;
 const FNC1 = 102;
@@ -196,8 +197,10 @@ export function getBarcodeModules(elements) {
 
 /** @param {Gs1Chunk[]} chunks */
 function encodeCode128Values(chunks) {
-  const values = [START_B, FNC1];
-  let set = 'B';
+  const firstData = chunks.find((chunk) => chunk.type === 'data')?.value ?? '';
+  const startsWithNumericRun = /^\d{4,}/.test(firstData);
+  const values = [startsWithNumericRun ? START_C : START_B, FNC1];
+  let set = startsWithNumericRun ? 'C' : 'B';
 
   for (const chunk of chunks) {
     if (chunk.type === 'fnc1') {
