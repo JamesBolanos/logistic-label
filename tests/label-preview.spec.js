@@ -158,8 +158,12 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
       timeout: 10000
     });
-    await expect(page.getByText('SSCC-only', { exact: true })).toBeVisible();
-    await expect(page.getByText('4 × 6 — two copies', { exact: true })).toBeVisible();
+    const ssccHistoryRow = page
+      .getByRole('table')
+      .getByRole('row')
+      .filter({ hasText: 'SSCC-only' });
+    await expect(ssccHistoryRow).toBeVisible();
+    await expect(ssccHistoryRow).toContainText('4 × 6 — two copies');
 
     await page.getByRole('button', { name: 'Change workflow' }).click();
     await page.getByRole('button', { name: /Homogeneous logistic unit/ }).click();
