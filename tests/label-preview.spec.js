@@ -206,10 +206,14 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
       timeout: 10000
     });
-    await expect(page.getByText('Homogeneous unit', { exact: true })).toBeVisible();
-    await expect(page.getByText('GTIN 00012345600012')).toBeVisible();
-    await expect(page.getByText('Lot: 123456')).toBeVisible();
-    await expect(page.getByText('Packaging date: 2026-09-28')).toBeVisible();
+    const homogeneousHistoryRow = page
+      .getByRole('table')
+      .getByRole('row')
+      .filter({ hasText: 'Homogeneous unit' });
+    await expect(homogeneousHistoryRow).toBeVisible();
+    await expect(homogeneousHistoryRow).toContainText('GTIN 00012345600012');
+    await expect(homogeneousHistoryRow).toContainText('Lot: 123456');
+    await expect(homogeneousHistoryRow).toContainText('Packaging date: 2026-09-28');
 
     const oversizedTraceabilityResponse = await page.request.post('/api/pdf/preview', {
       data: {
