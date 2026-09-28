@@ -4,6 +4,7 @@ import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { getLabelSettings } from '$lib/server/db/settings';
 import { generateSSCC } from '$lib/utils/gs1Utils';
+import { getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
 import {
   durationSince,
@@ -35,11 +36,11 @@ export async function POST({ request, locals }) {
   if (!user) {
     return json({ success: false, message: 'Authentication required' }, { status: 401 });
   }
-  
+
   try {
     // Parse label data from request
     const labelData = await request.json();
-    
+
     // Validate form data
     const validation = validateLabelForm(labelData);
     if (!validation.isValid) {
@@ -53,18 +54,18 @@ export async function POST({ request, locals }) {
       });
 
       return json(
-        { 
-          success: false, 
-          message: 'Invalid label data', 
-          errors: validation.errors 
-        }, 
+        {
+          success: false,
+          message: 'Invalid label data',
+          errors: validation.errors
+        },
         { status: 400 }
       );
     }
-    
+
     // Sanitize form data
     const sanitizedData = sanitizeLabelForm(labelData);
-    
+
     const settings = await getLabelSettings(user.id);
 
     if (!settings.is_configured) {
@@ -91,7 +92,7 @@ export async function POST({ request, locals }) {
       extensionDigit: settings.extension_digit,
       serialReference: settings.next_serial_reference
     });
-    
+
     // Prepare complete label data for preview
     const previewLabelData = {
       ...sanitizedData,
@@ -99,7 +100,7 @@ export async function POST({ request, locals }) {
       sscc,
       created_at: new Date().toISOString()
     };
-    
+
     // Generate PDF
     const pdfBuffer = await generateLogisticLabelPDF(previewLabelData, {
       company_name: settings.company_name
@@ -109,12 +110,12 @@ export async function POST({ request, locals }) {
       eventName: 'label_preview_succeeded',
       userId: user.id,
       operationId,
-      labelType: 'homogeneous_unit',
-      labelSize: '4x6',
-      templateVersion: 'v1',
+      labelType: sanitizedData.label_type,
+      labelSize: getLabelSizeForPrintLayout(sanitizedData.print_layout),
+      templateVersion: sanitizedData.template_version,
       durationMs: durationSince(startedAt)
     });
-    
+
     return new Response(pdfBuffer, {
       status: 200,
       headers: {
@@ -132,16 +133,22 @@ export async function POST({ request, locals }) {
       userId: user.id,
       operationId,
       workflowStep: 'label_preview',
-      errorCategory: error.code === 'LABEL_SETTINGS_REQUIRED' ? 'settings_required' : 'generation',
+      errorCategory:
+        error.code === 'LABEL_SETTINGS_REQUIRED'
+          ? 'settings_required'
+          : error.code === 'BARCODE_TOO_WIDE'
+            ? 'validation'
+            : 'generation',
       durationMs: durationSince(startedAt)
     });
-    
+
+    const isBarcodeTooWide = error.code === 'BARCODE_TOO_WIDE';
     return json(
-      { 
-        success: false, 
-        message: 'Failed to generate preview. Please try again.' 
-      }, 
-      { status: 500 }
+      {
+        success: false,
+        message: isBarcodeTooWide ? error.message : 'Failed to generate preview. Please try again.'
+      },
+      { status: isBarcodeTooWide ? 400 : 500 }
     );
   }
 }

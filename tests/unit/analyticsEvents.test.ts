@@ -34,6 +34,30 @@ describe('analytics event contract', () => {
     ).toEqual({ feature_key: 'release_history' });
   });
 
+  it('accepts the supported SSCC-only workflow metadata', () => {
+    expect(
+      sanitizeAnalyticsParameters('label_saved', {
+        label_type: 'sscc_only',
+        label_size: '4x6',
+        template_version: 'v2'
+      })
+    ).toEqual({
+      label_type: 'sscc_only',
+      label_size: '4x6',
+      template_version: 'v2'
+    });
+  });
+
+  it('accepts the compact label size', () => {
+    expect(
+      sanitizeAnalyticsParameters('label_preview_succeeded', {
+        label_type: 'sscc_only',
+        label_size: '4x3',
+        template_version: 'v2'
+      })
+    ).toMatchObject({ label_size: '4x3' });
+  });
+
   it('classifies HTTP failures without exposing response contents', () => {
     expect(classifyHttpFailure(400)).toBe('validation');
     expect(classifyHttpFailure(401)).toBe('authentication');

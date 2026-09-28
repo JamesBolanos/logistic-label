@@ -35,15 +35,13 @@ Authentication, CAPTCHA, and storage variables remain separately scoped to Previ
 
 Sensitive Vercel values are intentionally unavailable through `vercel env pull`. A pulled file can confirm that the variable name exists, but its local value may be blank. Verify sensitive values through a new deployment and a non-destructive application smoke test.
 
-## Preview Build Policy
+## Preview Deployment Policy
 
-The Vercel project uses this **Ignored Build Step** command:
+The repository's `vercel.json` permits automatic Git deployments only from `master` and `staging`. Feature, documentation, and Dependabot branches do not create automatic Vercel deployments. GitHub Quality and isolated E2E checks provide pull-request validation, while `staging.sscc-labels.com` provides the stable hosted acceptance environment.
 
-```bash
-case "$VERCEL_GIT_COMMIT_REF" in dependabot/*) exit 0 ;; *) exit 1 ;; esac
-```
+Do not use the **Ignored Build Step** as the primary branch filter. Vercel creates a canceled deployment before that command runs, so ignored builds still consume deployment quota and a concurrent build slot. The project-level Ignored Build Step may be cleared after the repository policy is deployed.
 
-Vercel interprets exit code `0` as canceling the build and exit code `1` as continuing. Dependabot pull requests run the secret-free GitHub Quality job and skip Neon-backed E2E because GitHub does not expose ordinary Actions secrets to Dependabot. Reproduce a selected dependency update on a maintainer branch when it needs browser/database validation. Feature and fix branches continue to receive Vercel previews when a hosted review is useful.
+Create a feature preview manually only when a hosted URL adds review value that CI and stable staging cannot provide. Dependabot pull requests run the secret-free GitHub Quality job and skip Neon-backed E2E because GitHub does not expose ordinary Actions secrets to Dependabot. Reproduce a selected dependency update on a maintainer branch when it needs browser/database validation.
 
 All Vercel Preview deployments use the shared `staging` database unless a temporary database is created and assigned manually for a specific high-risk change. Do not run destructive tests or automatic schema migrations from arbitrary preview builds against shared staging.
 

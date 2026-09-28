@@ -1,18 +1,21 @@
 <!-- src/routes/+page.svelte -->
 <script>
     import { page } from '$app/state';
+    import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
+    import { getRecentPublishedReleases } from '$lib/content/releases.js';
 
     let isLoggedIn = $derived(Boolean(page.data.user));
+    const recentUpdates = getRecentPublishedReleases(2);
     
     const features = [
       {
-        title: 'Free GS1-128 label generation',
-        description: 'Use the tool to create SSCC and GS1-128 logistic labels for common shipping and warehouse needs.',
+        title: 'Two guided label workflows',
+        description: 'Create an SSCC-only label or identify homogeneous contents with a contained GTIN, an unambiguous count, and optional lot or date traceability.',
         icon: 'check'
       },
       {
-        title: '4x6 label format',
-        description: 'Standard logistics label size with properly structured information sections. More formats will be added over time.',
+        title: 'Practical SSCC print layouts',
+        description: 'Print one 4 × 6 label, two identical 4 × 3 copies on a 4 × 6 sheet, or one compact 4 × 3 label.',
         icon: 'layout'
       },
       {
@@ -51,7 +54,7 @@
           SSCC Labels
         </h1>
         <p class="mt-6 text-xl max-w-2xl mx-auto">
-          Use this free tool to generate GS1-128 logistic labels for common SSCC workflows.
+          Create an SSCC-only label or a homogeneous logistic-unit label through a guided workflow.
         </p>
         <p class="mt-4 text-base text-blue-100 max-w-2xl mx-auto">
           I will keep improving it and adding label formats, printer support, and workflow features. It also works as a preview for teams that need a tailored private solution.
@@ -88,6 +91,10 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="mt-16">
+      <WhatsNewPanel updates={recentUpdates} />
     </div>
     
     <!-- Features Section -->
@@ -162,15 +169,13 @@
           <li>Warehouse workflows, user roles, and integrations</li>
         </ul>
         <p class="mt-4">
-          The sample focuses on common GS1 logistic label data such as:
+          The guided generator currently supports:
         </p>
         <ul class="mt-2">
-          <li>GTIN (Global Trade Item Number)</li>
-          <li>Lot/Batch numbers</li>
-          <li>Production dates</li>
-          <li>Quantity information</li>
-          <li>Weight measurements</li>
-          <li>SSCC (Serial Shipping Container Code)</li>
+          <li>SSCC-only logistic units using AI (00)</li>
+          <li>Homogeneous logistic units using AI (02) CONTENT and AI (37) COUNT</li>
+          <li>Optional batch/lot and production, packaging, best-before, sell-by, or expiry date</li>
+          <li>A separate AI (00) SSCC barcode as the lowest barcode on the label</li>
         </ul>
       </div>
     </div>

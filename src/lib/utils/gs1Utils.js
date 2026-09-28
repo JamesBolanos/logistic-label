@@ -14,10 +14,21 @@ export function calculateCheckDigit(valueWithoutCheckDigit) {
 
 /** @param {string} gtin */
 export function validateGTIN(gtin) {
-  if (!/^\d{14}$/.test(gtin)) return false;
-  const body = gtin.slice(0, 13);
-  const check = Number(gtin[13]);
+  const value = String(gtin || '').trim();
+  if (!/^(?:\d{8}|\d{12}|\d{13}|\d{14})$/.test(value)) return false;
+  const body = value.slice(0, -1);
+  const check = Number(value.at(-1));
   return calculateCheckDigit(body) === check;
+}
+
+/** @param {string} gtin */
+export function normalizeGTIN(gtin) {
+  const value = String(gtin || '').trim();
+  if (!validateGTIN(value)) {
+    throw new Error('GTIN must be a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14');
+  }
+
+  return value.padStart(14, '0');
 }
 
 /** @param {string} prefix */
@@ -35,7 +46,19 @@ export function validateSSCC(sscc) {
 
 /** @param {string} lot */
 export function validateLotNumber(lot) {
-  return /^[A-Za-z0-9]{1,20}$/.test(lot || '');
+  return /^[A-Za-z0-9!"%&'()*+,\-./:;<=>?_]{1,20}$/.test(lot || '');
+}
+
+/** @param {unknown} value */
+export function validateISODate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 /** @param {string | number | Date} dateStr */
@@ -58,11 +81,7 @@ export function formatGS1Date(dateStr) {
 /** @param {SSCCOptions | string} [options] */
 export function generateSSCC(options = {}) {
   const normalizedOptions = typeof options === 'string' ? { gs1CompanyPrefix: options } : options;
-  const {
-    gs1CompanyPrefix = '',
-    serialReference = 1,
-    extensionDigit = '0'
-  } = normalizedOptions;
+  const { gs1CompanyPrefix = '', serialReference = 1, extensionDigit = '0' } = normalizedOptions;
 
   const prefix = String(gs1CompanyPrefix).replace(/\D/g, '');
 
@@ -72,7 +91,10 @@ export function generateSSCC(options = {}) {
 
   const extension = String(extensionDigit).replace(/\D/g, '').slice(0, 1) || '0';
   const serialDigits = 16 - prefix.length;
-  const serial = String(Number.parseInt(String(serialReference), 10) || 0).padStart(serialDigits, '0');
+  const serial = String(Number.parseInt(String(serialReference), 10) || 0).padStart(
+    serialDigits,
+    '0'
+  );
 
   if (!/^\d$/.test(extension)) {
     throw new Error('SSCC extension digit must be a single digit');
@@ -89,9 +111,11 @@ export function generateSSCC(options = {}) {
 export default {
   calculateCheckDigit,
   validateGTIN,
+  normalizeGTIN,
   validateGS1CompanyPrefix,
   validateSSCC,
   validateLotNumber,
+  validateISODate,
   formatGS1Date,
   generateSSCC
 };

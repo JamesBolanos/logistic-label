@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-09-28-guided-label-workflows',
+    publishedAt: '2026-09-28',
+    category: 'improvement',
+    status: 'published',
+    title: 'Labels now begin with a clear logistics scenario',
+    benefit:
+      'Choose practical SSCC print layouts or create a homogeneous label with optional batch/lot and a selected GS1 date type.',
+    featureKey: 'guided_label_workflows',
+    href: '/labels',
+    linkLabel: 'Create a guided label'
+  },
+  {
     id: '2026-09-27-atomic-sscc-allocation',
     publishedAt: '2026-09-27',
     category: 'fix',
@@ -68,7 +80,7 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     title: "What's new is now visible",
     featureKey: 'release_history',
     benefit:
-      'See recently released fixes, improvements, and features from your dashboard and review the complete update history.',
+      'See recently released fixes, improvements, and features from the public home page and review the complete update history.',
     href: '/updates',
     linkLabel: 'View update history'
   }

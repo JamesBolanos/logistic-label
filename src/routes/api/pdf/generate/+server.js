@@ -1,6 +1,7 @@
 // src/routes/api/pdf/generate/+server.js
 import { json } from '@sveltejs/kit';
 import { createLabel } from '$lib/server/db/labels';
+import { validateGuidedLabelBarcodeFit } from '$lib/server/pdf/labelGenerator.js';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
 import {
@@ -62,6 +63,8 @@ export async function POST({ request, locals }) {
     
     // Sanitize form data
     const sanitizedData = sanitizeLabelForm(labelData);
+
+    validateGuidedLabelBarcodeFit(sanitizedData);
     
     // Create label in database
     const label = await createLabel(sanitizedData, user.id, { operationId, startedAt });
@@ -72,6 +75,18 @@ export async function POST({ request, locals }) {
       labelId: label.id
     });
   } catch (error) {
+    if (error.code === 'BARCODE_TOO_WIDE') {
+      await recordOperationalEvent({
+        eventName: 'workflow_failed',
+        userId: user.id,
+        operationId,
+        workflowStep: 'label_save',
+        errorCategory: 'validation',
+        durationMs: durationSince(startedAt)
+      });
+      return json({ success: false, message: error.message }, { status: 400 });
+    }
+
     if (error.code === 'LABEL_SETTINGS_REQUIRED') {
       await recordOperationalEvent({
         eventName: 'workflow_failed',

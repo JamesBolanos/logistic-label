@@ -29,6 +29,27 @@
       "when": 1790291374247,
       "tag": "0003_slim_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790548231562,
+      "tag": "0004_big_mockingbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790616410776,
+      "tag": "0005_curious_blindfold",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790618274320,
+      "tag": "0006_black_yellow_claw",
+      "breakpoints": true
     }
   ]
 }

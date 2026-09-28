@@ -2,11 +2,8 @@
 <script>
     import { onMount } from 'svelte';
     import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
-    import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
-    import { getRecentPublishedReleases } from '$lib/content/releases.js';
     import { trackProductEvent } from '$lib/analytics/client.js';
-
-    const recentUpdates = getRecentPublishedReleases(2);
+    import { getLabelTypeName, getPackagingLevelName, LABEL_TYPES } from '$lib/labels/workflows.js';
     
     // Stats
     let stats = $state({
@@ -81,38 +78,6 @@
           </button>
         </div>
       {:else}
-        <section class="bg-white shadow rounded-lg border border-blue-100">
-          <div class="px-4 py-5 sm:p-6">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Free tool and tailored solutions</p>
-                <h2 class="mt-1 text-xl font-semibold text-gray-900">Use this free GS1-128 label generator today.</h2>
-                <p class="mt-2 max-w-3xl text-sm text-gray-600">
-                  Contact me to suggest improvements to the public tool or discuss a tailored version for your label formats, printer models, company data, user roles, and warehouse workflow.
-                </p>
-              </div>
-              <div class="flex flex-col gap-3 sm:flex-row lg:flex-shrink-0">
-                <a
-                  href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
-                  onclick={() =>
-                    trackProductEvent('custom_contact_clicked', { placement: 'dashboard' })}
-                  class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Contact Me
-                </a>
-                <a
-                  href="/labels/create"
-                  class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Create Label
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <WhatsNewPanel updates={recentUpdates} />
-
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <!-- Total Labels -->
@@ -251,7 +216,7 @@
             <div class="px-4 py-5 sm:p-6">
               <div class="flow-root">
                 <ul class="-mb-8">
-                  {#each recentLabels as label, index (label.id ?? `${label.gtin}-${label.lot_number}-${label.created_at}`)}
+                  {#each recentLabels as label, index (label.id)}
                     <li>
                       <div class="relative pb-8">
                         {#if index !== recentLabels.length - 1}
@@ -267,7 +232,16 @@
                           </div>
                           <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                             <div>
-                              <p class="text-sm text-gray-500">Created label for <span class="font-medium text-gray-900">GTIN: {label.gtin}</span> with lot number <span class="font-medium text-gray-900">{label.lot_number}</span></p>
+                              <p class="text-sm text-gray-500">
+                                Created <span class="font-medium text-gray-900">{getLabelTypeName(label.label_type)}</span>
+                                {#if label.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT}
+                                  for {label.quantity} {getPackagingLevelName(label.packaging_level, label.quantity)} with GTIN {label.gtin}
+                                {:else if label.label_type === LABEL_TYPES.SSCC_ONLY}
+                                  with SSCC {label.sscc}
+                                {:else if label.gtin}
+                                  for GTIN {label.gtin}
+                                {/if}
+                              </p>
                             </div>
                             <div class="text-right text-sm whitespace-nowrap text-gray-500">
                               <time datetime={label.created_at}>{formatDate(label.created_at)}</time>
