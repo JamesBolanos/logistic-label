@@ -60,7 +60,7 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     await expect(page.getByRole('button', { name: /Logistic unit that is a trade item/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /Mixed-pallet content workflow/ })).toBeDisabled();
 
-    await page.getByRole('button', { name: /SSCC-only label/ }).click();
+    await page.getByRole('button', { name: /^SSCC-only label/ }).click();
     await expect(page.getByText('The barcode will contain only AI (00)')).toBeVisible();
 
     const ssccPreviewResponsePromise = page.waitForResponse((response) => {
