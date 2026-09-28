@@ -9,6 +9,7 @@ declare global {
 
 let analyticsEnabled = false;
 let configuredMeasurementId: string | null = null;
+const analyticsEnabledListeners = new Set<() => void>();
 
 export function initializeAnalytics(measurementId: string | null | undefined): boolean {
   if (typeof window === 'undefined') return false;
@@ -34,6 +35,7 @@ export function initializeAnalytics(measurementId: string | null | undefined): b
       window.dataLayer?.push(arguments);
     };
 
+  notifyAnalyticsEnabled();
   if (configuredMeasurementId === measurementId) return true;
   configuredMeasurementId = measurementId;
 
@@ -83,10 +85,12 @@ export function observeReleaseUpdate(
   node: HTMLElement,
   update: { id: string; category: string; featureKey: string }
 ): { destroy: () => void } {
-  if (!analyticsEnabled || typeof window === 'undefined') return { destroy() {} };
+  if (typeof window === 'undefined') return { destroy() {} };
 
   const storageKey = `release-update-viewed:${update.id}`;
   let recorded = readSessionFlag(storageKey);
+  let destroyed = false;
+  let observer: IntersectionObserver | null = null;
 
   const recordView = () => {
     if (recorded) return;
@@ -103,23 +107,43 @@ export function observeReleaseUpdate(
     }
   };
 
-  if (!('IntersectionObserver' in window)) {
-    recordView();
-    return { destroy() {} };
+  const startObserving = () => {
+    if (destroyed || recorded || observer || !analyticsEnabled) return;
+
+    analyticsEnabledListeners.delete(startObserving);
+
+    if (!('IntersectionObserver' in window)) {
+      recordView();
+      return;
+    }
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          recordView();
+          observer?.disconnect();
+          observer = null;
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(node);
+  };
+
+  if (analyticsEnabled) {
+    startObserving();
+  } else {
+    analyticsEnabledListeners.add(startObserving);
   }
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        recordView();
-        observer.disconnect();
-      }
-    },
-    { threshold: 0.5 }
-  );
-
-  observer.observe(node);
-  return { destroy: () => observer.disconnect() };
+  return {
+    destroy: () => {
+      destroyed = true;
+      analyticsEnabledListeners.delete(startObserving);
+      observer?.disconnect();
+    }
+  };
 }
 
 function isMeasurementId(value: string | null | undefined): value is string {
@@ -129,6 +153,10 @@ function isMeasurementId(value: string | null | undefined): value is string {
 function setGoogleAnalyticsDisabled(measurementId: string, disabled: boolean): void {
   const analyticsWindow = window as unknown as Record<string, unknown>;
   analyticsWindow[`ga-disable-${measurementId}`] = disabled;
+}
+
+function notifyAnalyticsEnabled(): void {
+  for (const listener of [...analyticsEnabledListeners]) listener();
 }
 
 function readSessionFlag(key: string): boolean {
