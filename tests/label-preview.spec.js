@@ -173,12 +173,6 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     await page.getByLabel('Batch or lot number — AI (10)').fill('123456');
     await page.getByLabel('GS1 date type').selectOption('13');
     await page.getByLabel('Date', { exact: true }).fill('2026-09-28');
-    await page
-      .getByLabel(
-        'I confirm that every trade item counted on this logistic unit has the same GTIN entered above.'
-      )
-      .check();
-
     const homogeneousPreviewResponsePromise = page.waitForResponse((response) => {
       const requestUrl = new URL(response.url());
       return requestUrl.pathname === '/api/pdf/preview' && response.request().method() === 'POST';
@@ -196,7 +190,6 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
       lot_number: '123456',
       date_ai: '13',
       date_value: '2026-09-28',
-      contents_are_homogeneous: true,
       print_layout: '4x6_single'
     });
     expect(homogeneousPreviewResponse.headers()['content-type']).toContain('application/pdf');
@@ -223,8 +216,7 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
         quantity: 12,
         lot_number: 'ABCDEFGHIJKLMNOPQRST',
         date_ai: '17',
-        date_value: '2026-09-28',
-        contents_are_homogeneous: true
+        date_value: '2026-09-28'
       }
     });
     expect(oversizedTraceabilityResponse.status()).toBe(400);
@@ -237,8 +229,7 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
         label_type: 'homogeneous_unit',
         gtin: '00012345600012',
         packaging_level: 'case',
-        quantity: 9999,
-        contents_are_homogeneous: true
+        quantity: 9999
       }
     });
     expect(maximumCountPreviewResponse.ok()).toBe(true);
@@ -264,8 +255,7 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
             label_type: 'homogeneous_unit',
             gtin: '00012345600012',
             packaging_level: 'case',
-            quantity: 12,
-            contents_are_homogeneous: true
+            quantity: 12
           }
         })
       )

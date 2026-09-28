@@ -28,8 +28,7 @@ const PASSWORD_COMPLEXITY_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
  *   print_layout?: string,
  *   lot_number?: string,
  *   date_ai?: string,
- *   date_value?: string,
- *   contents_are_homogeneous?: boolean
+ *   date_value?: string
  * }} formData
  */
 export function validateLabelForm(formData) {
@@ -71,10 +70,6 @@ export function validateLabelForm(formData) {
     Number(formData.quantity) > 9999
   ) {
     errors.quantity = 'Count must be a whole number from 1 to 9,999';
-  }
-
-  if (formData.contents_are_homogeneous !== true) {
-    errors.contents_are_homogeneous = 'Confirm that every contained trade item has the same GTIN';
   }
 
   const lotNumber = String(formData.lot_number || '').trim();

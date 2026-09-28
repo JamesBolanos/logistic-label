@@ -42,26 +42,12 @@ describe('guided label workflows', () => {
     expect(result.errors).toHaveProperty('print_layout');
   });
 
-  it('requires explicit homogeneous-content semantics', () => {
-    const result = validateLabelForm({
-      label_type: 'homogeneous_unit',
-      gtin: '9501101530003',
-      packaging_level: 'case',
-      quantity: 12,
-      contents_are_homogeneous: false
-    });
-
-    expect(result.isValid).toBe(false);
-    expect(result.errors).toHaveProperty('contents_are_homogeneous');
-  });
-
   it('normalizes a valid homogeneous label for AI encoding', () => {
     const input = {
       label_type: 'homogeneous_unit',
       gtin: '9501101530003',
       packaging_level: 'case',
-      quantity: 12,
-      contents_are_homogeneous: true
+      quantity: 12
     };
 
     expect(validateLabelForm(input)).toEqual({ isValid: true, errors: {} });
@@ -88,8 +74,7 @@ describe('guided label workflows', () => {
       quantity: 12,
       lot_number: 'LOT-26/09',
       date_ai: '13',
-      date_value: '2026-09-28',
-      contents_are_homogeneous: true
+      date_value: '2026-09-28'
     };
 
     expect(validateLabelForm(input)).toEqual({ isValid: true, errors: {} });
@@ -105,8 +90,7 @@ describe('guided label workflows', () => {
       label_type: 'homogeneous_unit',
       gtin: '9501101530003',
       packaging_level: 'case',
-      quantity: 12,
-      contents_are_homogeneous: true
+      quantity: 12
     };
 
     expect(validateLabelForm({ ...base, date_ai: '17' }).errors).toHaveProperty('date_value');

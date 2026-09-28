@@ -18,9 +18,9 @@ Use this workflow when the label only needs to identify a physical logistic unit
 
 ## Homogeneous logistic unit
 
-Use this workflow when every counted trade item on the logistic unit is identified by the same GTIN. The user selects what that GTIN identifies and confirms the homogeneous-content condition.
+Use this workflow when every counted trade item on the logistic unit is identified by the same GTIN. The user selects what that GTIN identifies and provides the number of those trade items.
 
-- Required user data: a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14; packaging level; whole-number count from 1 to 9,999; and explicit homogeneous-content confirmation.
+- Required user data: a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14; packaging level; and whole-number count from 1 to 9,999.
 - Optional traceability data: one batch/lot number with `AI (10)` and one selected date type. Supported dates are production `AI (11)`, packaging `AI (13)`, best before `AI (15)`, sell by `AI (16)`, and expiry `AI (17)`.
 - The lot and date may be omitted, used separately, or used together. A selected date type and its value must be supplied together.
 - Normalization: shorter valid GTINs are left-padded to the 14-digit form used with `AI (02)`.

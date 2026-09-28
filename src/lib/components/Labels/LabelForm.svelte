@@ -19,8 +19,7 @@
     lot_number: '',
     date_ai: '',
     date_value: '',
-    print_layout: DEFAULT_PRINT_LAYOUT,
-    contents_are_homogeneous: false
+    print_layout: DEFAULT_PRINT_LAYOUT
   });
   let isLoading = $state(false);
   let errors = $state({});
@@ -249,23 +248,6 @@
           selected values fit at the supported GS1-128 size.
         </p>
       </fieldset>
-
-      <div class="rounded-md border border-gray-200 bg-gray-50 p-4">
-        <label class="flex items-start gap-3">
-          <input
-            type="checkbox"
-            bind:checked={formData.contents_are_homogeneous}
-            class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span class="text-sm text-gray-700">
-            I confirm that every trade item counted on this logistic unit has the same GTIN entered
-            above.
-          </span>
-        </label>
-        {#if errors.contents_are_homogeneous}
-          <p class="mt-2 text-sm text-red-600">{errors.contents_are_homogeneous}</p>
-        {/if}
-      </div>
     </div>
   {/if}
 
