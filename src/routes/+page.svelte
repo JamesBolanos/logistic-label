@@ -1,6 +1,7 @@
 <!-- src/routes/+page.svelte -->
 <script>
     import { page } from '$app/state';
+    import { trackProductEvent } from '$lib/analytics/client.js';
     import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
     import { getRecentPublishedReleases } from '$lib/content/releases.js';
 
@@ -81,13 +82,15 @@
               >
                 Start Free
               </a>
-              <a
-                href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
-                class="flex items-center justify-center px-6 py-3 border border-white text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 md:text-lg"
-              >
-                Contact Me
-              </a>
             {/if}
+            <a
+              href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
+              onclick={() =>
+                trackProductEvent('custom_contact_clicked', { placement: 'home_hero' })}
+              class="flex items-center justify-center px-6 py-3 border border-white text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 md:text-lg"
+            >
+              Contact Me
+            </a>
           </div>
         </div>
       </div>
@@ -203,13 +206,14 @@
           >
             Start Free
           </a>
-          <a
-            href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
-            class="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 md:text-lg"
-          >
-            Contact Me
-          </a>
         {/if}
+        <a
+          href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
+          onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'home_cta' })}
+          class="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 md:text-lg"
+        >
+          Contact Me
+        </a>
       </div>
     </div>
   </div>

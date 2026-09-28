@@ -55,6 +55,7 @@
       items: [
         'Google Analytics is used in production to understand navigation and feature use',
         'Analytics events exclude emails, company names, label contents, product identifiers, and raw error messages',
+        'Configured owner accounts stop sending product analytics after authentication',
         'Saved labels, PDF responses, browser downloads, and physical printing are treated as different outcomes'
       ]
     }
@@ -78,7 +79,7 @@
             This page outlines how the GS1-128 Logistic Label Generator collects, uses, and protects
             user and business data.
           </p>
-          <p class="mt-3 text-sm text-gray-500">Last updated: September 26, 2026</p>
+          <p class="mt-3 text-sm text-gray-500">Last updated: September 28, 2026</p>
         </div>
 
         <div class="rounded-lg bg-blue-50 border border-blue-100 px-5 py-4 lg:w-72">

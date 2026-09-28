@@ -42,7 +42,7 @@ Measure whether people reach a useful logistic-label outcome, where workflows fa
 | `pdf_response_succeeded`  | Successful saved-label PDF response                                         | PDF format, new/history source, duration     |
 | `pdf_download_started`    | Browser triggers the file download                                          | PDF format and new/history source            |
 | `workflow_failed`         | Controlled server or browser failure boundary                               | Step, controlled category, duration          |
-| `custom_contact_clicked`  | Dashboard contact action                                                    | Placement                                    |
+| `custom_contact_clicked`  | Public home-page contact action                                             | Hero or final CTA placement                  |
 | `release_update_viewed`   | Published update reaches the viewport, once per release per browser session | Release ID, change category, feature key     |
 | `release_cta_clicked`     | Published update link is selected                                           | Release ID and feature key                   |
 
@@ -52,6 +52,7 @@ Do not send or store emails, names, company names, IP addresses, user-agent stri
 
 ## Validation
 
+- Follow [Product Analytics Validation Runbook](./ANALYTICS_VALIDATION_RUNBOOK.md) for the automated, GA4, owner-exclusion, and aggregate reconciliation checks.
 - Unit tests verify event allowlists, controlled values, failure categories, authentication-method resolution, reporting windows, and owner configuration.
 - Playwright verifies the real signup-to-download workflow against an isolated Neon branch. Account cleanup also removes the run's operational events.
 - Playwright verifies that a normal signed-in user receives a forbidden response from the owner statistics route.

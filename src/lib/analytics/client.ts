@@ -11,9 +11,20 @@ let analyticsEnabled = false;
 let configuredMeasurementId: string | null = null;
 
 export function initializeAnalytics(measurementId: string | null | undefined): boolean {
-  if (typeof window === 'undefined' || !isMeasurementId(measurementId)) return false;
+  if (typeof window === 'undefined') return false;
+
+  if (!isMeasurementId(measurementId)) {
+    if (configuredMeasurementId) setGoogleAnalyticsDisabled(configuredMeasurementId, true);
+    analyticsEnabled = false;
+    return false;
+  }
+
+  if (configuredMeasurementId && configuredMeasurementId !== measurementId) {
+    setGoogleAnalyticsDisabled(configuredMeasurementId, true);
+  }
 
   analyticsEnabled = true;
+  setGoogleAnalyticsDisabled(measurementId, false);
   window.dataLayer = window.dataLayer || [];
   window.gtag =
     window.gtag ||
@@ -113,6 +124,11 @@ export function observeReleaseUpdate(
 
 function isMeasurementId(value: string | null | undefined): value is string {
   return typeof value === 'string' && /^G-[A-Z0-9]+$/.test(value);
+}
+
+function setGoogleAnalyticsDisabled(measurementId: string, disabled: boolean): void {
+  const analyticsWindow = window as unknown as Record<string, unknown>;
+  analyticsWindow[`ga-disable-${measurementId}`] = disabled;
 }
 
 function readSessionFlag(key: string): boolean {

@@ -58,6 +58,21 @@ describe('analytics event contract', () => {
     ).toMatchObject({ label_size: '4x3' });
   });
 
+  it('accepts only the current public contact placements', () => {
+    expect(
+      sanitizeAnalyticsParameters('custom_contact_clicked', {
+        placement: 'home_hero',
+        email: 'person@example.com'
+      })
+    ).toEqual({ placement: 'home_hero' });
+    expect(
+      sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'home_cta' })
+    ).toEqual({ placement: 'home_cta' });
+    expect(sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'unknown' })).toEqual(
+      {}
+    );
+  });
+
   it('classifies HTTP failures without exposing response contents', () => {
     expect(classifyHttpFailure(400)).toBe('validation');
     expect(classifyHttpFailure(401)).toBe('authentication');

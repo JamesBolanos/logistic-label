@@ -3,7 +3,7 @@ import {
   createLegacyLabelForTestUser,
   createTestUserEmail,
   deleteTestUser,
-  getOperationalEventNames
+  getOperationalEvents
 } from './helpers/cleanupTestUser.js';
 
 test('signed-in user can generate both guided label scenarios', async ({ page }, testInfo) => {
@@ -295,7 +295,7 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     );
 
     await expect
-      .poll(() => getOperationalEventNames(email))
+      .poll(async () => (await getOperationalEvents(email)).map((event) => event.event_name))
       .toEqual(
         expect.arrayContaining([
           'sign_up',
@@ -307,6 +307,52 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
           'workflow_failed'
         ])
       );
+
+    const operationalEvents = await getOperationalEvents(email);
+    expect(operationalEvents.every((event) => event.operation_id)).toBe(true);
+    expect(operationalEvents.every((event) => event.is_internal === false)).toBe(true);
+    expect(
+      new Set(operationalEvents.map((event) => `${event.event_name}:${event.operation_id}`)).size
+    ).toBe(operationalEvents.length);
+    expect(operationalEvents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          event_name: 'sign_up',
+          auth_method: 'email'
+        }),
+        expect.objectContaining({
+          event_name: 'company_settings_saved',
+          setup_type: 'first_setup'
+        }),
+        expect.objectContaining({
+          event_name: 'label_preview_succeeded',
+          label_type: 'sscc_only',
+          label_size: '4x3',
+          template_version: 'v2'
+        }),
+        expect.objectContaining({
+          event_name: 'label_saved',
+          label_type: 'homogeneous_unit',
+          label_size: '4x6',
+          template_version: 'v2'
+        }),
+        expect.objectContaining({
+          event_name: 'pdf_response_succeeded',
+          document_format: 'pdf',
+          download_source: 'history'
+        }),
+        expect.objectContaining({
+          event_name: 'pdf_response_succeeded',
+          document_format: 'pdf',
+          download_source: 'new_label'
+        }),
+        expect.objectContaining({
+          event_name: 'workflow_failed',
+          workflow_step: 'label_preview',
+          error_category: 'validation'
+        })
+      ])
+    );
   } finally {
     await deleteTestUser(email, { requireExisting: accountCreationConfirmed });
   }

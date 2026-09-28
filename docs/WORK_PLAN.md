@@ -13,7 +13,7 @@ This is the planning checklist. Unchecked items are outstanding work, not implem
 | Order | Workstream | Status | Outcome to verify |
 |---|---|---|---|
 | 1 | What's new panel | Delivered; analytics follows in priority 2 | Users can discover every released fix, improvement, and new feature |
-| 2 | Event checklist and statistics | In progress; tracking foundation and first owner dashboard implemented, release verification pending | See where users stop, which operations fail, and which released features they use |
+| 2 | Event checklist and statistics | In progress; automated validation added, GA4 and aggregate reconciliation pending | See where users stop, which operations fail, and which released features they use |
 | 3 | Fixes | Needs completion and verification | Correct labels, reliable authentication/downloads, and isolated tests with cleanup |
 | 4 | Improvements | Planned; refine with feedback | Make existing workflows easier and prepare evidence for future decisions |
 | 5 | New features, including Excel export | Backlog; scope through analysis | Add capabilities that address a defined user or business need |

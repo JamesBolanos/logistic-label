@@ -75,20 +75,32 @@ export async function deleteTestUser(email, { requireExisting = false } = {}) {
   return true;
 }
 
-export async function getOperationalEventNames(email) {
+export async function getOperationalEvents(email) {
   if (!testUserEmailPattern.test(email)) {
     throw new Error(`Refusing to inspect a non-test user: ${email}`);
   }
 
   const rows = await sql`
-    SELECT event."event_name"
+    SELECT
+      event."event_name",
+      event."operation_id",
+      event."auth_method",
+      event."setup_type",
+      event."workflow_step",
+      event."error_category",
+      event."document_format",
+      event."download_source",
+      event."label_type",
+      event."label_size",
+      event."template_version",
+      event."is_internal"
     FROM "operational_event" AS event
     INNER JOIN "user" AS account ON account."id" = event."user_id"
     WHERE account."email" = ${email}
     ORDER BY event."created_at", event."id"
   `;
 
-  return rows.map((row) => row.event_name);
+  return rows;
 }
 
 export async function createLegacyLabelForTestUser(email) {

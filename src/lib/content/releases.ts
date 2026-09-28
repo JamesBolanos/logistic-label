@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-09-28-analytics-validation',
+    publishedAt: '2026-09-28',
+    category: 'improvement',
+    status: 'published',
+    title: 'Privacy-safe usage signals are more reliable',
+    benefit:
+      'Public contact actions now use controlled analytics values, while configured owner sessions stop sending product analytics after sign-in.',
+    featureKey: 'analytics_validation',
+    href: '/privacy',
+    linkLabel: 'Review analytics privacy'
+  },
+  {
     id: '2026-09-28-guided-label-workflows',
     publishedAt: '2026-09-28',
     category: 'improvement',
