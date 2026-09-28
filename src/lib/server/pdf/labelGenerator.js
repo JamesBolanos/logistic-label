@@ -48,7 +48,9 @@ function generateGuidedLabelPDF(labelData, options) {
     15,
     true
   );
-  drawLine(content, MARGIN, 392, PAGE_WIDTH - MARGIN, 392);
+  if (!getHomogeneousTraceabilityElements(elements).length) {
+    drawLine(content, MARGIN, 392, PAGE_WIDTH - MARGIN, 392);
+  }
 
   drawHomogeneousLabel(content, labelData, elements);
 
@@ -108,9 +110,7 @@ function drawCompactSSCCLabel(content, labelData, elements, companyName, originY
 
 function drawHomogeneousLabel(content, labelData, elements) {
   const contentElements = elements.filter((item) => item.ai === '02' || item.ai === '37');
-  const traceabilityElements = elements.filter(
-    (item) => item.ai === '10' || getHomogeneousDateOption(item.ai)
-  );
+  const traceabilityElements = getHomogeneousTraceabilityElements(elements);
   const ssccElements = elements.filter((item) => item.ai === '00');
 
   if (!traceabilityElements.length) {
@@ -126,8 +126,8 @@ function drawHomogeneousLabel(content, labelData, elements) {
     return;
   }
 
-  drawInfoField(content, 'CONTENT', labelData.gtin, MARGIN, 386, 14);
-  drawInfoField(content, 'COUNT', String(labelData.quantity), 222, 386, 14);
+  drawInfoFieldFitted(content, 'CONTENT', labelData.gtin, MARGIN, 190, 386);
+  drawInfoFieldFitted(content, 'COUNT', String(labelData.quantity), 222, 48, 386);
   drawHomogeneousTraceabilityFields(content, labelData);
 
   drawCompliantBarcode(content, contentElements, 246);
@@ -138,6 +138,10 @@ function drawHomogeneousLabel(content, labelData, elements) {
 
   drawCompliantBarcode(content, ssccElements, 22);
   drawCenteredText(content, humanReadable(ssccElements), PAGE_WIDTH / 2, 7, 9);
+}
+
+function getHomogeneousTraceabilityElements(elements) {
+  return elements.filter((item) => item.ai === '10' || getHomogeneousDateOption(item.ai));
 }
 
 function drawHomogeneousTraceabilityFields(content, labelData) {
