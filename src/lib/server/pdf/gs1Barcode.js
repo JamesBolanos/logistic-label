@@ -124,6 +124,10 @@ const AI_DEFINITIONS = {
   '02': { fixedLength: 14 },
   10: { variable: true },
   11: { fixedLength: 6 },
+  13: { fixedLength: 6 },
+  15: { fixedLength: 6 },
+  16: { fixedLength: 6 },
+  17: { fixedLength: 6 },
   30: { variable: true },
   37: { variable: true },
   3201: { fixedLength: 6 }
@@ -136,11 +140,16 @@ export function buildGs1Elements(labelData) {
   }
 
   if (labelData.label_type === 'homogeneous_unit') {
+    const dateAi = String(labelData.date_ai ?? '');
+    const dateValue = formatDateForAi(labelData.date_value);
+
     return [
       { ai: '00', value: String(labelData.sscc ?? '') },
       { ai: '02', value: String(labelData.gtin ?? '') },
-      { ai: '37', value: String(labelData.quantity ?? '') }
-    ].filter((item) => item.value);
+      { ai: '37', value: String(labelData.quantity ?? '') },
+      { ai: dateAi, value: dateValue },
+      { ai: '10', value: String(labelData.lot_number ?? '') }
+    ].filter((item) => item.ai && item.value);
   }
 
   const quantity = String(labelData.quantity ?? '').replace(/\D/g, '');

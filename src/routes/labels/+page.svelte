@@ -7,7 +7,7 @@
   import LabelHistory from '$lib/components/Labels/LabelHistory.svelte';
   import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
   import { classifyHttpFailure } from '$lib/analytics/events.js';
-  import { CURRENT_TEMPLATE_VERSION } from '$lib/labels/workflows.js';
+  import { CURRENT_TEMPLATE_VERSION, getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
 
   let selectedLabelType = $state(null);
   let labelData = $state(null);
@@ -94,7 +94,7 @@
 
       trackProductEvent('label_saved', {
         label_type: labelData.label_type,
-        label_size: '4x6',
+        label_size: getLabelSizeForPrintLayout(labelData.print_layout),
         template_version: CURRENT_TEMPLATE_VERSION,
         duration_ms: Date.now() - startedAt
       });

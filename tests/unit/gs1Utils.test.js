@@ -3,6 +3,8 @@ import {
   calculateCheckDigit,
   generateSSCC,
   normalizeGTIN,
+  validateISODate,
+  validateLotNumber,
   validateGTIN,
   validateGS1CompanyPrefix,
   validateSSCC
@@ -41,5 +43,13 @@ describe('GS1 identifiers', () => {
     expect(validateGTIN('9501101530003')).toBe(true);
     expect(normalizeGTIN('9501101530003')).toBe('09501101530003');
     expect(validateGTIN('9501101530004')).toBe(false);
+  });
+
+  it('validates GS1 lot characters and strict calendar dates', () => {
+    expect(validateLotNumber('LOT-26/09')).toBe(true);
+    expect(validateLotNumber('LOT 26')).toBe(false);
+    expect(validateLotNumber('A'.repeat(21))).toBe(false);
+    expect(validateISODate('2026-09-28')).toBe(true);
+    expect(validateISODate('2026-02-30')).toBe(false);
   });
 });

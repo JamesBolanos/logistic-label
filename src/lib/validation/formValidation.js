@@ -1,10 +1,19 @@
 // src/lib/validation/formValidation.js
-import { normalizeGTIN, validateGTIN } from '$lib/utils/gs1Utils';
+import {
+  normalizeGTIN,
+  validateGTIN,
+  validateISODate,
+  validateLotNumber
+} from '$lib/utils/gs1Utils';
 import {
   CURRENT_TEMPLATE_VERSION,
+  DEFAULT_PRINT_LAYOUT,
+  isHomogeneousDateAi,
   isPackagingLevel,
+  isSupportedPrintLayout,
   isSupportedLabelType,
-  LABEL_TYPES
+  LABEL_TYPES,
+  PRINT_LAYOUTS
 } from '$lib/labels/workflows.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -16,6 +25,10 @@ const PASSWORD_COMPLEXITY_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
  *   gtin?: string,
  *   quantity?: string | number,
  *   packaging_level?: string,
+ *   print_layout?: string,
+ *   lot_number?: string,
+ *   date_ai?: string,
+ *   date_value?: string,
  *   contents_are_homogeneous?: boolean
  * }} formData
  */
@@ -27,8 +40,17 @@ export function validateLabelForm(formData) {
     return { isValid: false, errors };
   }
 
+  const printLayout = formData.print_layout || DEFAULT_PRINT_LAYOUT;
+  if (!isSupportedPrintLayout(printLayout)) {
+    errors.print_layout = 'Choose a supported print layout';
+  }
+
   if (formData.label_type === LABEL_TYPES.SSCC_ONLY) {
-    return { isValid: true, errors };
+    return { isValid: Object.keys(errors).length === 0, errors };
+  }
+
+  if (printLayout !== PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
+    errors.print_layout = 'The homogeneous workflow currently supports the 4 × 6 layout';
   }
 
   if (!formData.gtin) {
@@ -55,6 +77,24 @@ export function validateLabelForm(formData) {
     errors.contents_are_homogeneous = 'Confirm that every contained trade item has the same GTIN';
   }
 
+  const lotNumber = String(formData.lot_number || '').trim();
+  if (lotNumber && !validateLotNumber(lotNumber)) {
+    errors.lot_number =
+      'Lot number must contain 1 to 20 GS1-compatible letters, numbers, or symbols';
+  }
+
+  const dateAi = String(formData.date_ai || '').trim();
+  const dateValue = String(formData.date_value || '').trim();
+  if (dateAi && !isHomogeneousDateAi(dateAi)) {
+    errors.date_ai = 'Choose a supported GS1 date type';
+  } else if (dateAi && !dateValue) {
+    errors.date_value = 'Enter the selected date';
+  } else if (!dateAi && dateValue) {
+    errors.date_ai = 'Choose what this date means';
+  } else if (dateValue && !validateISODate(dateValue)) {
+    errors.date_value = 'Enter a valid date';
+  }
+
   return {
     isValid: Object.keys(errors).length === 0,
     errors
@@ -66,7 +106,11 @@ export function validateLabelForm(formData) {
  *   label_type?: string,
  *   gtin?: string,
  *   quantity?: string | number,
- *   packaging_level?: string
+ *   packaging_level?: string,
+ *   print_layout?: string,
+ *   lot_number?: string,
+ *   date_ai?: string,
+ *   date_value?: string
  * }} formData
  */
 export function sanitizeLabelForm(formData) {
@@ -79,9 +123,12 @@ export function sanitizeLabelForm(formData) {
       gtin: null,
       lot_number: null,
       production_date: null,
+      date_ai: null,
+      date_value: null,
       quantity: null,
       weight_pounds: null,
-      packaging_level: null
+      packaging_level: null,
+      print_layout: String(formData.print_layout || DEFAULT_PRINT_LAYOUT)
     };
   }
 
@@ -89,11 +136,14 @@ export function sanitizeLabelForm(formData) {
     label_type: labelType,
     template_version: CURRENT_TEMPLATE_VERSION,
     gtin: normalizeGTIN(formData.gtin || ''),
-    lot_number: null,
+    lot_number: String(formData.lot_number || '').trim() || null,
     production_date: null,
+    date_ai: String(formData.date_ai || '').trim() || null,
+    date_value: String(formData.date_value || '').trim() || null,
     quantity: Number(formData.quantity),
     weight_pounds: null,
-    packaging_level: String(formData.packaging_level || '').trim()
+    packaging_level: String(formData.packaging_level || '').trim(),
+    print_layout: DEFAULT_PRINT_LAYOUT
   };
 }
 

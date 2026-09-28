@@ -46,7 +46,19 @@ export function validateSSCC(sscc) {
 
 /** @param {string} lot */
 export function validateLotNumber(lot) {
-  return /^[A-Za-z0-9]{1,20}$/.test(lot || '');
+  return /^[A-Za-z0-9!"%&'()*+,\-./:;<=>?_]{1,20}$/.test(lot || '');
+}
+
+/** @param {unknown} value */
+export function validateISODate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 /** @param {string | number | Date} dateStr */
@@ -103,6 +115,7 @@ export default {
   validateGS1CompanyPrefix,
   validateSSCC,
   validateLotNumber,
+  validateISODate,
   formatGS1Date,
   generateSSCC
 };

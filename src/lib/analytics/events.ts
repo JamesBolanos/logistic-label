@@ -66,7 +66,7 @@ const controlledValues: Record<string, ReadonlySet<string>> = {
   method: new Set(['email', 'google', 'unknown']),
   setup_type: new Set(['first_setup', 'update']),
   label_type: new Set(['sscc_only', 'homogeneous_unit']),
-  label_size: new Set(['4x6']),
+  label_size: new Set(['4x6', '4x3']),
   template_version: new Set(['v1', 'v2']),
   format: new Set(['pdf']),
   source: new Set(['new_label', 'history']),

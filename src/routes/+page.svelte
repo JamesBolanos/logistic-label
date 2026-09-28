@@ -7,12 +7,12 @@
     const features = [
       {
         title: 'Two guided label workflows',
-        description: 'Create an SSCC-only label or identify homogeneous contents with a contained GTIN and an unambiguous trade-item count.',
+        description: 'Create an SSCC-only label or identify homogeneous contents with a contained GTIN, an unambiguous count, and optional lot or date traceability.',
         icon: 'check'
       },
       {
-        title: '4x6 label format',
-        description: 'Standard logistics label size with properly structured information sections. More formats will be added over time.',
+        title: 'Practical SSCC print layouts',
+        description: 'Print one 4 × 6 label, two identical 4 × 3 copies on a 4 × 6 sheet, or one compact 4 × 3 label.',
         icon: 'layout'
       },
       {
@@ -167,6 +167,7 @@
         <ul class="mt-2">
           <li>SSCC-only logistic units using AI (00)</li>
           <li>Homogeneous logistic units using AI (02) CONTENT and AI (37) COUNT</li>
+          <li>Optional batch/lot and production, packaging, best-before, sell-by, or expiry date</li>
           <li>A separate AI (00) SSCC barcode as the lowest barcode on the label</li>
         </ul>
       </div>

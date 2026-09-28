@@ -4,6 +4,7 @@ import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
 import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
 import { getLabelSettings } from '$lib/server/db/settings';
 import { generateSSCC } from '$lib/utils/gs1Utils';
+import { getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
 import {
   durationSince,
@@ -110,7 +111,7 @@ export async function POST({ request, locals }) {
       userId: user.id,
       operationId,
       labelType: sanitizedData.label_type,
-      labelSize: '4x6',
+      labelSize: getLabelSizeForPrintLayout(sanitizedData.print_layout),
       templateVersion: sanitizedData.template_version,
       durationMs: durationSince(startedAt)
     });
@@ -132,16 +133,22 @@ export async function POST({ request, locals }) {
       userId: user.id,
       operationId,
       workflowStep: 'label_preview',
-      errorCategory: error.code === 'LABEL_SETTINGS_REQUIRED' ? 'settings_required' : 'generation',
+      errorCategory:
+        error.code === 'LABEL_SETTINGS_REQUIRED'
+          ? 'settings_required'
+          : error.code === 'BARCODE_TOO_WIDE'
+            ? 'validation'
+            : 'generation',
       durationMs: durationSince(startedAt)
     });
 
+    const isBarcodeTooWide = error.code === 'BARCODE_TOO_WIDE';
     return json(
       {
         success: false,
-        message: 'Failed to generate preview. Please try again.'
+        message: isBarcodeTooWide ? error.message : 'Failed to generate preview. Please try again.'
       },
-      { status: 500 }
+      { status: isBarcodeTooWide ? 400 : 500 }
     );
   }
 }

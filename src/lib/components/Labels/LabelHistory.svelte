@@ -2,7 +2,13 @@
   import { onMount } from 'svelte';
   import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
   import { classifyHttpFailure } from '$lib/analytics/events.js';
-  import { getLabelTypeName, getPackagingLevelName, LABEL_TYPES } from '$lib/labels/workflows.js';
+  import {
+    getLabelTypeName,
+    getHomogeneousDateOption,
+    getPackagingLevelName,
+    getPrintLayoutName,
+    LABEL_TYPES
+  } from '$lib/labels/workflows.js';
 
   let labels = $state([]);
   let isLoading = $state(true);
@@ -55,6 +61,12 @@
       dateStyle: 'medium',
       timeStyle: 'short'
     }).format(new Date(dateString));
+  }
+
+  function formatTraceabilityDate(dateAi, dateValue) {
+    const option = getHomogeneousDateOption(dateAi);
+    if (!option || !dateValue) return '';
+    return `${option.label}: ${dateValue}`;
   }
 
   async function downloadLabel(id) {
@@ -193,8 +205,17 @@
                     {getPackagingLevelName(label.packaging_level, label.quantity)}
                   </div>
                   <div class="mt-1 font-mono text-xs">GTIN {label.gtin}</div>
+                  {#if label.lot_number}
+                    <div class="mt-1 text-xs">Lot: {label.lot_number}</div>
+                  {/if}
+                  {#if label.date_ai && label.date_value}
+                    <div class="mt-1 text-xs">
+                      {formatTraceabilityDate(label.date_ai, label.date_value)}
+                    </div>
+                  {/if}
                 {:else if label.label_type === LABEL_TYPES.SSCC_ONLY}
-                  Logistic unit identifier; contents are not encoded
+                  <div>Logistic unit identifier; contents are not encoded</div>
+                  <div class="mt-1 text-xs">{getPrintLayoutName(label.print_layout)}</div>
                 {:else}
                   <div>GTIN {label.gtin || 'Unavailable'}</div>
                   {#if label.lot_number}<div class="mt-1 text-xs">Lot {label.lot_number}</div>{/if}

@@ -1,6 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 import { loadEnv } from 'vite';
 import { assertDatabaseEnvironment } from '../../src/lib/server/db/databaseEnvironment.js';
+import { generateSSCC } from '../../src/lib/utils/gs1Utils.js';
 
 const env = loadEnv('development', process.cwd(), '');
 const readEnvironmentVariable = (name) => process.env[name] || env[name];
@@ -88,4 +89,46 @@ export async function getOperationalEventNames(email) {
   `;
 
   return rows.map((row) => row.event_name);
+}
+
+export async function createLegacyLabelForTestUser(email) {
+  if (!testUserEmailPattern.test(email)) {
+    throw new Error(`Refusing to create a legacy label for a non-test user: ${email}`);
+  }
+
+  const serialReference = Number(String(Date.now()).slice(-9));
+  const sscc = generateSSCC({
+    gs1CompanyPrefix: '1234567',
+    serialReference,
+    extensionDigit: '9'
+  });
+
+  const rows = await sql`
+    INSERT INTO "logistic_label" (
+      "user_id",
+      "gtin",
+      "lot_number",
+      "production_date",
+      "quantity",
+      "weight_pounds",
+      "sscc"
+    )
+    SELECT
+      account."id",
+      '00012345600012',
+      'LEGACY123',
+      '2026-09-28',
+      12,
+      25.5,
+      ${sscc}
+    FROM "user" AS account
+    WHERE account."email" = ${email}
+    RETURNING "id", "sscc", "label_type", "template_version", "print_layout"
+  `;
+
+  if (rows.length !== 1) {
+    throw new Error(`Expected one test user for the legacy-label fixture, found ${rows.length}.`);
+  }
+
+  return rows[0];
 }

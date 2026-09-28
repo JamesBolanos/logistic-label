@@ -48,6 +48,16 @@ describe('analytics event contract', () => {
     });
   });
 
+  it('accepts the compact label size', () => {
+    expect(
+      sanitizeAnalyticsParameters('label_preview_succeeded', {
+        label_type: 'sscc_only',
+        label_size: '4x3',
+        template_version: 'v2'
+      })
+    ).toMatchObject({ label_size: '4x3' });
+  });
+
   it('classifies HTTP failures without exposing response contents', () => {
     expect(classifyHttpFailure(400)).toBe('validation');
     expect(classifyHttpFailure(401)).toBe('authentication');

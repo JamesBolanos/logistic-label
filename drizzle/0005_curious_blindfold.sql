@@ -1,0 +1,1 @@
+ALTER TABLE "logistic_label" ADD COLUMN "print_layout" varchar(30) DEFAULT '4x6_single' NOT NULL;

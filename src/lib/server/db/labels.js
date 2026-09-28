@@ -4,6 +4,7 @@ import { validateSSCC } from '$lib/utils/gs1Utils';
 import { db } from '$lib/server/db';
 import { logisticLabel } from '$lib/server/db/schema.js';
 import { durationSince, recordOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
+import { getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
 
 const MAX_SSCC_ALLOCATION_ATTEMPTS = 100;
 
@@ -19,7 +20,7 @@ export async function createLabel(data, userId, telemetry = {}) {
     userId,
     operationId: telemetry.operationId,
     labelType: data.label_type,
-    labelSize: '4x6',
+    labelSize: getLabelSizeForPrintLayout(data.print_layout),
     templateVersion: data.template_version,
     durationMs: telemetry.startedAt ? durationSince(telemetry.startedAt) : undefined
   });
@@ -53,10 +54,13 @@ async function insertLabel(data, userId, sscc, { ignoreSSCCConflict = false } = 
     userId,
     labelType: data.label_type,
     templateVersion: data.template_version,
+    printLayout: data.print_layout,
     gtin: data.gtin || null,
     packagingLevel: data.packaging_level || null,
     lotNumber: data.lot_number || null,
     productionDate: data.production_date || null,
+    dateAi: data.date_ai || null,
+    dateValue: data.date_value || null,
     quantity: data.quantity ?? null,
     weightPounds: data.weight_pounds == null ? null : String(data.weight_pounds),
     sscc
@@ -179,10 +183,13 @@ function toApiLabel(label) {
     user_id: label.userId,
     label_type: label.labelType,
     template_version: label.templateVersion,
+    print_layout: label.printLayout,
     gtin: label.gtin,
     packaging_level: label.packagingLevel,
     lot_number: label.lotNumber,
     production_date: label.productionDate,
+    date_ai: label.dateAi,
+    date_value: label.dateValue,
     quantity: label.quantity,
     weight_pounds: label.weightPounds == null ? null : Number(label.weightPounds),
     sscc: label.sscc,
