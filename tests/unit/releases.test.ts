@@ -44,7 +44,7 @@ describe('release updates', () => {
     ]);
   });
 
-  it('limits the dashboard list without changing the source list', () => {
+  it('limits the home-page list without changing the source list', () => {
     expect(getRecentPublishedReleases(1, updates).map((update) => update.id)).toEqual([
       '2026-09-24-fix'
     ]);

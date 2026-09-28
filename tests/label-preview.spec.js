@@ -14,6 +14,14 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
   let accountCreationConfirmed = false;
 
   try {
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
+    await expect(page.getByText('Labels now begin with a clear logistics scenario')).toBeVisible();
+    await page.getByRole('link', { name: 'View all updates' }).click();
+    await expect(page).toHaveURL(/\/updates$/);
+    await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
+    await expect(page.getByText('Password recovery is available')).toBeVisible();
+
     await page.goto('/signup', { waitUntil: 'networkidle' });
 
     await page.getByLabel('Email Address').fill(email);
@@ -35,17 +43,8 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
 
     await expect(page).toHaveURL(/\/dashboard|\/labels/, { timeout: 10000 });
 
-    await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
-    await expect(page.getByText('Labels now begin with a clear logistics scenario')).toBeVisible();
-
     const ownerStatisticsResponse = await page.request.get('/admin/statistics');
     expect(ownerStatisticsResponse.status()).toBe(403);
-
-    await page.getByRole('link', { name: 'View all updates' }).click();
-    await expect(page).toHaveURL(/\/updates$/);
-    await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
-    await expect(page.getByText('Password recovery is available')).toBeVisible();
 
     const invalidPreviewResponse = await page.request.post('/api/pdf/preview', { data: {} });
     expect(invalidPreviewResponse.status()).toBe(400);

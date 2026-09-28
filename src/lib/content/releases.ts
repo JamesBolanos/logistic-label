@@ -80,7 +80,7 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     title: "What's new is now visible",
     featureKey: 'release_history',
     benefit:
-      'See recently released fixes, improvements, and features from your dashboard and review the complete update history.',
+      'See recently released fixes, improvements, and features from the public home page and review the complete update history.',
     href: '/updates',
     linkLabel: 'View update history'
   }

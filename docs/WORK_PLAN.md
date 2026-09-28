@@ -82,7 +82,7 @@ The workflow above adapts the agile principles of incremental delivery, collabor
 
 First deliverable: make every released fix, improvement, and new feature visible to users, with a clear explanation of its benefit.
 
-- [x] Add a compact "What's new" panel on the signed-in dashboard, with a link to the full release history.
+- [x] Add a compact "What's new" panel on the public home page, with a link to the full release history.
 - [x] Give each update a stable release ID, publication date, change category (`fix`, `improvement`, or `new feature`), short title, user-facing benefit, and relevant feature/instruction link.
 - [x] Start with a small file-backed release list; distinguish drafts from published updates and publish only capabilities that are available.
 - [x] Show recent releases first and preserve older entries in the history. Keep planned roadmap items separate from released features.

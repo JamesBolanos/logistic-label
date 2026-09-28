@@ -1,8 +1,11 @@
 <!-- src/routes/+page.svelte -->
 <script>
     import { page } from '$app/state';
+    import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
+    import { getRecentPublishedReleases } from '$lib/content/releases.js';
 
     let isLoggedIn = $derived(Boolean(page.data.user));
+    const recentUpdates = getRecentPublishedReleases(2);
     
     const features = [
       {
@@ -88,6 +91,10 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="mt-16">
+      <WhatsNewPanel updates={recentUpdates} />
     </div>
     
     <!-- Features Section -->
