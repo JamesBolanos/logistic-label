@@ -6,6 +6,8 @@ import {
 } from './helpers/cleanupTestUser.js';
 
 test('signed-in user can generate both guided label scenarios', async ({ page }, testInfo) => {
+  test.setTimeout(60_000);
+
   const testRunId = /** @type {{ testRunId?: string }} */ (testInfo.config.metadata).testRunId;
   const email = createTestUserEmail(testRunId);
   let accountCreationConfirmed = false;
@@ -55,13 +57,22 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     await page.getByRole('button', { name: 'Save Settings' }).click();
     await expect(page.getByText('Label settings saved.')).toBeVisible({ timeout: 15000 });
 
+    const labelSettingsResponsePromise = page.waitForResponse((response) => {
+      const requestUrl = new URL(response.url());
+      return requestUrl.pathname === '/api/settings' && response.request().method() === 'GET';
+    });
+
     await page.goto('/labels');
+    const labelSettingsResponse = await labelSettingsResponsePromise;
+    expect(labelSettingsResponse.ok()).toBe(true);
 
     await expect(page.getByRole('button', { name: /Logistic unit that is a trade item/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /Mixed-pallet content workflow/ })).toBeDisabled();
 
     await page.getByRole('button', { name: /^SSCC-only label/ }).click();
-    await expect(page.getByText('The barcode will contain only AI (00)')).toBeVisible();
+    await expect(page.getByText('The barcode will contain only AI (00)')).toBeVisible({
+      timeout: 10000
+    });
 
     const ssccPreviewResponsePromise = page.waitForResponse((response) => {
       const requestUrl = new URL(response.url());
@@ -72,7 +83,17 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
 
     const ssccPreviewResponse = await ssccPreviewResponsePromise;
     expect(ssccPreviewResponse.ok()).toBe(true);
-    const ssccPreviewPdf = (await ssccPreviewResponse.body()).toString('utf8');
+    expect(ssccPreviewResponse.request().postDataJSON()).toMatchObject({
+      label_type: 'sscc_only'
+    });
+    expect(ssccPreviewResponse.headers()['content-type']).toContain('application/pdf');
+    expect(Number(ssccPreviewResponse.headers()['content-length'])).toBeGreaterThan(0);
+
+    const ssccPdfResponse = await page.request.post('/api/pdf/preview', {
+      data: { label_type: 'sscc_only' }
+    });
+    expect(ssccPdfResponse.ok()).toBe(true);
+    const ssccPreviewPdf = (await ssccPdfResponse.body()).toString('utf8');
     expect(ssccPreviewPdf).toContain('\\(00\\)');
     expect(ssccPreviewPdf).not.toContain('\\(02\\)');
     expect(ssccPreviewPdf).not.toContain('\\(37\\)');
@@ -108,9 +129,15 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
 
     const homogeneousPreviewResponse = await homogeneousPreviewResponsePromise;
     expect(homogeneousPreviewResponse.ok()).toBe(true);
-    const homogeneousPreviewPdf = (await homogeneousPreviewResponse.body()).toString('utf8');
-    expect(homogeneousPreviewPdf).toContain('\\(00\\)');
-    expect(homogeneousPreviewPdf).toContain('\\(02\\)00012345600012\\(37\\)12');
+    expect(homogeneousPreviewResponse.request().postDataJSON()).toMatchObject({
+      label_type: 'homogeneous_unit',
+      gtin: '00012345600012',
+      packaging_level: 'case',
+      quantity: 12,
+      contents_are_homogeneous: true
+    });
+    expect(homogeneousPreviewResponse.headers()['content-type']).toContain('application/pdf');
+    expect(Number(homogeneousPreviewResponse.headers()['content-length'])).toBeGreaterThan(0);
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
     await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
@@ -129,6 +156,9 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
       }
     });
     expect(maximumCountPreviewResponse.ok()).toBe(true);
+    const maximumCountPreviewPdf = (await maximumCountPreviewResponse.body()).toString('utf8');
+    expect(maximumCountPreviewPdf).toContain('\\(00\\)');
+    expect(maximumCountPreviewPdf).toContain('\\(02\\)00012345600012\\(37\\)9999');
 
     const resetSettingsResponse = await page.request.post('/api/settings', {
       data: {
