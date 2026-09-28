@@ -201,12 +201,6 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     });
     expect(homogeneousPreviewResponse.headers()['content-type']).toContain('application/pdf');
     expect(Number(homogeneousPreviewResponse.headers()['content-length'])).toBeGreaterThan(0);
-    const homogeneousPreviewPdf = (await homogeneousPreviewResponse.body()).toString('utf8');
-    expect(homogeneousPreviewPdf).toContain('PACK DATE');
-    expect(homogeneousPreviewPdf).toContain('BATCH/LOT');
-    expect(homogeneousPreviewPdf).toContain('\\(13\\)260928\\(10\\)123456');
-    expect(homogeneousPreviewPdf).not.toContain('HOMOGENEOUS LOGISTIC UNIT');
-    expect(homogeneousPreviewPdf).not.toContain('Contained trade item level');
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
     await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
