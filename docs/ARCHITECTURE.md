@@ -48,7 +48,8 @@
 
 - `src/lib/server/pdf/labelGenerator.js` produces 4×6 and 4×3 PDF labels, including an SSCC-only two-copy 4×6 sheet.
 - `src/lib/server/pdf/gs1Barcode.js` encodes supported GS1 application identifiers as Code 128 / GS1-128 bar patterns.
-- `src/lib/labels/workflows.js` defines the supported guided scenarios, packaging-level vocabulary, homogeneous date AIs, print layouts, and current template version.
+- `src/lib/labels/scenarios.js` defines the business-facing shipping situations and maps available choices to stable stored label types.
+- `src/lib/labels/workflows.js` defines the technical label types, packaging-level vocabulary, homogeneous date AIs, print layouts, and current template version.
 - New records persist an explicit label type, template version, print layout, and selected traceability values. Existing records remain `legacy_demo` / `v1` and continue through the legacy renderer.
 - The active preview and download endpoints generate PDF responses on demand. A legacy hash-preview reader can read short-lived files from `PREVIEW_STORAGE_PATH`; the current application does not write generated PDFs to `storage/pdf`.
 - GS1 SSCC allocation, reuse, responsibility, and nested logistic unit rules are tracked in `docs/GS1_REQUIREMENTS.md`.

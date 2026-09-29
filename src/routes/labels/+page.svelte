@@ -151,19 +151,20 @@
 </script>
 
 <svelte:head>
-  <title>Guided Logistic Label Generator</title>
+  <title>Shipping Label Solutions - GS1-128 Logistic Label Generator</title>
   <meta
     name="description"
-    content="Choose an explicit logistic-label scenario and generate a guided GS1-128 PDF label."
+    content="Choose the shipping situation that fits your operation and generate a guided GS1-128 PDF label."
   />
 </svelte:head>
 
 <ProtectedRoute>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Guided Logistic Label Generator</h1>
+      <h1 class="text-2xl font-bold text-gray-900">Choose the label that fits your shipment</h1>
       <p class="mt-2 text-sm text-gray-600">
-        Choose the scenario first, then review exactly what the barcode will communicate.
+        Start with the business situation. We will show what the label identifies, what information
+        you need, and what its barcodes communicate.
       </p>
     </div>
 

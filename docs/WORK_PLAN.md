@@ -13,7 +13,7 @@ This is the planning checklist. Unchecked items are outstanding work, not implem
 | Order | Workstream | Status | Outcome to verify |
 |---|---|---|---|
 | 1 | What's new panel | Delivered; analytics follows in priority 2 | Users can discover every released fix, improvement, and new feature |
-| 2 | Event checklist and statistics | In progress; automated validation added, GA4 and aggregate reconciliation pending | See where users stop, which operations fail, and which released features they use |
+| 2 | Event checklist and statistics | Delivered; collect a usage baseline and review outcomes | See where users stop, which operations fail, and which released features they use |
 | 3 | Fixes | Needs completion and verification | Correct labels, reliable authentication/downloads, and isolated tests with cleanup |
 | 4 | Improvements | Planned; refine with feedback | Make existing workflows easier and prepare evidence for future decisions |
 | 5 | New features, including Excel export | Backlog; scope through analysis | Add capabilities that address a defined user or business need |
@@ -33,10 +33,10 @@ The app already has useful foundations:
 - SSCC storage.
 - 4×6 and compact 4×3 PDF output for the supported scenarios.
 - Company settings and prefix-based SSCC generation.
-- Production-only GA4 navigation and allowlisted product events, plus persisted operational events; GA4 property and DebugView verification remain.
+- Production-only GA4 navigation and allowlisted product events, plus persisted operational events and an owner-only aggregate dashboard.
 - A Playwright workflow that creates and cleans up an isolated Neon branch for eligible E2E runs.
 
-The guided workflow now separates SSCC-only labels from homogeneous logistic units. Legacy records retain their original data and template version. The remaining correctness work includes physical print/scanner verification, SSCC reuse controls, and carefully scoped support for additional scenarios and data elements.
+The label selector now describes real-world shipping situations while preserving the technical workflow types underneath. It separates tracking one pallet, carton, or parcel from shipping multiple identical cases or items. Legacy records retain their original data and template version. The remaining correctness work includes physical print/scanner verification, SSCC reuse controls, and carefully scoped support for additional scenarios and data elements.
 
 ## Business Analysis and Agile Working Approach
 
@@ -73,7 +73,7 @@ Use a lightweight visual workflow: **Backlog → Analysis → Ready → In progr
 - [x] Refine the next small item within the agreed priority order, with a clear need, scope, acceptance criteria, and dependencies.
 - [x] Deliver and verify a usable increment; keep work in progress small.
 - [x] Include a dated What's new entry for every released change, grouping related small changes into one release when appropriate.
-- [ ] Validate the tracking required for that increment. The initial panel uses content/UI verification; its analytics follow in priority 2.
+- [x] Validate the tracking required for that increment. The initial panel uses content/UI verification; its analytics follow in priority 2.
 - [ ] Review stakeholder feedback and available metrics after release, then adjust the backlog and working approach.
 
 The workflow above adapts the agile principles of incremental delivery, collaboration, and regular improvement to this project. [Agile Manifesto principles](https://agilemanifesto.org/principles.html)
@@ -118,13 +118,14 @@ Event names below are proposed contracts. Establish one recording point per even
 | `release_update_viewed` | A published update becomes visible, once per release per session | Release ID, change category, feature key |
 | `release_cta_clicked` | The user follows an update's feature or instruction link | Release ID, feature key |
 
-- [ ] Review the existing GA4 property and base tag, including page views during SvelteKit navigation and duplicate-event handling.
+- [x] Review the existing GA4 property and base tag, including page views during SvelteKit navigation and duplicate-event handling.
 - [x] Add success and failure events at the defined recording points. Standardize operation IDs where needed to distinguish retries from separate jobs.
 - [x] Use GA4 for acquisition and navigation; use persisted application records and operational events for account/label totals and workflow outcomes.
 - [x] Keep emails, company names, raw label contents, free-text inquiries, and raw error messages out of GA event payloads. Use controlled categories and non-identifying attributes.
-- [ ] Validate events against successful operations and deliberately failed operations; analytics failures must not interrupt label creation.
-- [ ] Reconcile the measured milestones with database records, verify owner exclusion, and confirm automated test data remains confined to nonproduction databases.
-- [ ] Instrument the already-released What's new panel and compare distinct viewers, feature-link users, and subsequent successful feature use. Clicks alone do not establish adoption or causation.
+- [x] Validate events against successful operations and deliberately failed operations; analytics failures must not interrupt label creation.
+- [x] Reconcile the measured milestones with database records, verify owner exclusion, and confirm automated test data remains confined to nonproduction databases.
+- [x] Instrument the already-released What's new panel and validate its controlled visibility and link events.
+- [ ] After enough usage has accumulated, compare distinct update viewers, feature-link users, and subsequent successful feature use. Clicks alone do not establish adoption or causation.
 
 ### Owner Dashboard
 
@@ -142,16 +143,15 @@ Event names below are proposed contracts. Establish one recording point per even
 - [x] Build an owner-only statistics page with rolling 7/30-day filters and cohort exclusions; enforce owner access on the server.
 - [x] Start with six summary cards: new users, first-label users, weekly label creators, failed attempts, custom inquiries, and accepted projects. Show untracked metrics as unavailable rather than zero.
 - [x] Add the completion funnel and the most frequent failure categories below the cards.
-- [ ] Configure environment-specific owner user IDs, verify the aggregate queries on staging, and reconcile staging/production results before using them for decisions.
+- [x] Configure environment-specific owner user IDs, verify the aggregate queries on staging, and reconcile staging/production results before using them for decisions.
 - [ ] Review Search Console queries, impressions, and clicks to identify useful content and landing-page improvements.
-- [ ] Save dated usage reports in `usage_log/`, including definitions, exclusions, and data limitations; preserve earlier snapshots for comparison.
+- [x] Save dated usage reports in `usage_log/`, including definitions, exclusions, and data limitations; preserve earlier snapshots for comparison.
 
 ## 3. Fixes
 
 - [x] Make SSCC allocation atomic and verify simultaneous label creation against an isolated database.
 - [x] Correct the generated 4×6 and 4×3 barcode dimensions, quiet zones, HRI, and SSCC placement for the two guided workflows.
 - [ ] Print and validate representative labels with a scanner/verifier.
-- [ ] Retry a failed PDF fetch against the saved label instead of allocating another SSCC.
 - [ ] Clarify weight. If it means logistic gross weight, use logistic weight AIs such as `340n`, not trade item net weight `320n`.
 - [x] Complete password recovery.
 - [ ] Handle returned Google sign-in errors.
@@ -163,6 +163,7 @@ Event names below are proposed contracts. Establish one recording point per even
 ## 4. Improvements
 
 - [ ] Guide new users through company setup and first-label creation.
+- [ ] After saving a label, refresh history immediately. If the automatic PDF download fails, explain that the saved label can be downloaded from history without creating another SSCC.
 - [ ] Gather feedback from repeat creators, one-time creators, configured non-creators, and signup-only users; record the task, printer, required output, and obstacle.
 - [ ] Add a categorized feature/customization request path and distinguish general suggestions from concrete project requirements.
 - [ ] Validate a small saved-product list: product name, internal reference, and GTIN. Review shipment-specific values on each new label.
@@ -192,7 +193,7 @@ Label capability checklist (completed foundations are shown for context; correct
 - [x] SSCC check digit validation.
 - [x] Store SSCCs with unique values in label history; review retention and deletion safeguards below.
 - [ ] One-year minimum SSCC reuse prevention logic, including retention and deletion behavior.
-- [x] Label type selector: `SSCC-only` or `Homogeneous unit`; show later scenarios as unavailable rather than accepting ambiguous data.
+- [x] Business-situation selector: track one pallet/carton/parcel or ship multiple identical cases/items; show later scenarios as unavailable rather than accepting ambiguous data.
 - [x] Allow SSCC-only labels without requiring GTIN, lot, date, quantity, or weight; validate additional fields according to the selected label type.
 - [x] AI-aware validation shared by UI/API/PDF for `AI (00)`, the homogeneous `AI (02)` plus `AI (37)` association, optional `AI (10)`, and supported GS1 date AIs.
 - [ ] PDF layout aligned to GS1 building blocks and physical barcode dimensions; choose sufficient label space for each supported data combination.
@@ -230,6 +231,7 @@ Defer until the MVP is solid:
 - ASN/despatch advice integration.
 - Scanner verification integrations.
 - Multi-label batch printing.
+- ZPL generation and LAN-printer delivery through a user-installed local print bridge.
 - Carrier-specific templates.
 
 ### Label Workflow Milestone

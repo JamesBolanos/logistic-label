@@ -111,9 +111,11 @@ export function getLabelSizeForPrintLayout(value) {
 
 /** @param {unknown} value */
 export function getLabelTypeName(value) {
-  if (value === LABEL_TYPES.SSCC_ONLY) return 'SSCC-only';
-  if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return 'Homogeneous unit';
-  return 'Legacy demo';
+  // These compact names appear in history and dashboards. The technical values
+  // above remain unchanged because they are stored with every saved label.
+  if (value === LABEL_TYPES.SSCC_ONLY) return 'Transport unit tracking';
+  if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return 'Identical contents';
+  return 'Legacy label';
 }
 
 /** @param {unknown} value @param {string | number} [quantity] */

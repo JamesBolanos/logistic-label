@@ -1,8 +1,8 @@
 <script>
   import { validateLabelForm } from '$lib/validation/formValidation';
+  import { getAvailableScenarioForLabelType } from '$lib/labels/scenarios.js';
   import {
     DEFAULT_PRINT_LAYOUT,
-    getLabelTypeName,
     HOMOGENEOUS_DATE_OPTIONS,
     LABEL_TYPES,
     PACKAGING_LEVELS,
@@ -24,6 +24,7 @@
   let isLoading = $state(false);
   let errors = $state({});
   let formError = $state('');
+  let selectedScenario = $derived(getAvailableScenarioForLabelType(labelType));
 
   $effect(() => {
     formData.label_type = labelType;
@@ -61,7 +62,9 @@
 >
   <div>
     <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Step 2 of 3</p>
-    <h2 class="mt-1 text-xl font-bold text-gray-900">{getLabelTypeName(labelType)} label</h2>
+    <h2 class="mt-1 text-xl font-bold text-gray-900">
+      {selectedScenario?.title || 'Create a logistic label'}
+    </h2>
   </div>
 
   {#if formError}
@@ -73,15 +76,15 @@
   {#if labelType === LABEL_TYPES.SSCC_ONLY}
     <div class="space-y-4">
       <div class="rounded-md border border-blue-200 bg-blue-50 p-4">
-        <h3 class="font-semibold text-blue-950">This label identifies one logistic unit</h3>
+        <h3 class="font-semibold text-blue-950">Give one shipping unit a unique identity</h3>
         <p class="mt-2 text-sm text-blue-900">
-          The barcode will contain only AI (00) and the allocated SSCC. Products, quantities, lots,
-          dates, weights, destinations, and routing are not encoded.
+          The barcode contains AI (00) and the allocated SSCC. Your WMS, ASN, spreadsheet, or other
+          record can use that SSCC to describe the contents and shipment.
         </p>
       </div>
       <p class="text-sm text-gray-600">
-        Use this when another system, shipment message, spreadsheet, or internal process associates
-        the SSCC with the logistic unit's contents.
+        Product details, quantities, lots, dates, destinations, and routing are not encoded in this
+        label.
       </p>
 
       <fieldset>
@@ -117,6 +120,16 @@
     </div>
   {:else}
     <div class="space-y-5">
+      <div class="rounded-md border border-blue-200 bg-blue-50 p-4">
+        <h3 class="font-semibold text-blue-950">
+          Describe several identical cases or items on one shipping unit
+        </h3>
+        <p class="mt-2 text-sm text-blue-900">
+          The content barcode identifies the contained item with AI (02) and its count with AI (37).
+          A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC.
+        </p>
+      </div>
+
       <div>
         <label for="gtin" class="mb-1 block text-sm font-medium text-gray-700">
           Contained trade item GTIN
@@ -257,7 +270,7 @@
       onclick={() => onback?.()}
       class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     >
-      Change workflow
+      Choose a different situation
     </button>
     <button
       type="submit"

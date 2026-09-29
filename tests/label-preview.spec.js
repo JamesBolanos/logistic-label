@@ -6,7 +6,9 @@ import {
   getOperationalEvents
 } from './helpers/cleanupTestUser.js';
 
-test('signed-in user can generate both guided label scenarios', async ({ page }, testInfo) => {
+test('signed-in user can generate both available shipping situations', async ({
+  page
+}, testInfo) => {
   test.setTimeout(60_000);
 
   const testRunId = /** @type {{ testRunId?: string }} */ (testInfo.config.metadata).testRunId;
@@ -16,7 +18,7 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
   try {
     await page.goto('/', { waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
-    await expect(page.getByText('Labels now begin with a clear logistics scenario')).toBeVisible();
+    await expect(page.getByText('Choose a label by the shipping problem it solves')).toBeVisible();
     await page.getByRole('link', { name: 'View all updates' }).click();
     await expect(page).toHaveURL(/\/updates$/);
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
@@ -88,11 +90,32 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     expect(legacyPdf).not.toContain('\\(02\\)');
     expect(legacyPdf).not.toContain('\\(37\\)');
 
-    await expect(page.getByRole('button', { name: /Logistic unit that is a trade item/ })).toBeDisabled();
-    await expect(page.getByRole('button', { name: /Mixed-pallet content workflow/ })).toBeDisabled();
+    await expect(
+      page.getByRole('button', {
+        name: 'Ship a case or pallet sold as one item — Planned',
+        exact: true
+      })
+    ).toBeDisabled();
+    await expect(
+      page.getByRole('button', {
+        name: 'Ship a pallet containing different products — Planned',
+        exact: true
+      })
+    ).toBeDisabled();
+    await expect(
+      page.getByRole('button', {
+        name: 'Follow a retailer or customer routing guide — Tailored solution',
+        exact: true
+      })
+    ).toBeDisabled();
 
-    await page.getByRole('button', { name: /^SSCC-only label/ }).click();
-    await expect(page.getByText('The barcode will contain only AI (00)')).toBeVisible({
+    await page
+      .getByRole('button', {
+        name: 'Track a pallet, carton, or parcel — Available',
+        exact: true
+      })
+      .click();
+    await expect(page.getByText(/The barcode contains AI \(00\)/)).toBeVisible({
       timeout: 10000
     });
     await expect(page.getByRole('radio', { name: /^3 × 3 — unavailable/ })).toBeDisabled();
@@ -160,12 +183,17 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     const ssccHistoryRow = page
       .getByRole('table')
       .getByRole('row')
-      .filter({ hasText: 'SSCC-only' });
+      .filter({ hasText: 'Transport unit tracking' });
     await expect(ssccHistoryRow).toBeVisible();
     await expect(ssccHistoryRow).toContainText('4 × 6 — two copies');
 
-    await page.getByRole('button', { name: 'Change workflow' }).click();
-    await page.getByRole('button', { name: /Homogeneous logistic unit/ }).click();
+    await page.getByRole('button', { name: 'Choose a different situation' }).click();
+    await page
+      .getByRole('button', {
+        name: 'Ship multiple identical cases or items — Available',
+        exact: true
+      })
+      .click();
     await page.getByLabel('Contained trade item GTIN').fill('00012345600012');
     await page.getByLabel('What does this GTIN identify?').selectOption('case');
     await page.getByLabel('Number of trade items identified by this GTIN').fill('12');
@@ -201,7 +229,7 @@ test('signed-in user can generate both guided label scenarios', async ({ page },
     const homogeneousHistoryRow = page
       .getByRole('table')
       .getByRole('row')
-      .filter({ hasText: 'Homogeneous unit' });
+      .filter({ hasText: 'Identical contents' });
     await expect(homogeneousHistoryRow).toBeVisible();
     await expect(homogeneousHistoryRow).toContainText('GTIN 00012345600012');
     await expect(homogeneousHistoryRow).toContainText('Lot: 123456');

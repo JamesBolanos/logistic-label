@@ -1,10 +1,19 @@
-# Guided Label Workflows
+# Shipping-situation label workflows
 
-The generator supports two explicit workflows. The selected workflow controls the form, validation, stored data, GS1 Application Identifiers (AIs), and PDF layout. Existing labels retain the `legacy_demo` type and `v1` template so their original meaning is not rewritten.
+The generator presents label choices as real-world shipping situations. Users choose the problem they need to solve before seeing technical GS1 fields. Internally, the selected workflow still controls the form, validation, stored data, GS1 Application Identifiers (AIs), and PDF layout. Existing labels retain the `legacy_demo` type and `v1` template so their original meaning is not rewritten.
+
+Available situations map to the existing stable data contract:
+
+| User-facing situation                  | Stored label type  | Business meaning                                                                                                     |
+| -------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Track a pallet, carton, or parcel      | `sscc_only`        | Uniquely identify one physical logistic unit while keeping its contents in an ASN, WMS, spreadsheet, or other record |
+| Ship multiple identical cases or items | `homogeneous_unit` | Identify a logistic unit containing a count of trade items that all share the same GTIN                              |
+
+Planned cards explain later scenarios without accepting unsupported data. These include an orderable case or pallet using `AI (01)`, variable-measure or perishable goods, mixed logistic units, and customer-specific routing-guide implementations.
 
 The detailed GS1 rules and source references are summarized in [`GS1_LOGISTIC_LABEL_GUIDE.md`](../GS1_LOGISTIC_LABEL_GUIDE.md). The repository also contains the source [`GS1 Logistic Label Guideline`](../GS1_Logistic_Label_Guideline.pdf).
 
-## SSCC-only logistic label
+## Track a pallet, carton, or parcel (`sscc_only`)
 
 Use this workflow when the label only needs to identify a physical logistic unit. Its contents are associated with the SSCC in another system, shipment message, spreadsheet, or operational process.
 
@@ -16,7 +25,7 @@ Use this workflow when the label only needs to identify a physical logistic unit
 - A 3 × 3 option is shown as unavailable because the barcode plus required quiet zones needs approximately 3.64 inches of width at the supported X-dimension.
 - Stored label type and template: `sscc_only`, `v2`.
 
-## Homogeneous logistic unit
+## Ship multiple identical cases or items (`homogeneous_unit`)
 
 Use this workflow when every counted trade item on the logistic unit is identified by the same GTIN. The user selects what that GTIN identifies and provides the number of those trade items.
 
@@ -31,6 +40,8 @@ Use this workflow when every counted trade item on the logistic unit is identifi
 - Stored label type and template: `homogeneous_unit`, `v2`.
 
 The count is the number of trade items identified by the exact GTIN entered. For example, if the GTIN identifies a case, the count is cases; it is not the number of individual units inside those cases.
+
+This workflow must remain distinct from a logistic unit that is itself an orderable trade item. A homogeneous logistic unit that is not a trade item uses `AI (02)` with the mandatory `AI (37)` count. A case or pallet that is itself the trade item uses `AI (01)` instead. `AI (01)` and `AI (02)` must never be combined on one logistic label, and `AI (37)` is not used with `AI (01)`.
 
 ## Rendering and compatibility
 
