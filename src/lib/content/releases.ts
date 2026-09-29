@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-09-29-business-scenario-labels',
+    publishedAt: '2026-09-29',
+    category: 'improvement',
+    status: 'published',
+    title: 'Choose a label by the shipping problem it solves',
+    benefit:
+      'Start with a real-world shipping situation. Both available options now use clear transport zones, while identical-content shipments can use a larger 6 × 8 layout for lot and date traceability.',
+    featureKey: 'business_scenario_labels',
+    href: '/labels',
+    linkLabel: 'Choose a shipping label'
+  },
+  {
     id: '2026-09-28-analytics-validation',
     publishedAt: '2026-09-28',
     category: 'improvement',
@@ -33,7 +45,7 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     status: 'published',
     title: 'Labels now begin with a clear logistics scenario',
     benefit:
-      'Choose practical SSCC print layouts or create a homogeneous label with optional batch/lot and a selected GS1 date type.',
+      'Choose practical transport-label layouts or describe multiple identical contained items with optional batch/lot and a selected GS1 date type.',
     featureKey: 'guided_label_workflows',
     href: '/labels',
     linkLabel: 'Create a guided label'

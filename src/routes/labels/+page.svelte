@@ -7,7 +7,10 @@
   import LabelHistory from '$lib/components/Labels/LabelHistory.svelte';
   import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
   import { classifyHttpFailure } from '$lib/analytics/events.js';
-  import { CURRENT_TEMPLATE_VERSION, getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
+  import {
+    getLabelSizeForPrintLayout,
+    getTemplateVersionForLabelType
+  } from '$lib/labels/workflows.js';
 
   let selectedLabelType = $state(null);
   let labelData = $state(null);
@@ -95,7 +98,7 @@
       trackProductEvent('label_saved', {
         label_type: labelData.label_type,
         label_size: getLabelSizeForPrintLayout(labelData.print_layout),
-        template_version: CURRENT_TEMPLATE_VERSION,
+        template_version: getTemplateVersionForLabelType(labelData.label_type),
         duration_ms: Date.now() - startedAt
       });
 
@@ -151,19 +154,20 @@
 </script>
 
 <svelte:head>
-  <title>Guided Logistic Label Generator</title>
+  <title>Shipping Label Solutions - GS1-128 Logistic Label Generator</title>
   <meta
     name="description"
-    content="Choose an explicit logistic-label scenario and generate a guided GS1-128 PDF label."
+    content="Choose the shipping situation that fits your operation and generate a guided GS1-128 PDF label."
   />
 </svelte:head>
 
 <ProtectedRoute>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Guided Logistic Label Generator</h1>
+      <h1 class="text-2xl font-bold text-gray-900">Choose the label that fits your shipment</h1>
       <p class="mt-2 text-sm text-gray-600">
-        Choose the scenario first, then review exactly what the barcode will communicate.
+        Start with the business situation. We will show what the label identifies, what information
+        you need, and what its barcodes communicate.
       </p>
     </div>
 
@@ -197,6 +201,7 @@
           {#key selectedLabelType}
             <LabelForm
               labelType={selectedLabelType}
+              companyName={settings?.company_name || ''}
               onsubmit={handleSubmit}
               onback={changeWorkflow}
             />

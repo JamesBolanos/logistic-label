@@ -39,12 +39,12 @@ describe('analytics event contract', () => {
       sanitizeAnalyticsParameters('label_saved', {
         label_type: 'sscc_only',
         label_size: '4x6',
-        template_version: 'v2'
+        template_version: 'v3'
       })
     ).toEqual({
       label_type: 'sscc_only',
       label_size: '4x6',
-      template_version: 'v2'
+      template_version: 'v3'
     });
   });
 
@@ -53,9 +53,23 @@ describe('analytics event contract', () => {
       sanitizeAnalyticsParameters('label_preview_succeeded', {
         label_type: 'sscc_only',
         label_size: '4x3',
-        template_version: 'v2'
+        template_version: 'v3'
       })
     ).toMatchObject({ label_size: '4x3' });
+  });
+
+  it('accepts structured identical-contents metadata', () => {
+    expect(
+      sanitizeAnalyticsParameters('label_saved', {
+        label_type: 'homogeneous_unit',
+        label_size: '6x8',
+        template_version: 'v4'
+      })
+    ).toEqual({
+      label_type: 'homogeneous_unit',
+      label_size: '6x8',
+      template_version: 'v4'
+    });
   });
 
   it('accepts only the current public contact placements', () => {

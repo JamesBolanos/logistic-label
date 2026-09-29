@@ -6,18 +6,31 @@ import {
   validateLotNumber
 } from '$lib/utils/gs1Utils';
 import {
-  CURRENT_TEMPLATE_VERSION,
   DEFAULT_PRINT_LAYOUT,
+  getTemplateVersionForLabelType,
   isHomogeneousDateAi,
   isPackagingLevel,
   isSupportedPrintLayout,
   isSupportedLabelType,
+  isTransportCountType,
+  isTransportWeightUnit,
   LABEL_TYPES,
   PRINT_LAYOUTS
 } from '$lib/labels/workflows.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_COMPLEXITY_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+/** @type {ReadonlySet<string>} */
+const SSCC_PRINT_LAYOUTS = new Set([
+  PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
+  PRINT_LAYOUTS.FOUR_BY_SIX_TWO_UP,
+  PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE
+]);
+/** @type {ReadonlySet<string>} */
+const HOMOGENEOUS_PRINT_LAYOUTS = new Set([
+  PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
+  PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE
+]);
 
 /**
  * @param {{
@@ -28,10 +41,19 @@ const PASSWORD_COMPLEXITY_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
  *   print_layout?: string,
  *   lot_number?: string,
  *   date_ai?: string,
- *   date_value?: string
+ *   date_value?: string,
+ *   ship_from?: string,
+ *   ship_to?: string,
+ *   purchase_order?: string,
+ *   carrier?: string,
+ *   gross_weight?: string | number,
+ *   gross_weight_unit?: string,
+ *   transport_count?: string | number,
+ *   transport_count_type?: string
  * }} formData
  */
 export function validateLabelForm(formData) {
+  /** @type {Record<string, string>} */
   const errors = {};
 
   if (!isSupportedLabelType(formData?.label_type)) {
@@ -45,12 +67,20 @@ export function validateLabelForm(formData) {
   }
 
   if (formData.label_type === LABEL_TYPES.SSCC_ONLY) {
+    if (!SSCC_PRINT_LAYOUTS.has(printLayout)) {
+      errors.print_layout = 'Choose a supported transport-label print layout';
+    }
+    validateTransportFields(formData, errors, { includeCount: true });
     return { isValid: Object.keys(errors).length === 0, errors };
   }
 
-  if (printLayout !== PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
-    errors.print_layout = 'The homogeneous workflow currently supports the 4 × 6 layout';
+  if (!HOMOGENEOUS_PRINT_LAYOUTS.has(printLayout)) {
+    errors.print_layout = 'Choose either the 4 × 6 or 6 × 8 identical-contents layout';
   }
+
+  // The shipping fields remain human-readable. Product and logistic-unit AIs
+  // are validated separately below and encoded in their own barcode groups.
+  validateTransportFields(formData, errors, { includeCount: false });
 
   if (!formData.gtin) {
     errors.gtin = 'Contained trade item GTIN is required';
@@ -90,6 +120,10 @@ export function validateLabelForm(formData) {
     errors.date_value = 'Enter a valid date';
   }
 
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE && (lotNumber || dateAi || dateValue)) {
+    errors.print_layout = 'Choose the 6 × 8 layout when adding a lot number or date';
+  }
+
   return {
     isValid: Object.keys(errors).length === 0,
     errors
@@ -105,7 +139,15 @@ export function validateLabelForm(formData) {
  *   print_layout?: string,
  *   lot_number?: string,
  *   date_ai?: string,
- *   date_value?: string
+ *   date_value?: string,
+ *   ship_from?: string,
+ *   ship_to?: string,
+ *   purchase_order?: string,
+ *   carrier?: string,
+ *   gross_weight?: string | number,
+ *   gross_weight_unit?: string,
+ *   transport_count?: string | number,
+ *   transport_count_type?: string
  * }} formData
  */
 export function sanitizeLabelForm(formData) {
@@ -114,7 +156,7 @@ export function sanitizeLabelForm(formData) {
   if (labelType === LABEL_TYPES.SSCC_ONLY) {
     return {
       label_type: labelType,
-      template_version: CURRENT_TEMPLATE_VERSION,
+      template_version: getTemplateVersionForLabelType(labelType),
       gtin: null,
       lot_number: null,
       production_date: null,
@@ -123,13 +165,21 @@ export function sanitizeLabelForm(formData) {
       quantity: null,
       weight_pounds: null,
       packaging_level: null,
-      print_layout: String(formData.print_layout || DEFAULT_PRINT_LAYOUT)
+      print_layout: String(formData.print_layout || DEFAULT_PRINT_LAYOUT),
+      ship_from: normalizeAddress(formData.ship_from),
+      ship_to: normalizeAddress(formData.ship_to),
+      purchase_order: normalizeSingleLine(formData.purchase_order) || null,
+      carrier: normalizeSingleLine(formData.carrier) || null,
+      gross_weight: hasValue(formData.gross_weight) ? Number(formData.gross_weight) : null,
+      gross_weight_unit: normalizeSingleLine(formData.gross_weight_unit) || null,
+      transport_count: hasValue(formData.transport_count) ? Number(formData.transport_count) : null,
+      transport_count_type: normalizeSingleLine(formData.transport_count_type) || null
     };
   }
 
   return {
     label_type: labelType,
-    template_version: CURRENT_TEMPLATE_VERSION,
+    template_version: getTemplateVersionForLabelType(labelType),
     gtin: normalizeGTIN(formData.gtin || ''),
     lot_number: String(formData.lot_number || '').trim() || null,
     production_date: null,
@@ -138,8 +188,86 @@ export function sanitizeLabelForm(formData) {
     quantity: Number(formData.quantity),
     weight_pounds: null,
     packaging_level: String(formData.packaging_level || '').trim(),
-    print_layout: DEFAULT_PRINT_LAYOUT
+    print_layout: String(formData.print_layout || DEFAULT_PRINT_LAYOUT),
+    ship_from: normalizeAddress(formData.ship_from),
+    ship_to: normalizeAddress(formData.ship_to),
+    purchase_order: normalizeSingleLine(formData.purchase_order) || null,
+    carrier: normalizeSingleLine(formData.carrier) || null,
+    gross_weight: hasValue(formData.gross_weight) ? Number(formData.gross_weight) : null,
+    gross_weight_unit: normalizeSingleLine(formData.gross_weight_unit) || null,
+    transport_count: null,
+    transport_count_type: null
   };
+}
+
+/**
+ * @param {Record<string, unknown>} formData
+ * @param {Record<string, string>} errors
+ * @param {{ includeCount: boolean }} options
+ */
+function validateTransportFields(formData, errors, options) {
+  const shipFrom = normalizeAddress(formData.ship_from);
+  const shipTo = normalizeAddress(formData.ship_to);
+  const purchaseOrder = normalizeSingleLine(formData.purchase_order);
+  const carrier = normalizeSingleLine(formData.carrier);
+
+  if (!shipFrom) errors.ship_from = 'Ship From is required';
+  else if (shipFrom.length > 160) errors.ship_from = 'Ship From must be 160 characters or fewer';
+
+  if (!shipTo) errors.ship_to = 'Ship To is required';
+  else if (shipTo.length > 160) errors.ship_to = 'Ship To must be 160 characters or fewer';
+
+  if (purchaseOrder.length > 50) {
+    errors.purchase_order = 'PO Number must be 50 characters or fewer';
+  }
+  if (carrier.length > 100) errors.carrier = 'Carrier must be 100 characters or fewer';
+
+  const hasWeight = hasValue(formData.gross_weight);
+  const weight = Number(formData.gross_weight);
+  const weightUnit = normalizeSingleLine(formData.gross_weight_unit);
+  if (hasWeight && (!Number.isFinite(weight) || weight <= 0 || weight > 999999.99)) {
+    errors.gross_weight = 'Gross Weight must be greater than 0 and no more than 999,999.99';
+  }
+  if (hasWeight && !isTransportWeightUnit(weightUnit)) {
+    errors.gross_weight_unit = 'Choose kg or lb';
+  } else if (!hasWeight && weightUnit) {
+    errors.gross_weight = 'Enter the Gross Weight for the selected unit';
+  }
+
+  if (options.includeCount) {
+    const hasCount = hasValue(formData.transport_count);
+    const count = Number(formData.transport_count);
+    const countType = normalizeSingleLine(formData.transport_count_type);
+    if (hasCount && (!Number.isInteger(count) || count < 1 || count > 99999)) {
+      errors.transport_count = 'Count must be a whole number from 1 to 99,999';
+    }
+    if (hasCount && !isTransportCountType(countType)) {
+      errors.transport_count_type = 'Choose what is being counted';
+    } else if (!hasCount && countType) {
+      errors.transport_count = 'Enter the Count for the selected type';
+    }
+  }
+}
+
+/** @param {unknown} value */
+function normalizeSingleLine(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** @param {unknown} value */
+function normalizeAddress(value) {
+  return String(value || '')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/[\t ]+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+/** @param {unknown} value */
+function hasValue(value) {
+  return value !== undefined && value !== null && String(value).trim() !== '';
 }
 
 /** @param {{ email?: string, password?: string }} formData */

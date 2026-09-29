@@ -85,6 +85,14 @@ export async function POST({ request, locals }) {
         date_value: label.date_value,
         quantity: label.quantity,
         weight_pounds: label.weight_pounds,
+        ship_from: label.ship_from,
+        ship_to: label.ship_to,
+        purchase_order: label.purchase_order,
+        carrier: label.carrier,
+        gross_weight: label.gross_weight,
+        gross_weight_unit: label.gross_weight_unit,
+        transport_count: label.transport_count,
+        transport_count_type: label.transport_count_type,
         sscc: label.sscc,
         created_at: label.created_at
       }

@@ -1,15 +1,19 @@
 <script>
   import { validateLabelForm } from '$lib/validation/formValidation';
+  import { getAvailableScenarioForLabelType } from '$lib/labels/scenarios.js';
   import {
     DEFAULT_PRINT_LAYOUT,
-    getLabelTypeName,
     HOMOGENEOUS_DATE_OPTIONS,
+    HOMOGENEOUS_PRINT_LAYOUT_OPTIONS,
     LABEL_TYPES,
     PACKAGING_LEVELS,
-    SSCC_PRINT_LAYOUT_OPTIONS
+    PRINT_LAYOUTS,
+    SSCC_PRINT_LAYOUT_OPTIONS,
+    TRANSPORT_COUNT_TYPES,
+    TRANSPORT_WEIGHT_UNITS
   } from '$lib/labels/workflows.js';
 
-  let { labelType, onsubmit, onback } = $props();
+  let { labelType, companyName = '', onsubmit, onback } = $props();
 
   let formData = $state({
     label_type: '',
@@ -19,14 +23,28 @@
     lot_number: '',
     date_ai: '',
     date_value: '',
-    print_layout: DEFAULT_PRINT_LAYOUT
+    print_layout: DEFAULT_PRINT_LAYOUT,
+    ship_from: '',
+    ship_to: '',
+    purchase_order: '',
+    carrier: '',
+    gross_weight: '',
+    gross_weight_unit: '',
+    transport_count: '',
+    transport_count_type: ''
   });
   let isLoading = $state(false);
   let errors = $state({});
   let formError = $state('');
+  let companyNameApplied = $state(false);
+  let selectedScenario = $derived(getAvailableScenarioForLabelType(labelType));
 
   $effect(() => {
     formData.label_type = labelType;
+    if (!companyNameApplied && companyName) {
+      formData.ship_from = companyName;
+      companyNameApplied = true;
+    }
   });
 
   async function handleSubmit() {
@@ -61,7 +79,9 @@
 >
   <div>
     <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Step 2 of 3</p>
-    <h2 class="mt-1 text-xl font-bold text-gray-900">{getLabelTypeName(labelType)} label</h2>
+    <h2 class="mt-1 text-xl font-bold text-gray-900">
+      {selectedScenario?.title || 'Create a logistic label'}
+    </h2>
   </div>
 
   {#if formError}
@@ -73,16 +93,167 @@
   {#if labelType === LABEL_TYPES.SSCC_ONLY}
     <div class="space-y-4">
       <div class="rounded-md border border-blue-200 bg-blue-50 p-4">
-        <h3 class="font-semibold text-blue-950">This label identifies one logistic unit</h3>
+        <h3 class="font-semibold text-blue-950">Identify and route one shipping unit</h3>
         <p class="mt-2 text-sm text-blue-900">
-          The barcode will contain only AI (00) and the allocated SSCC. Products, quantities, lots,
-          dates, weights, destinations, and routing are not encoded.
+          The printed transport information helps people route the shipment. The barcode contains
+          only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or
+          another shipment record.
         </p>
       </div>
-      <p class="text-sm text-gray-600">
-        Use this when another system, shipment message, spreadsheet, or internal process associates
-        the SSCC with the logistic unit's contents.
-      </p>
+
+      <fieldset class="space-y-4 rounded-md border border-gray-200 p-4">
+        <legend class="px-1 text-sm font-medium text-gray-700">Transport information</legend>
+
+        <!-- These fields are human-readable. Only the SSCC is encoded in the barcode. -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="ship_from" class="mb-1 block text-sm font-medium text-gray-700">
+              Ship From
+            </label>
+            <textarea
+              id="ship_from"
+              bind:value={formData.ship_from}
+              rows="3"
+              maxlength="160"
+              required
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Company and origin address"></textarea>
+            {#if errors.ship_from}
+              <p class="mt-1 text-sm text-red-600">{errors.ship_from}</p>
+            {/if}
+            <p class="mt-1 text-xs text-gray-500">
+              Put the company name on the first line, followed by the origin address.
+            </p>
+          </div>
+
+          <div>
+            <label for="ship_to" class="mb-1 block text-sm font-medium text-gray-700">
+              Ship To
+            </label>
+            <textarea
+              id="ship_to"
+              bind:value={formData.ship_to}
+              rows="3"
+              maxlength="160"
+              required
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Customer and physical delivery address"></textarea>
+            {#if errors.ship_to}
+              <p class="mt-1 text-sm text-red-600">{errors.ship_to}</p>
+            {/if}
+            <p class="mt-1 text-xs text-gray-500">
+              Put the destination name on the first line, followed by its physical address.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="purchase_order" class="mb-1 block text-sm font-medium text-gray-700">
+              PO Number <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              id="purchase_order"
+              type="text"
+              bind:value={formData.purchase_order}
+              maxlength="50"
+              autocomplete="off"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.purchase_order}
+              <p class="mt-1 text-sm text-red-600">{errors.purchase_order}</p>
+            {/if}
+          </div>
+
+          <div>
+            <label for="carrier" class="mb-1 block text-sm font-medium text-gray-700">
+              Carrier <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              id="carrier"
+              type="text"
+              bind:value={formData.carrier}
+              maxlength="100"
+              autocomplete="off"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.carrier}
+              <p class="mt-1 text-sm text-red-600">{errors.carrier}</p>
+            {/if}
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="gross_weight" class="mb-1 block text-sm font-medium text-gray-700">
+              Gross Weight <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <div class="grid grid-cols-[minmax(0,1fr)_5rem] gap-2">
+              <input
+                id="gross_weight"
+                type="number"
+                bind:value={formData.gross_weight}
+                min="0.01"
+                max="999999.99"
+                step="0.01"
+                class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                aria-label="Gross Weight unit"
+                bind:value={formData.gross_weight_unit}
+                class="w-full rounded-md border border-gray-300 px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Unit</option>
+                {#each TRANSPORT_WEIGHT_UNITS as unit (unit.value)}
+                  <option value={unit.value}>{unit.label}</option>
+                {/each}
+              </select>
+            </div>
+            {#if errors.gross_weight}
+              <p class="mt-1 text-sm text-red-600">{errors.gross_weight}</p>
+            {:else if errors.gross_weight_unit}
+              <p class="mt-1 text-sm text-red-600">{errors.gross_weight_unit}</p>
+            {/if}
+          </div>
+
+          <div>
+            <label for="transport_count" class="mb-1 block text-sm font-medium text-gray-700">
+              Count <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <div class="grid grid-cols-[minmax(0,1fr)_7rem] gap-2">
+              <input
+                id="transport_count"
+                type="number"
+                bind:value={formData.transport_count}
+                min="1"
+                max="99999"
+                step="1"
+                class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                aria-label="Count type"
+                bind:value={formData.transport_count_type}
+                class="w-full rounded-md border border-gray-300 px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Type</option>
+                {#each TRANSPORT_COUNT_TYPES as type (type.value)}
+                  <option value={type.value}>{type.label}</option>
+                {/each}
+              </select>
+            </div>
+            {#if errors.transport_count}
+              <p class="mt-1 text-sm text-red-600">{errors.transport_count}</p>
+            {:else if errors.transport_count_type}
+              <p class="mt-1 text-sm text-red-600">{errors.transport_count_type}</p>
+            {/if}
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-500">
+          Ship From and Ship To are required. The remaining transport fields may be left empty when
+          they do not apply.
+        </p>
+      </fieldset>
 
       <fieldset>
         <legend class="mb-2 text-sm font-medium text-gray-700">Print layout</legend>
@@ -117,6 +288,129 @@
     </div>
   {:else}
     <div class="space-y-5">
+      <div class="rounded-md border border-blue-200 bg-blue-50 p-4">
+        <h3 class="font-semibold text-blue-950">
+          Describe several identical cases or items on one shipping unit
+        </h3>
+        <p class="mt-2 text-sm text-blue-900">
+          The content barcode identifies the contained item with AI (02) and its count with AI (37).
+          A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC.
+        </p>
+      </div>
+
+      <fieldset class="space-y-4 rounded-md border border-gray-200 p-4">
+        <legend class="px-1 text-sm font-medium text-gray-700">Transport information</legend>
+
+        <!-- These fields help people route the unit; they are printed but are not GS1 barcode data. -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="ship_from" class="mb-1 block text-sm font-medium text-gray-700">
+              Ship From
+            </label>
+            <textarea
+              id="ship_from"
+              bind:value={formData.ship_from}
+              rows="3"
+              maxlength="160"
+              required
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Company and origin address"></textarea>
+            {#if errors.ship_from}
+              <p class="mt-1 text-sm text-red-600">{errors.ship_from}</p>
+            {/if}
+          </div>
+
+          <div>
+            <label for="ship_to" class="mb-1 block text-sm font-medium text-gray-700">
+              Ship To
+            </label>
+            <textarea
+              id="ship_to"
+              bind:value={formData.ship_to}
+              rows="3"
+              maxlength="160"
+              required
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Customer and physical delivery address"></textarea>
+            {#if errors.ship_to}
+              <p class="mt-1 text-sm text-red-600">{errors.ship_to}</p>
+            {/if}
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="purchase_order" class="mb-1 block text-sm font-medium text-gray-700">
+              PO Number <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              id="purchase_order"
+              type="text"
+              bind:value={formData.purchase_order}
+              maxlength="50"
+              autocomplete="off"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.purchase_order}
+              <p class="mt-1 text-sm text-red-600">{errors.purchase_order}</p>
+            {/if}
+          </div>
+
+          <div>
+            <label for="carrier" class="mb-1 block text-sm font-medium text-gray-700">
+              Carrier <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              id="carrier"
+              type="text"
+              bind:value={formData.carrier}
+              maxlength="100"
+              autocomplete="off"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.carrier}
+              <p class="mt-1 text-sm text-red-600">{errors.carrier}</p>
+            {/if}
+          </div>
+        </div>
+
+        <div class="max-w-sm">
+          <label for="gross_weight" class="mb-1 block text-sm font-medium text-gray-700">
+            Gross Weight <span class="font-normal text-gray-500">(optional)</span>
+          </label>
+          <div class="grid grid-cols-[minmax(0,1fr)_5rem] gap-2">
+            <input
+              id="gross_weight"
+              type="number"
+              bind:value={formData.gross_weight}
+              min="0.01"
+              max="999999.99"
+              step="0.01"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <select
+              aria-label="Gross Weight unit"
+              bind:value={formData.gross_weight_unit}
+              class="w-full rounded-md border border-gray-300 px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Unit</option>
+              {#each TRANSPORT_WEIGHT_UNITS as unit (unit.value)}
+                <option value={unit.value}>{unit.label}</option>
+              {/each}
+            </select>
+          </div>
+          {#if errors.gross_weight}
+            <p class="mt-1 text-sm text-red-600">{errors.gross_weight}</p>
+          {:else if errors.gross_weight_unit}
+            <p class="mt-1 text-sm text-red-600">{errors.gross_weight_unit}</p>
+          {/if}
+        </div>
+
+        <p class="text-xs text-gray-500">
+          Ship From and Ship To are required. PO, carrier, and Gross Weight may be left empty.
+        </p>
+      </fieldset>
+
       <div>
         <label for="gtin" class="mb-1 block text-sm font-medium text-gray-700">
           Contained trade item GTIN
@@ -192,6 +486,11 @@
             type="text"
             id="lot_number"
             bind:value={formData.lot_number}
+            oninput={(event) => {
+              if (event.currentTarget.value) {
+                formData.print_layout = PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE;
+              }
+            }}
             class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             maxlength="20"
             autocomplete="off"
@@ -211,6 +510,7 @@
               bind:value={formData.date_ai}
               onchange={(event) => {
                 if (!event.currentTarget.value) formData.date_value = '';
+                else formData.print_layout = PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE;
               }}
               class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
@@ -243,10 +543,35 @@
         </div>
 
         <p class="text-xs text-gray-500">
-          Choose the date type printed on the contained trade items. Leave both optional fields
-          empty when they do not apply to the whole logistic unit. The preview checks that the
-          selected values fit at the supported GS1-128 size.
+          Choose the date type printed on the contained trade items. Lot or date traceability needs
+          the 6 × 8 layout so all three barcodes retain their full height.
         </p>
+      </fieldset>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-medium text-gray-700">Print layout</legend>
+        <div class="grid gap-3">
+          {#each HOMOGENEOUS_PRINT_LAYOUT_OPTIONS as layout (layout.value)}
+            <label
+              class="flex cursor-pointer gap-3 rounded-md border border-gray-300 bg-white p-3 hover:border-blue-400"
+            >
+              <input
+                type="radio"
+                name="print_layout"
+                value={layout.value}
+                bind:group={formData.print_layout}
+                class="mt-1 h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>
+                <span class="block text-sm font-medium text-gray-900">{layout.label}</span>
+                <span class="mt-1 block text-xs text-gray-600">{layout.description}</span>
+              </span>
+            </label>
+          {/each}
+        </div>
+        {#if errors.print_layout}
+          <p class="mt-2 text-sm text-red-600">{errors.print_layout}</p>
+        {/if}
       </fieldset>
     </div>
   {/if}
@@ -257,7 +582,7 @@
       onclick={() => onback?.()}
       class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     >
-      Change workflow
+      Choose a different situation
     </button>
     <button
       type="submit"

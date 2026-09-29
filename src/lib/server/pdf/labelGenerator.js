@@ -2,12 +2,17 @@ import { buildGs1Elements, getBarcodeModules, humanReadable } from './gs1Barcode
 import {
   DEFAULT_PRINT_LAYOUT,
   getHomogeneousDateOption,
+  getPackagingLevelName,
+  getTransportCountTypeName,
   LABEL_TYPES,
-  PRINT_LAYOUTS
+  PRINT_LAYOUTS,
+  TEMPLATE_VERSIONS
 } from '$lib/labels/workflows.js';
 
 const PAGE_WIDTH = 288;
 const PAGE_HEIGHT = 432;
+const LARGE_PAGE_WIDTH = 432;
+const LARGE_PAGE_HEIGHT = 576;
 const COMPACT_PAGE_HEIGHT = 216;
 const MARGIN = 18;
 const POINTS_PER_INCH = 72;
@@ -20,7 +25,21 @@ const MINIMUM_BAR_HEIGHT_POINTS = (MINIMUM_BAR_HEIGHT_MM / MILLIMETERS_PER_INCH)
 
 export async function generateLogisticLabelPDF(labelData, options = {}) {
   if (
-    labelData.template_version === 'v2' &&
+    labelData.template_version === TEMPLATE_VERSIONS.STRUCTURED_CONTENT &&
+    labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT
+  ) {
+    return generateStructuredHomogeneousLabelPDF(labelData);
+  }
+
+  if (
+    labelData.template_version === TEMPLATE_VERSIONS.TRANSPORT &&
+    labelData.label_type === LABEL_TYPES.SSCC_ONLY
+  ) {
+    return generateTransportLabelPDF(labelData);
+  }
+
+  if (
+    labelData.template_version === TEMPLATE_VERSIONS.GUIDED_CONTENT &&
     (labelData.label_type === LABEL_TYPES.SSCC_ONLY ||
       labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT)
   ) {
@@ -28,6 +47,278 @@ export async function generateLogisticLabelPDF(labelData, options = {}) {
   }
 
   return generateLegacyLabelPDF(labelData, options);
+}
+
+function generateTransportLabelPDF(labelData) {
+  const elements = buildGs1Elements(labelData);
+  const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
+  const content = [];
+
+  // The 4 × 6 layout uses GS1's transport/customer/supplier reading order:
+  // routing fields first, logistic measures second, and the SSCC barcode last.
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
+    drawTransportLabel(content, labelData, elements, 0, false);
+    return createPdf(content.join('\n'), PAGE_WIDTH, PAGE_HEIGHT);
+  }
+
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE) {
+    drawTransportLabel(content, labelData, elements, 0, true);
+    return createPdf(content.join('\n'), PAGE_WIDTH, COMPACT_PAGE_HEIGHT);
+  }
+
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_TWO_UP) {
+    drawTransportLabel(content, labelData, elements, COMPACT_PAGE_HEIGHT, true);
+    drawTransportLabel(content, labelData, elements, 0, true);
+    drawCutGuide(content, COMPACT_PAGE_HEIGHT, PAGE_WIDTH);
+    return createPdf(content.join('\n'), PAGE_WIDTH, PAGE_HEIGHT);
+  }
+
+  throw new Error('Unsupported transport-label print layout');
+}
+
+function drawTransportLabel(content, labelData, elements, originY, compact) {
+  const rightColumn = 150;
+  const columnWidth = 120;
+  const grossWeight = formatGrossWeight(labelData);
+  const count = formatTransportCount(labelData);
+
+  if (!compact) {
+    const left = 12;
+    const right = PAGE_WIDTH - 12;
+    const middle = PAGE_WIDTH / 2;
+
+    // A boxed zone layout lets warehouse staff scan the label visually in the
+    // same order every time while keeping the SSCC symbol isolated at the bottom.
+    drawOutlineRect(content, left, 18, right - left, 402, 1.2);
+    drawLine(content, left, 332, right, 332, 2.2);
+    drawLine(content, middle, 332, middle, 420, 0.8);
+    drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
+    drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
+
+    drawLine(content, left, 282, right, 282, 2.2);
+    drawLargeInfoField(
+      content,
+      'PO NUMBER',
+      labelData.purchase_order || '-',
+      18,
+      252,
+      318,
+      292,
+      20
+    );
+
+    drawLine(content, left, 220, right, 220, 2.2);
+    drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 252, 268, 234, 27);
+
+    drawLine(content, left, 168, right, 168, 2.2);
+    drawLine(content, middle, 168, middle, 220, 0.8);
+    drawLargeInfoField(content, 'GROSS WEIGHT', grossWeight, 18, 120, 206, 181, 15);
+    drawLargeInfoField(content, 'COUNT', count, 150, 120, 206, 181, 15);
+
+    drawCenteredText(content, 'SSCC', PAGE_WIDTH / 2, 154, 8, true);
+    drawCenteredText(content, labelData.sscc, PAGE_WIDTH / 2, 138, 13, true);
+    drawCompliantBarcode(content, elements, 40, PAGE_WIDTH);
+    drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, 25, 9);
+    return;
+  }
+
+  // Compact copies retain the same transport meaning at smaller type while
+  // preserving the full-size compliant SSCC barcode and quiet zones.
+  drawInfoFieldFitted(
+    content,
+    'SHIP FROM',
+    labelData.ship_from,
+    MARGIN,
+    columnWidth,
+    originY + 205
+  );
+  drawInfoFieldFitted(
+    content,
+    'SHIP TO',
+    labelData.ship_to,
+    rightColumn,
+    columnWidth,
+    originY + 205
+  );
+  drawInfoFieldFitted(
+    content,
+    'PO NUMBER',
+    labelData.purchase_order || '-',
+    MARGIN,
+    columnWidth,
+    originY + 177
+  );
+  drawInfoFieldFitted(
+    content,
+    'CARRIER',
+    labelData.carrier || '-',
+    rightColumn,
+    columnWidth,
+    originY + 177
+  );
+  drawInfoFieldFitted(content, 'GROSS WEIGHT', grossWeight, MARGIN, columnWidth, originY + 149);
+  drawInfoFieldFitted(content, 'COUNT', count, rightColumn, columnWidth, originY + 149);
+  drawCompliantBarcode(content, elements, originY + 22, PAGE_WIDTH);
+  drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, originY + 8, 8);
+}
+
+function formatGrossWeight(labelData) {
+  if (labelData.gross_weight == null || !labelData.gross_weight_unit) return '-';
+  return `${Number(labelData.gross_weight).toLocaleString('en-US')} ${labelData.gross_weight_unit}`;
+}
+
+function formatTransportCount(labelData) {
+  if (labelData.transport_count == null || !labelData.transport_count_type) return '-';
+  return `${Number(labelData.transport_count).toLocaleString('en-US')} ${getTransportCountTypeName(
+    labelData.transport_count_type,
+    labelData.transport_count
+  )}`;
+}
+
+function generateStructuredHomogeneousLabelPDF(labelData) {
+  const elements = buildGs1Elements(labelData);
+  const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
+  validateGuidedLabelBarcodeFit(labelData, elements);
+
+  const content = [];
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
+    drawStructuredHomogeneousFourBySix(content, labelData, elements);
+    return createPdf(content.join('\n'), PAGE_WIDTH, PAGE_HEIGHT);
+  }
+
+  if (printLayout === PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE) {
+    drawStructuredHomogeneousSixByEight(content, labelData, elements);
+    return createPdf(content.join('\n'), LARGE_PAGE_WIDTH, LARGE_PAGE_HEIGHT);
+  }
+
+  throw new Error('Unsupported identical-contents print layout');
+}
+
+function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
+  const left = 12;
+  const right = PAGE_WIDTH - 12;
+  const middle = PAGE_WIDTH / 2;
+  const contentElements = getHomogeneousContentElements(elements);
+  const ssccElements = getSSCCElements(elements);
+
+  // The compact label contains routing data plus two complete barcode blocks.
+  // Optional traceability is reserved for 6 × 8 rather than shrinking symbols.
+  drawOutlineRect(content, left, 4, right - left, 416, 1.2);
+  drawLine(content, left, 354, right, 354, 2.2);
+  drawLine(content, middle, 354, middle, 420, 0.8);
+  drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
+  drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
+
+  drawLine(content, left, 322, right, 322, 1.2);
+  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 252, 347, 331, 13);
+
+  drawLine(content, left, 286, right, 286, 1.2);
+  drawLine(content, 196, 286, 196, 322, 0.8);
+  drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 166, 314, 298, 13);
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 202, 68, 314, 298, 11);
+
+  drawLine(content, left, 246, right, 246, 2.2);
+  drawLine(content, 190, 246, 190, 286, 0.8);
+  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 160, 278, 260, 13);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 74, 278, 260, 11);
+
+  drawCenteredText(content, 'CONTENT AND COUNT', PAGE_WIDTH / 2, 239, 7, true);
+  drawCompliantBarcode(content, contentElements, 145, PAGE_WIDTH);
+  drawCenteredText(content, humanReadable(contentElements), PAGE_WIDTH / 2, 129, 9);
+
+  drawCenteredText(content, 'SSCC', PAGE_WIDTH / 2, 118, 7, true);
+  drawCompliantBarcode(content, ssccElements, 25, PAGE_WIDTH);
+  drawCenteredText(content, humanReadable(ssccElements), PAGE_WIDTH / 2, 10, 9);
+}
+
+function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
+  const left = 12;
+  const right = LARGE_PAGE_WIDTH - 12;
+  const middle = LARGE_PAGE_WIDTH / 2;
+  const contentElements = getHomogeneousContentElements(elements);
+  const traceabilityElements = getHomogeneousTraceabilityElements(elements);
+  const ssccElements = getSSCCElements(elements);
+  const dateOption = getHomogeneousDateOption(labelData.date_ai);
+
+  // GS1 identifies 6 × 8 (or A5) as a useful larger label when trade-item
+  // information must accompany the SSCC. The added height protects all three
+  // 31.75 mm barcode heights instead of compressing the symbols.
+  drawOutlineRect(content, left, 4, right - left, 564, 1.2);
+  drawLine(content, left, 494, right, 494, 2.2);
+  drawLine(content, middle, 494, middle, 568, 0.8);
+  drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 186, 556);
+  drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 222, 186, 556);
+
+  drawLine(content, left, 452, right, 452, 1.2);
+  drawLine(content, middle, 452, middle, 494, 0.8);
+  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 186, 486, 468, 15);
+  drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 222, 186, 486, 468, 15);
+
+  drawLine(content, left, 410, right, 410, 1.2);
+  drawLine(content, 232, 410, 232, 452, 0.8);
+  drawLine(content, 334, 410, 334, 452, 0.8);
+  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 202, 444, 426, 15);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 240, 84, 444, 426, 12);
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 342, 72, 444, 426, 11);
+
+  drawLine(content, left, 376, right, 376, 2.2);
+  drawLine(content, middle, 376, middle, 410, 0.8);
+  drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number || '-', 18, 186, 402);
+  drawInfoFieldFitted(
+    content,
+    dateOption?.dataTitle || 'DATE',
+    labelData.date_value || '-',
+    222,
+    186,
+    402
+  );
+
+  if (traceabilityElements.length) {
+    drawBarcodeBlock(
+      content,
+      'CONTENT AND COUNT',
+      contentElements,
+      366,
+      268,
+      252,
+      LARGE_PAGE_WIDTH
+    );
+    drawBarcodeBlock(
+      content,
+      'LOT AND DATE TRACEABILITY',
+      traceabilityElements,
+      244,
+      146,
+      130,
+      LARGE_PAGE_WIDTH
+    );
+    drawBarcodeBlock(content, 'SSCC', ssccElements, 122, 24, 9, LARGE_PAGE_WIDTH);
+    return;
+  }
+
+  drawBarcodeBlock(content, 'CONTENT AND COUNT', contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
+  drawBarcodeBlock(content, 'SSCC', ssccElements, 194, 96, 80, LARGE_PAGE_WIDTH);
+}
+
+function drawBarcodeBlock(content, title, elements, titleY, barcodeY, hriY, pageWidth) {
+  drawCenteredText(content, title, pageWidth / 2, titleY, 7, true);
+  drawCompliantBarcode(content, elements, barcodeY, pageWidth);
+  drawCenteredText(content, humanReadable(elements), pageWidth / 2, hriY, 9);
+}
+
+function getHomogeneousContentElements(elements) {
+  return elements.filter((item) => item.ai === '02' || item.ai === '37');
+}
+
+function getSSCCElements(elements) {
+  return elements.filter((item) => item.ai === '00');
+}
+
+function formatHomogeneousCount(labelData) {
+  return `${Number(labelData.quantity).toLocaleString('en-US')} ${getPackagingLevelName(
+    labelData.packaging_level,
+    labelData.quantity
+  )}`;
 }
 
 function generateGuidedLabelPDF(labelData, options) {
@@ -168,6 +459,10 @@ function drawHomogeneousTraceabilityFields(content, labelData) {
 export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elements(labelData)) {
   if (labelData.label_type !== LABEL_TYPES.HOMOGENEOUS_UNIT) return;
 
+  const isLargeLayout = labelData.print_layout === PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE;
+  const pageWidth = isLargeLayout ? LARGE_PAGE_WIDTH : PAGE_WIDTH;
+  const labelSize = isLargeLayout ? '6 × 8' : '4 × 6';
+
   const groups = [
     {
       name: 'content and count',
@@ -181,7 +476,7 @@ export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elem
 
   for (const group of groups) {
     if (!group.elements.length) continue;
-    if (calculateBarcodeGeometry(group.elements).requiredWidth <= PAGE_WIDTH) continue;
+    if (calculateBarcodeGeometry(group.elements).requiredWidth <= pageWidth) continue;
 
     const suggestion =
       group.name === 'optional lot and date'
@@ -189,7 +484,9 @@ export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elem
         : 'Review the GTIN and quantity values.';
 
     throw Object.assign(
-      new Error(`The ${group.name} barcode is too wide for a compliant 4 × 6 label. ${suggestion}`),
+      new Error(
+        `The ${group.name} barcode is too wide for a compliant ${labelSize} label. ${suggestion}`
+      ),
       { code: 'BARCODE_TOO_WIDE' }
     );
   }
@@ -319,8 +616,102 @@ function drawInfoField(content, label, value, x, labelY, valueSize = 11) {
 }
 
 function drawInfoFieldFitted(content, label, value, x, width, labelY) {
-  drawText(content, label, x, labelY, fitTextSize(label, width, 7, 5));
-  drawText(content, value, x, labelY - 14, fitTextSize(String(value ?? ''), width, 10, 6), true);
+  const labelSize = fitTextSize(label, width, 7, 5);
+  const valueText = String(value ?? '');
+  const valueSize = fitTextSize(valueText, width, 10, 6);
+  drawText(content, truncateTextToWidth(label, width, labelSize), x, labelY, labelSize);
+  drawText(
+    content,
+    truncateTextToWidth(valueText, width, valueSize, true),
+    x,
+    labelY - 14,
+    valueSize,
+    true
+  );
+}
+
+function drawLargeInfoField(content, label, value, x, width, labelY, valueY, preferredSize) {
+  drawText(content, label, x, labelY, 8, true);
+  const valueText = String(value ?? '');
+  const valueSize = fitTextSize(valueText, width, preferredSize, 8);
+  drawText(
+    content,
+    truncateTextToWidth(valueText, width, valueSize, true),
+    x,
+    valueY,
+    valueSize,
+    true
+  );
+}
+
+function drawAddressBlock(content, label, value, x, width, labelY) {
+  drawText(content, label, x, labelY, 8, true);
+  const addressLines = getAddressLines(value, width, 4);
+  addressLines.forEach((line, index) => {
+    const isCompanyLine = index === 0;
+    const size = isCompanyLine ? 10 : 8;
+    drawText(content, line, x, labelY - 16 - index * 11, size, isCompanyLine);
+  });
+}
+
+function getAddressLines(value, width, maxLines) {
+  const segments = String(value ?? '')
+    .split(/\r?\n|\s*,\s*/)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+  const lines = [];
+
+  for (const segment of segments) {
+    const isCompanyLine = lines.length === 0;
+    const size = isCompanyLine ? 10 : 8;
+    const remaining = maxLines - lines.length;
+    if (!remaining) break;
+    lines.push(...wrapText(segment, width, size, isCompanyLine, remaining));
+  }
+
+  return lines.length ? lines.slice(0, maxLines) : ['-'];
+}
+
+function wrapText(text, width, size, bold, maxLines) {
+  const normalized = text.trim();
+  const words = normalized.split(/\s+/).filter(Boolean);
+  const lines = [];
+  let truncated = false;
+
+  for (const word of words) {
+    const current = lines.at(-1) || '';
+    const candidate = current ? `${current} ${word}` : word;
+    if (estimateTextWidth(candidate, size, bold) <= width) {
+      if (lines.length) lines[lines.length - 1] = candidate;
+      else lines.push(candidate);
+      continue;
+    }
+
+    if (lines.length < maxLines) {
+      let fittedWord = word;
+      while (fittedWord.length > 1 && estimateTextWidth(fittedWord, size, bold) > width) {
+        fittedWord = fittedWord.slice(0, -1);
+        truncated = true;
+      }
+      lines.push(fittedWord);
+    } else {
+      truncated = true;
+      break;
+    }
+  }
+
+  if (!lines.length) return ['-'];
+  if (truncated || lines.join(' ').length < normalized.length) {
+    const lastIndex = lines.length - 1;
+    while (
+      lines[lastIndex].length > 1 &&
+      estimateTextWidth(`${lines[lastIndex]}...`, size, bold) > width
+    ) {
+      lines[lastIndex] = lines[lastIndex].slice(0, -1);
+    }
+    lines[lastIndex] = `${lines[lastIndex]}...`;
+  }
+  return lines;
 }
 
 function fitTextSize(text, width, preferredSize, minimumSize) {
@@ -329,6 +720,16 @@ function fitTextSize(text, width, preferredSize, minimumSize) {
     size -= 0.5;
   }
   return size;
+}
+
+function truncateTextToWidth(text, width, size, bold = false) {
+  let fitted = String(text ?? '');
+  if (estimateTextWidth(fitted, size, bold) <= width) return fitted;
+
+  while (fitted.length > 1 && estimateTextWidth(`${fitted}...`, size, bold) > width) {
+    fitted = fitted.slice(0, -1);
+  }
+  return `${fitted}...`;
 }
 
 function drawCenteredInfoField(content, label, value, centerX, labelY, valueY, valueSize = 11) {
@@ -353,8 +754,12 @@ function estimateTextWidth(text, size, bold = false) {
   return text.length * size * averageGlyphWidth;
 }
 
-function drawLine(content, x1, y1, x2, y2) {
-  content.push(`0.8 w ${x1} ${y1} m ${x2} ${y2} l S`);
+function drawLine(content, x1, y1, x2, y2, lineWidth = 0.8) {
+  content.push(`${lineWidth} w ${x1} ${y1} m ${x2} ${y2} l S`);
+}
+
+function drawOutlineRect(content, x, y, width, height, lineWidth = 0.8) {
+  content.push(`${lineWidth} w ${x} ${y} ${width} ${height} re S`);
 }
 
 function drawCutGuide(content, y, pageWidth) {

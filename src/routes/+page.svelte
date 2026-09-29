@@ -10,8 +10,8 @@
     
     const features = [
       {
-        title: 'Two guided label workflows',
-        description: 'Create an SSCC-only label or identify homogeneous contents with a contained GTIN, an unambiguous count, and optional lot or date traceability.',
+        title: 'Choose by shipping situation',
+        description: 'Track one pallet, carton, or parcel, or describe a shipping unit containing multiple identical cases or items.',
         icon: 'check'
       },
       {
@@ -55,7 +55,7 @@
           SSCC Labels
         </h1>
         <p class="mt-6 text-xl max-w-2xl mx-auto">
-          Create an SSCC-only label or a homogeneous logistic-unit label through a guided workflow.
+          Choose what you need to ship, then create the label that fits that real-world situation.
         </p>
         <p class="mt-4 text-base text-blue-100 max-w-2xl mx-auto">
           I will keep improving it and adding label formats, printer support, and workflow features. It also works as a preview for teams that need a tailored private solution.
@@ -172,11 +172,11 @@
           <li>Warehouse workflows, user roles, and integrations</li>
         </ul>
         <p class="mt-4">
-          The guided generator currently supports:
+          The generator currently helps you:
         </p>
         <ul class="mt-2">
-          <li>SSCC-only logistic units using AI (00)</li>
-          <li>Homogeneous logistic units using AI (02) CONTENT and AI (37) COUNT</li>
+          <li>Track one pallet, carton, or parcel using AI (00) SSCC</li>
+          <li>Ship multiple identical cases or items using AI (02) CONTENT and AI (37) COUNT</li>
           <li>Optional batch/lot and production, packaging, best-before, sell-by, or expiry date</li>
           <li>A separate AI (00) SSCC barcode as the lowest barcode on the label</li>
         </ul>

@@ -7,6 +7,7 @@
     getHomogeneousDateOption,
     getPackagingLevelName,
     getPrintLayoutName,
+    getTransportCountTypeName,
     LABEL_TYPES
   } from '$lib/labels/workflows.js';
 
@@ -200,6 +201,9 @@
               </td>
               <td class="px-4 py-4 text-sm text-gray-600">
                 {#if label.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT}
+                  {#if label.ship_to}
+                    <div>Ship to: {label.ship_to}</div>
+                  {/if}
                   <div>
                     {label.quantity}
                     {getPackagingLevelName(label.packaging_level, label.quantity)}
@@ -213,9 +217,35 @@
                       {formatTraceabilityDate(label.date_ai, label.date_value)}
                     </div>
                   {/if}
+                  <div class="mt-1 text-xs">
+                    {getPrintLayoutName(
+                      label.print_layout,
+                      label.label_type,
+                      label.template_version
+                    )}
+                  </div>
                 {:else if label.label_type === LABEL_TYPES.SSCC_ONLY}
-                  <div>Logistic unit identifier; contents are not encoded</div>
-                  <div class="mt-1 text-xs">{getPrintLayoutName(label.print_layout)}</div>
+                  {#if label.ship_to}
+                    <div>Ship to: {label.ship_to}</div>
+                    {#if label.transport_count}
+                      <div class="mt-1 text-xs">
+                        Count: {label.transport_count}
+                        &nbsp;{getTransportCountTypeName(
+                          label.transport_count_type,
+                          label.transport_count
+                        )}
+                      </div>
+                    {/if}
+                  {:else}
+                    <div>Logistic unit identifier; contents are not encoded</div>
+                  {/if}
+                  <div class="mt-1 text-xs">
+                    {getPrintLayoutName(
+                      label.print_layout,
+                      label.label_type,
+                      label.template_version
+                    )}
+                  </div>
                 {:else}
                   <div>GTIN {label.gtin || 'Unavailable'}</div>
                   {#if label.lot_number}<div class="mt-1 text-xs">Lot {label.lot_number}</div>{/if}
