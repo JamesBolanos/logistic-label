@@ -50,6 +50,13 @@
       "when": 1790618274320,
       "tag": "0006_black_yellow_claw",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790702562839,
+      "tag": "0007_chief_annihilus",
+      "breakpoints": true
     }
   ]
 }

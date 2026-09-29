@@ -46,11 +46,11 @@
 
 ## Labels and PDF
 
-- `src/lib/server/pdf/labelGenerator.js` produces 4×6 and 4×3 PDF labels, including an SSCC-only two-copy 4×6 sheet.
+- `src/lib/server/pdf/labelGenerator.js` produces 4×6 and 4×3 PDF labels, including a two-copy transport-label sheet.
 - `src/lib/server/pdf/gs1Barcode.js` encodes supported GS1 application identifiers as Code 128 / GS1-128 bar patterns.
 - `src/lib/labels/scenarios.js` defines the business-facing shipping situations and maps available choices to stable stored label types.
-- `src/lib/labels/workflows.js` defines the technical label types, packaging-level vocabulary, homogeneous date AIs, print layouts, and current template version.
-- New records persist an explicit label type, template version, print layout, and selected traceability values. Existing records remain `legacy_demo` / `v1` and continue through the legacy renderer.
+- `src/lib/labels/workflows.js` defines the technical label types, transport vocabularies, packaging-level vocabulary, homogeneous date AIs, print layouts, and template versions.
+- New records persist an explicit label type, template version, print layout, and the fields needed to reproduce the selected label. Existing `legacy_demo` / `v1` and simple SSCC `v2` records continue through their original renderers; transport labels use `v3`.
 - The active preview and download endpoints generate PDF responses on demand. A legacy hash-preview reader can read short-lived files from `PREVIEW_STORAGE_PATH`; the current application does not write generated PDFs to `storage/pdf`.
 - GS1 SSCC allocation, reuse, responsibility, and nested logistic unit rules are tracked in `docs/GS1_REQUIREMENTS.md`.
 - GS1 Logistic Label layout, AI combination, barcode sizing, placement, and verification guidance is summarized in `docs/GS1_LOGISTIC_LABEL_GUIDE.md`; the source PDF is checked in as `docs/GS1_Logistic_Label_Guideline.pdf`.

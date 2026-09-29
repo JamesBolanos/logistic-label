@@ -15,15 +15,16 @@ The detailed GS1 rules and source references are summarized in [`GS1_LOGISTIC_LA
 
 ## Track a pallet, carton, or parcel (`sscc_only`)
 
-Use this workflow when the label only needs to identify a physical logistic unit. Its contents are associated with the SSCC in another system, shipment message, spreadsheet, or operational process.
+Use this workflow to identify and route one physical logistic unit. Human-readable transport information helps people handle the unit, while its contents can remain associated with the SSCC in another system, shipment message, spreadsheet, or operational process.
 
-- Required user data: configured company name, GS1 Company Prefix, extension digit, and next serial reference.
+- Required user data: Ship From, Ship To, configured GS1 Company Prefix, extension digit, and next serial reference.
+- Optional human-readable data: PO Number, carrier, Gross Weight with `kg` or `lb`, and Count with an explicit type such as cartons or pallets.
 - Encoded barcode data: `AI (00)` SSCC only.
-- Not encoded: GTIN, count, lot, date, weight, destination, and routing.
+- Not encoded: the printed transport fields, GTIN, lot, and date. The generic workflow deliberately keeps one reliable SSCC barcode and does not imply a customer-specific routing-guide implementation.
 - Print layouts: one 4 × 6 label, two identical 4 × 3 copies on one 4 × 6 sheet with a cut guide, or one 4 × 3 label.
 - The two-copy layout repeats the same SSCC; it does not allocate a second logistic-unit identifier.
 - A 3 × 3 option is shown as unavailable because the barcode plus required quiet zones needs approximately 3.64 inches of width at the supported X-dimension.
-- Stored label type and template: `sscc_only`, `v2`.
+- Stored label type and template: `sscc_only`, `v3`.
 
 ## Ship multiple identical cases or items (`homogeneous_unit`)
 
@@ -49,7 +50,7 @@ This workflow must remain distinct from a logistic unit that is itself an ordera
 - Guided barcodes target a 0.495 mm X-dimension, a 31.75 mm minimum bar height, and quiet zones of at least 10 X-dimensions.
 - Optional traceability is rejected when its combined GS1-128 symbol would exceed the 4-inch page at the supported barcode dimensions; the user must shorten the lot value.
 - Human-readable interpretation appears below each barcode with AIs in parentheses.
-- Saved `v1` labels continue through the legacy renderer. New guided labels use the `v2` renderer.
+- Saved `v1` labels continue through the legacy renderer, and previously saved `v2` SSCC-only labels retain their original simple layout. New transport labels use `v3`; homogeneous labels continue to use `v2`.
 - The database migrations add workflow, print-layout, and selected-date metadata and make product-content fields optional without changing existing records.
 
 Automated checks cover form rules, GTIN normalization, workflow metadata, maximum supported count, PDF AI content, saved history, and simultaneous SSCC allocation. Representative printed labels still require physical scanner or verifier testing before that verification item is complete.

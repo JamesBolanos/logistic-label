@@ -2,9 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { sanitizeLabelForm, validateLabelForm } from '../../src/lib/validation/formValidation.js';
 
 describe('guided label workflows', () => {
-  it('accepts an SSCC-only label without product-content fields', () => {
+  it('accepts a transport label and ignores product-content fields', () => {
     const input = {
       label_type: 'sscc_only',
+      ship_from: ' Test Shipper   10 Origin Road ',
+      ship_to: 'Customer DC 20 Destination Road',
+      purchase_order: 'PO-100',
+      carrier: 'Example Freight',
+      gross_weight: '540.5',
+      gross_weight_unit: 'kg',
+      transport_count: '12',
+      transport_count_type: 'cartons',
       gtin: 'invalid content that must be ignored',
       quantity: -1
     };
@@ -12,20 +20,30 @@ describe('guided label workflows', () => {
     expect(validateLabelForm(input)).toEqual({ isValid: true, errors: {} });
     expect(sanitizeLabelForm(input)).toMatchObject({
       label_type: 'sscc_only',
-      template_version: 'v2',
+      template_version: 'v3',
       gtin: null,
       date_ai: null,
       date_value: null,
       quantity: null,
       packaging_level: null,
-      print_layout: '4x6_single'
+      print_layout: '4x6_single',
+      ship_from: 'Test Shipper 10 Origin Road',
+      ship_to: 'Customer DC 20 Destination Road',
+      purchase_order: 'PO-100',
+      carrier: 'Example Freight',
+      gross_weight: 540.5,
+      gross_weight_unit: 'kg',
+      transport_count: 12,
+      transport_count_type: 'cartons'
     });
   });
 
   it('preserves a supported two-copy SSCC print layout', () => {
     const input = {
       label_type: 'sscc_only',
-      print_layout: '4x6_two_up'
+      print_layout: '4x6_two_up',
+      ship_from: 'Test Shipper',
+      ship_to: 'Customer DC'
     };
 
     expect(validateLabelForm(input)).toEqual({ isValid: true, errors: {} });
@@ -35,7 +53,9 @@ describe('guided label workflows', () => {
   it('rejects a 3 by 3 layout that cannot fit the compliant SSCC barcode', () => {
     const result = validateLabelForm({
       label_type: 'sscc_only',
-      print_layout: '3x3_single'
+      print_layout: '3x3_single',
+      ship_from: 'Test Shipper',
+      ship_to: 'Customer DC'
     });
 
     expect(result.isValid).toBe(false);
@@ -62,8 +82,35 @@ describe('guided label workflows', () => {
       quantity: 12,
       weight_pounds: null,
       packaging_level: 'case',
-      print_layout: '4x6_single'
+      print_layout: '4x6_single',
+      ship_from: null,
+      ship_to: null,
+      purchase_order: null,
+      carrier: null,
+      gross_weight: null,
+      gross_weight_unit: null,
+      transport_count: null,
+      transport_count_type: null
     });
+  });
+
+  it('requires transport endpoints and validates paired measures', () => {
+    const base = {
+      label_type: 'sscc_only',
+      ship_from: 'Test Shipper',
+      ship_to: 'Customer DC'
+    };
+
+    expect(validateLabelForm({ label_type: 'sscc_only' }).errors).toMatchObject({
+      ship_from: expect.any(String),
+      ship_to: expect.any(String)
+    });
+    expect(validateLabelForm({ ...base, gross_weight: 100 }).errors).toHaveProperty(
+      'gross_weight_unit'
+    );
+    expect(
+      validateLabelForm({ ...base, transport_count: 12, transport_count_type: 'unknown' }).errors
+    ).toHaveProperty('transport_count_type');
   });
 
   it('accepts optional lot and packaging date traceability', () => {

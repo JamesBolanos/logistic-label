@@ -115,9 +115,17 @@ test('signed-in user can generate both available shipping situations', async ({
         exact: true
       })
       .click();
-    await expect(page.getByText(/The barcode contains AI \(00\)/)).toBeVisible({
+    await expect(page.getByText(/The barcode contains.*AI \(00\)/)).toBeVisible({
       timeout: 10000
     });
+    await page.getByLabel('Ship From').fill('Preview Test Company, 10 Origin Road');
+    await page.getByLabel('Ship To').fill('Customer DC, 20 Destination Road');
+    await page.getByLabel('PO Number').fill('PO-100');
+    await page.getByLabel('Carrier').fill('Example Freight');
+    await page.getByLabel('Gross Weight', { exact: true }).fill('540.5');
+    await page.getByLabel('Gross Weight unit').selectOption('kg');
+    await page.getByLabel('Count', { exact: true }).fill('12');
+    await page.getByLabel('Count type').selectOption('cartons');
     await expect(page.getByRole('radio', { name: /^3 × 3 — unavailable/ })).toBeDisabled();
     await page.getByRole('radio', { name: /^4 × 6 — two copies/ }).check();
 
@@ -132,13 +140,33 @@ test('signed-in user can generate both available shipping situations', async ({
     expect(ssccPreviewResponse.ok()).toBe(true);
     expect(ssccPreviewResponse.request().postDataJSON()).toMatchObject({
       label_type: 'sscc_only',
-      print_layout: '4x6_two_up'
+      print_layout: '4x6_two_up',
+      ship_from: 'Preview Test Company, 10 Origin Road',
+      ship_to: 'Customer DC, 20 Destination Road',
+      purchase_order: 'PO-100',
+      carrier: 'Example Freight',
+      gross_weight: 540.5,
+      gross_weight_unit: 'kg',
+      transport_count: 12,
+      transport_count_type: 'cartons'
     });
     expect(ssccPreviewResponse.headers()['content-type']).toContain('application/pdf');
     expect(Number(ssccPreviewResponse.headers()['content-length'])).toBeGreaterThan(0);
 
+    const transportData = {
+      label_type: 'sscc_only',
+      ship_from: 'Preview Test Company, 10 Origin Road',
+      ship_to: 'Customer DC, 20 Destination Road',
+      purchase_order: 'PO-100',
+      carrier: 'Example Freight',
+      gross_weight: 540.5,
+      gross_weight_unit: 'kg',
+      transport_count: 12,
+      transport_count_type: 'cartons'
+    };
+
     const ssccTwoUpPdfResponse = await page.request.post('/api/pdf/preview', {
-      data: { label_type: 'sscc_only', print_layout: '4x6_two_up' }
+      data: { ...transportData, print_layout: '4x6_two_up' }
     });
     expect(ssccTwoUpPdfResponse.ok()).toBe(true);
     const ssccTwoUpPdf = (await ssccTwoUpPdfResponse.body()).toString('utf8');
@@ -147,19 +175,24 @@ test('signed-in user can generate both available shipping situations', async ({
     expect(ssccTwoUpPdf).toContain('[4 4] 0 d');
     expect(ssccTwoUpPdf).not.toContain('SSCC-ONLY LOGISTIC LABEL');
     expect(ssccTwoUpPdf).not.toContain('contents are not encoded');
+    expect(ssccTwoUpPdf).toContain('SHIP FROM');
+    expect(ssccTwoUpPdf).toContain('Customer DC, 20 Destination Road');
+    expect(ssccTwoUpPdf).toContain('12 Cartons');
     expect(ssccTwoUpPdf).not.toContain('\\(02\\)');
     expect(ssccTwoUpPdf).not.toContain('\\(37\\)');
 
     const ssccSinglePdfResponse = await page.request.post('/api/pdf/preview', {
-      data: { label_type: 'sscc_only', print_layout: '4x6_single' }
+      data: { ...transportData, print_layout: '4x6_single' }
     });
     expect(ssccSinglePdfResponse.ok()).toBe(true);
     const ssccSinglePdf = (await ssccSinglePdfResponse.body()).toString('utf8');
     expect(ssccSinglePdf).toContain('/MediaBox [0 0 288 432]');
     expect(ssccSinglePdf.split('\\(00\\)')).toHaveLength(2);
+    expect(ssccSinglePdf).toContain('PO-100');
+    expect(ssccSinglePdf).toContain('540.5 kg');
 
     const ssccCompactPdfResponse = await page.request.post('/api/pdf/preview', {
-      data: { label_type: 'sscc_only', print_layout: '4x3_single' }
+      data: { ...transportData, print_layout: '4x3_single' }
     });
     expect(ssccCompactPdfResponse.ok()).toBe(true);
     const ssccCompactPdf = (await ssccCompactPdfResponse.body()).toString('utf8');
@@ -167,7 +200,7 @@ test('signed-in user can generate both available shipping situations', async ({
     expect(ssccCompactPdf.split('\\(00\\)')).toHaveLength(2);
 
     const unsupportedCompactResponse = await page.request.post('/api/pdf/preview', {
-      data: { label_type: 'sscc_only', print_layout: '3x3_single' }
+      data: { ...transportData, print_layout: '3x3_single' }
     });
     expect(unsupportedCompactResponse.status()).toBe(400);
 
@@ -185,6 +218,8 @@ test('signed-in user can generate both available shipping situations', async ({
       .getByRole('row')
       .filter({ hasText: 'Transport unit tracking' });
     await expect(ssccHistoryRow).toBeVisible();
+    await expect(ssccHistoryRow).toContainText('Ship to: Customer DC, 20 Destination Road');
+    await expect(ssccHistoryRow).toContainText('Count: 12 Cartons');
     await expect(ssccHistoryRow).toContainText('4 × 6 — two copies');
 
     await page.getByRole('button', { name: 'Choose a different situation' }).click();
@@ -356,7 +391,7 @@ test('signed-in user can generate both available shipping situations', async ({
           event_name: 'label_preview_succeeded',
           label_type: 'sscc_only',
           label_size: '4x3',
-          template_version: 'v2'
+          template_version: 'v3'
         }),
         expect.objectContaining({
           event_name: 'label_saved',

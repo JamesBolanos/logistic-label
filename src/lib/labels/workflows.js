@@ -4,7 +4,11 @@ export const LABEL_TYPES = Object.freeze({
   LEGACY_DEMO: 'legacy_demo'
 });
 
-export const CURRENT_TEMPLATE_VERSION = 'v2';
+export const TEMPLATE_VERSIONS = Object.freeze({
+  LEGACY: 'v1',
+  GUIDED_CONTENT: 'v2',
+  TRANSPORT: 'v3'
+});
 
 export const PRINT_LAYOUTS = Object.freeze({
   FOUR_BY_SIX_SINGLE: '4x6_single',
@@ -61,10 +65,26 @@ export const PACKAGING_LEVELS = Object.freeze([
   { value: 'other', label: 'Other trade items' }
 ]);
 
+export const TRANSPORT_WEIGHT_UNITS = Object.freeze([
+  { value: 'kg', label: 'kg' },
+  { value: 'lb', label: 'lb' }
+]);
+
+export const TRANSPORT_COUNT_TYPES = Object.freeze([
+  { value: 'cartons', label: 'Cartons' },
+  { value: 'cases', label: 'Cases' },
+  { value: 'pallets', label: 'Pallets' },
+  { value: 'parcels', label: 'Parcels' },
+  { value: 'packages', label: 'Packages' },
+  { value: 'pieces', label: 'Pieces' }
+]);
+
 /** @type {Set<string>} */
 const supportedLabelTypes = new Set([LABEL_TYPES.SSCC_ONLY, LABEL_TYPES.HOMOGENEOUS_UNIT]);
 const packagingLevelValues = new Set(PACKAGING_LEVELS.map((level) => level.value));
 const homogeneousDateAis = new Set(HOMOGENEOUS_DATE_OPTIONS.map((option) => option.value));
+const transportWeightUnits = new Set(TRANSPORT_WEIGHT_UNITS.map((unit) => unit.value));
+const transportCountTypes = new Set(TRANSPORT_COUNT_TYPES.map((type) => type.value));
 /** @type {Set<string>} */
 const supportedPrintLayouts = new Set(
   SSCC_PRINT_LAYOUT_OPTIONS.filter((layout) => layout.available).map((layout) => layout.value)
@@ -88,6 +108,16 @@ export function isSupportedPrintLayout(value) {
 /** @param {unknown} value */
 export function isHomogeneousDateAi(value) {
   return typeof value === 'string' && homogeneousDateAis.has(value);
+}
+
+/** @param {unknown} value */
+export function isTransportWeightUnit(value) {
+  return typeof value === 'string' && transportWeightUnits.has(value);
+}
+
+/** @param {unknown} value */
+export function isTransportCountType(value) {
+  return typeof value === 'string' && transportCountTypes.has(value);
 }
 
 /** @param {unknown} value */
@@ -116,6 +146,20 @@ export function getLabelTypeName(value) {
   if (value === LABEL_TYPES.SSCC_ONLY) return 'Transport unit tracking';
   if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return 'Identical contents';
   return 'Legacy label';
+}
+
+/** @param {unknown} value */
+export function getTemplateVersionForLabelType(value) {
+  return value === LABEL_TYPES.SSCC_ONLY
+    ? TEMPLATE_VERSIONS.TRANSPORT
+    : TEMPLATE_VERSIONS.GUIDED_CONTENT;
+}
+
+/** @param {unknown} value @param {string | number} [count] */
+export function getTransportCountTypeName(value, count = 2) {
+  const plural = TRANSPORT_COUNT_TYPES.find((type) => type.value === value)?.label || 'Packages';
+  if (Number(count) !== 1) return plural;
+  return plural.endsWith('s') ? plural.slice(0, -1) : plural;
 }
 
 /** @param {unknown} value @param {string | number} [quantity] */

@@ -6,10 +6,12 @@
     HOMOGENEOUS_DATE_OPTIONS,
     LABEL_TYPES,
     PACKAGING_LEVELS,
-    SSCC_PRINT_LAYOUT_OPTIONS
+    SSCC_PRINT_LAYOUT_OPTIONS,
+    TRANSPORT_COUNT_TYPES,
+    TRANSPORT_WEIGHT_UNITS
   } from '$lib/labels/workflows.js';
 
-  let { labelType, onsubmit, onback } = $props();
+  let { labelType, companyName = '', onsubmit, onback } = $props();
 
   let formData = $state({
     label_type: '',
@@ -19,15 +21,28 @@
     lot_number: '',
     date_ai: '',
     date_value: '',
-    print_layout: DEFAULT_PRINT_LAYOUT
+    print_layout: DEFAULT_PRINT_LAYOUT,
+    ship_from: '',
+    ship_to: '',
+    purchase_order: '',
+    carrier: '',
+    gross_weight: '',
+    gross_weight_unit: '',
+    transport_count: '',
+    transport_count_type: ''
   });
   let isLoading = $state(false);
   let errors = $state({});
   let formError = $state('');
+  let companyNameApplied = $state(false);
   let selectedScenario = $derived(getAvailableScenarioForLabelType(labelType));
 
   $effect(() => {
     formData.label_type = labelType;
+    if (!companyNameApplied && companyName) {
+      formData.ship_from = companyName;
+      companyNameApplied = true;
+    }
   });
 
   async function handleSubmit() {
@@ -76,16 +91,161 @@
   {#if labelType === LABEL_TYPES.SSCC_ONLY}
     <div class="space-y-4">
       <div class="rounded-md border border-blue-200 bg-blue-50 p-4">
-        <h3 class="font-semibold text-blue-950">Give one shipping unit a unique identity</h3>
+        <h3 class="font-semibold text-blue-950">Identify and route one shipping unit</h3>
         <p class="mt-2 text-sm text-blue-900">
-          The barcode contains AI (00) and the allocated SSCC. Your WMS, ASN, spreadsheet, or other
-          record can use that SSCC to describe the contents and shipment.
+          The printed transport information helps people route the shipment. The barcode contains
+          only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or
+          another shipment record.
         </p>
       </div>
-      <p class="text-sm text-gray-600">
-        Product details, quantities, lots, dates, destinations, and routing are not encoded in this
-        label.
-      </p>
+
+      <fieldset class="space-y-4 rounded-md border border-gray-200 p-4">
+        <legend class="px-1 text-sm font-medium text-gray-700">Transport information</legend>
+
+        <!-- These fields are human-readable. Only the SSCC is encoded in the barcode. -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="ship_from" class="mb-1 block text-sm font-medium text-gray-700">
+              Ship From
+            </label>
+            <textarea
+              id="ship_from"
+              bind:value={formData.ship_from}
+              rows="3"
+              maxlength="160"
+              required
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Company and origin address"></textarea>
+            {#if errors.ship_from}
+              <p class="mt-1 text-sm text-red-600">{errors.ship_from}</p>
+            {/if}
+          </div>
+
+          <div>
+            <label for="ship_to" class="mb-1 block text-sm font-medium text-gray-700">
+              Ship To
+            </label>
+            <textarea
+              id="ship_to"
+              bind:value={formData.ship_to}
+              rows="3"
+              maxlength="160"
+              required
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Customer and physical delivery address"></textarea>
+            {#if errors.ship_to}
+              <p class="mt-1 text-sm text-red-600">{errors.ship_to}</p>
+            {/if}
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="purchase_order" class="mb-1 block text-sm font-medium text-gray-700">
+              PO Number <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              id="purchase_order"
+              type="text"
+              bind:value={formData.purchase_order}
+              maxlength="50"
+              autocomplete="off"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.purchase_order}
+              <p class="mt-1 text-sm text-red-600">{errors.purchase_order}</p>
+            {/if}
+          </div>
+
+          <div>
+            <label for="carrier" class="mb-1 block text-sm font-medium text-gray-700">
+              Carrier <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <input
+              id="carrier"
+              type="text"
+              bind:value={formData.carrier}
+              maxlength="100"
+              autocomplete="off"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.carrier}
+              <p class="mt-1 text-sm text-red-600">{errors.carrier}</p>
+            {/if}
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="gross_weight" class="mb-1 block text-sm font-medium text-gray-700">
+              Gross Weight <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <div class="grid grid-cols-[minmax(0,1fr)_5rem] gap-2">
+              <input
+                id="gross_weight"
+                type="number"
+                bind:value={formData.gross_weight}
+                min="0.01"
+                max="999999.99"
+                step="0.01"
+                class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                aria-label="Gross Weight unit"
+                bind:value={formData.gross_weight_unit}
+                class="w-full rounded-md border border-gray-300 px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Unit</option>
+                {#each TRANSPORT_WEIGHT_UNITS as unit (unit.value)}
+                  <option value={unit.value}>{unit.label}</option>
+                {/each}
+              </select>
+            </div>
+            {#if errors.gross_weight}
+              <p class="mt-1 text-sm text-red-600">{errors.gross_weight}</p>
+            {:else if errors.gross_weight_unit}
+              <p class="mt-1 text-sm text-red-600">{errors.gross_weight_unit}</p>
+            {/if}
+          </div>
+
+          <div>
+            <label for="transport_count" class="mb-1 block text-sm font-medium text-gray-700">
+              Count <span class="font-normal text-gray-500">(optional)</span>
+            </label>
+            <div class="grid grid-cols-[minmax(0,1fr)_7rem] gap-2">
+              <input
+                id="transport_count"
+                type="number"
+                bind:value={formData.transport_count}
+                min="1"
+                max="99999"
+                step="1"
+                class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                aria-label="Count type"
+                bind:value={formData.transport_count_type}
+                class="w-full rounded-md border border-gray-300 px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Type</option>
+                {#each TRANSPORT_COUNT_TYPES as type (type.value)}
+                  <option value={type.value}>{type.label}</option>
+                {/each}
+              </select>
+            </div>
+            {#if errors.transport_count}
+              <p class="mt-1 text-sm text-red-600">{errors.transport_count}</p>
+            {:else if errors.transport_count_type}
+              <p class="mt-1 text-sm text-red-600">{errors.transport_count_type}</p>
+            {/if}
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-500">
+          Ship From and Ship To are required. The remaining transport fields may be left empty when
+          they do not apply.
+        </p>
+      </fieldset>
 
       <fieldset>
         <legend class="mb-2 text-sm font-medium text-gray-700">Print layout</legend>

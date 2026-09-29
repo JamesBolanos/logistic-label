@@ -5,6 +5,50 @@ import {
 } from '../../src/lib/server/pdf/labelGenerator.js';
 
 describe('guided label PDF rendering', () => {
+  it('renders human-readable transport fields above one SSCC barcode', async () => {
+    const pdf = await generateLogisticLabelPDF({
+      label_type: 'sscc_only',
+      template_version: 'v3',
+      print_layout: '4x6_single',
+      sscc: '012345670000000015',
+      ship_from: 'Test Shipper 10 Origin Road',
+      ship_to: 'Customer DC 20 Destination Road',
+      purchase_order: 'PO-100',
+      carrier: 'Example Freight',
+      gross_weight: 540.5,
+      gross_weight_unit: 'kg',
+      transport_count: 12,
+      transport_count_type: 'cartons'
+    });
+
+    const content = pdf.toString('utf8');
+    expect(content).toContain('SHIP FROM');
+    expect(content).toContain('SHIP TO');
+    expect(content).toContain('PO-100');
+    expect(content).toContain('Example Freight');
+    expect(content).toContain('540.5 kg');
+    expect(content).toContain('12 Cartons');
+    expect(content.split('\\(00\\)')).toHaveLength(2);
+    expect(content).not.toContain('\\(02\\)');
+  });
+
+  it('keeps previously saved v2 SSCC labels on the simple renderer', async () => {
+    const pdf = await generateLogisticLabelPDF(
+      {
+        label_type: 'sscc_only',
+        template_version: 'v2',
+        print_layout: '4x6_single',
+        sscc: '012345670000000015'
+      },
+      { company_name: 'PDF Test Company' }
+    );
+
+    const content = pdf.toString('utf8');
+    expect(content).toContain('PDF Test Company');
+    expect(content).toContain('SSCC');
+    expect(content).not.toContain('SHIP TO');
+  });
+
   it('renders homogeneous traceability fields and their GS1 human-readable data', async () => {
     const pdf = await generateLogisticLabelPDF(
       {

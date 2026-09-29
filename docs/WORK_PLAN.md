@@ -36,7 +36,7 @@ The app already has useful foundations:
 - Production-only GA4 navigation and allowlisted product events, plus persisted operational events and an owner-only aggregate dashboard.
 - A Playwright workflow that creates and cleans up an isolated Neon branch for eligible E2E runs.
 
-The label selector now describes real-world shipping situations while preserving the technical workflow types underneath. It separates tracking one pallet, carton, or parcel from shipping multiple identical cases or items. Legacy records retain their original data and template version. The remaining correctness work includes physical print/scanner verification, SSCC reuse controls, and carefully scoped support for additional scenarios and data elements.
+The label selector now describes real-world shipping situations while preserving the technical workflow types underneath. It separates a transport identification label with human-readable routing information from a label for multiple identical cases or items. Legacy records retain their original data and template version. The remaining correctness work includes physical print/scanner verification, SSCC reuse controls, and carefully scoped support for additional scenarios and data elements.
 
 ## Business Analysis and Agile Working Approach
 

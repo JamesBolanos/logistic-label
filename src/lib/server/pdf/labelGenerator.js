@@ -2,8 +2,10 @@ import { buildGs1Elements, getBarcodeModules, humanReadable } from './gs1Barcode
 import {
   DEFAULT_PRINT_LAYOUT,
   getHomogeneousDateOption,
+  getTransportCountTypeName,
   LABEL_TYPES,
-  PRINT_LAYOUTS
+  PRINT_LAYOUTS,
+  TEMPLATE_VERSIONS
 } from '$lib/labels/workflows.js';
 
 const PAGE_WIDTH = 288;
@@ -20,7 +22,14 @@ const MINIMUM_BAR_HEIGHT_POINTS = (MINIMUM_BAR_HEIGHT_MM / MILLIMETERS_PER_INCH)
 
 export async function generateLogisticLabelPDF(labelData, options = {}) {
   if (
-    labelData.template_version === 'v2' &&
+    labelData.template_version === TEMPLATE_VERSIONS.TRANSPORT &&
+    labelData.label_type === LABEL_TYPES.SSCC_ONLY
+  ) {
+    return generateTransportLabelPDF(labelData);
+  }
+
+  if (
+    labelData.template_version === TEMPLATE_VERSIONS.GUIDED_CONTENT &&
     (labelData.label_type === LABEL_TYPES.SSCC_ONLY ||
       labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT)
   ) {
@@ -28,6 +37,121 @@ export async function generateLogisticLabelPDF(labelData, options = {}) {
   }
 
   return generateLegacyLabelPDF(labelData, options);
+}
+
+function generateTransportLabelPDF(labelData) {
+  const elements = buildGs1Elements(labelData);
+  const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
+  const content = [];
+
+  // The 4 × 6 layout uses GS1's transport/customer/supplier reading order:
+  // routing fields first, logistic measures second, and the SSCC barcode last.
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
+    drawTransportLabel(content, labelData, elements, 0, false);
+    return createPdf(content.join('\n'), PAGE_WIDTH, PAGE_HEIGHT);
+  }
+
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE) {
+    drawTransportLabel(content, labelData, elements, 0, true);
+    return createPdf(content.join('\n'), PAGE_WIDTH, COMPACT_PAGE_HEIGHT);
+  }
+
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_TWO_UP) {
+    drawTransportLabel(content, labelData, elements, COMPACT_PAGE_HEIGHT, true);
+    drawTransportLabel(content, labelData, elements, 0, true);
+    drawCutGuide(content, COMPACT_PAGE_HEIGHT, PAGE_WIDTH);
+    return createPdf(content.join('\n'), PAGE_WIDTH, PAGE_HEIGHT);
+  }
+
+  throw new Error('Unsupported transport-label print layout');
+}
+
+function drawTransportLabel(content, labelData, elements, originY, compact) {
+  const rightColumn = 150;
+  const columnWidth = 120;
+  const grossWeight = formatGrossWeight(labelData);
+  const count = formatTransportCount(labelData);
+
+  if (!compact) {
+    drawWrappedInfoField(content, 'SHIP FROM', labelData.ship_from, MARGIN, columnWidth, 414, 2);
+    drawWrappedInfoField(content, 'SHIP TO', labelData.ship_to, rightColumn, columnWidth, 414, 2);
+    drawInfoFieldFitted(
+      content,
+      'PO NUMBER',
+      labelData.purchase_order || '-',
+      MARGIN,
+      columnWidth,
+      362
+    );
+    drawInfoFieldFitted(
+      content,
+      'CARRIER',
+      labelData.carrier || '-',
+      rightColumn,
+      columnWidth,
+      362
+    );
+    drawLine(content, MARGIN, 330, PAGE_WIDTH - MARGIN, 330);
+    drawInfoFieldFitted(content, 'GROSS WEIGHT', grossWeight, MARGIN, columnWidth, 313);
+    drawInfoFieldFitted(content, 'COUNT', count, rightColumn, columnWidth, 313);
+    drawLine(content, MARGIN, 279, PAGE_WIDTH - MARGIN, 279);
+    drawCenteredInfoField(content, 'SSCC', labelData.sscc, PAGE_WIDTH / 2, 260, 242, 14);
+    drawCompliantBarcode(content, elements, 72, PAGE_WIDTH);
+    drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, 56, 10);
+    return;
+  }
+
+  // Compact copies retain the same transport meaning at smaller type while
+  // preserving the full-size compliant SSCC barcode and quiet zones.
+  drawInfoFieldFitted(
+    content,
+    'SHIP FROM',
+    labelData.ship_from,
+    MARGIN,
+    columnWidth,
+    originY + 205
+  );
+  drawInfoFieldFitted(
+    content,
+    'SHIP TO',
+    labelData.ship_to,
+    rightColumn,
+    columnWidth,
+    originY + 205
+  );
+  drawInfoFieldFitted(
+    content,
+    'PO NUMBER',
+    labelData.purchase_order || '-',
+    MARGIN,
+    columnWidth,
+    originY + 177
+  );
+  drawInfoFieldFitted(
+    content,
+    'CARRIER',
+    labelData.carrier || '-',
+    rightColumn,
+    columnWidth,
+    originY + 177
+  );
+  drawInfoFieldFitted(content, 'GROSS WEIGHT', grossWeight, MARGIN, columnWidth, originY + 149);
+  drawInfoFieldFitted(content, 'COUNT', count, rightColumn, columnWidth, originY + 149);
+  drawCompliantBarcode(content, elements, originY + 22, PAGE_WIDTH);
+  drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, originY + 8, 8);
+}
+
+function formatGrossWeight(labelData) {
+  if (labelData.gross_weight == null || !labelData.gross_weight_unit) return '-';
+  return `${Number(labelData.gross_weight).toLocaleString('en-US')} ${labelData.gross_weight_unit}`;
+}
+
+function formatTransportCount(labelData) {
+  if (labelData.transport_count == null || !labelData.transport_count_type) return '-';
+  return `${Number(labelData.transport_count).toLocaleString('en-US')} ${getTransportCountTypeName(
+    labelData.transport_count_type,
+    labelData.transport_count
+  )}`;
 }
 
 function generateGuidedLabelPDF(labelData, options) {
@@ -319,8 +443,66 @@ function drawInfoField(content, label, value, x, labelY, valueSize = 11) {
 }
 
 function drawInfoFieldFitted(content, label, value, x, width, labelY) {
-  drawText(content, label, x, labelY, fitTextSize(label, width, 7, 5));
-  drawText(content, value, x, labelY - 14, fitTextSize(String(value ?? ''), width, 10, 6), true);
+  const labelSize = fitTextSize(label, width, 7, 5);
+  const valueText = String(value ?? '');
+  const valueSize = fitTextSize(valueText, width, 10, 6);
+  drawText(content, truncateTextToWidth(label, width, labelSize), x, labelY, labelSize);
+  drawText(
+    content,
+    truncateTextToWidth(valueText, width, valueSize, true),
+    x,
+    labelY - 14,
+    valueSize,
+    true
+  );
+}
+
+function drawWrappedInfoField(content, label, value, x, width, labelY, maxLines) {
+  drawText(content, label, x, labelY, 7);
+  const lines = wrapText(String(value ?? ''), width, 8, true, maxLines);
+  lines.forEach((line, index) => drawText(content, line, x, labelY - 14 - index * 11, 8, true));
+}
+
+function wrapText(text, width, size, bold, maxLines) {
+  const normalized = text.trim();
+  const words = normalized.split(/\s+/).filter(Boolean);
+  const lines = [];
+  let truncated = false;
+
+  for (const word of words) {
+    const current = lines.at(-1) || '';
+    const candidate = current ? `${current} ${word}` : word;
+    if (estimateTextWidth(candidate, size, bold) <= width) {
+      if (lines.length) lines[lines.length - 1] = candidate;
+      else lines.push(candidate);
+      continue;
+    }
+
+    if (lines.length < maxLines) {
+      let fittedWord = word;
+      while (fittedWord.length > 1 && estimateTextWidth(fittedWord, size, bold) > width) {
+        fittedWord = fittedWord.slice(0, -1);
+        truncated = true;
+      }
+      lines.push(fittedWord);
+    } else {
+      truncated = true;
+      break;
+    }
+  }
+
+  if (!lines.length) return ['-'];
+  if (truncated || lines.join(' ').length < normalized.length) {
+    const lastIndex = lines.length - 1;
+    while (
+      lines[lastIndex].length > 1 &&
+      estimateTextWidth(`${lines[lastIndex]}...`, size, bold) > width
+    ) {
+      lines[lastIndex] = lines[lastIndex].slice(0, -1);
+    }
+    lines[lastIndex] = `${lines[lastIndex]}...`;
+  }
+  return lines;
 }
 
 function fitTextSize(text, width, preferredSize, minimumSize) {
@@ -329,6 +511,16 @@ function fitTextSize(text, width, preferredSize, minimumSize) {
     size -= 0.5;
   }
   return size;
+}
+
+function truncateTextToWidth(text, width, size, bold = false) {
+  let fitted = String(text ?? '');
+  if (estimateTextWidth(fitted, size, bold) <= width) return fitted;
+
+  while (fitted.length > 1 && estimateTextWidth(`${fitted}...`, size, bold) > width) {
+    fitted = fitted.slice(0, -1);
+  }
+  return `${fitted}...`;
 }
 
 function drawCenteredInfoField(content, label, value, centerX, labelY, valueY, valueSize = 11) {

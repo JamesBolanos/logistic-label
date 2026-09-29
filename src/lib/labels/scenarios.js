@@ -22,8 +22,12 @@ export const LABEL_SCENARIOS = Object.freeze([
     statusLabel: 'Available',
     targetUser: 'Warehouses, 3PL operators, cross-docking teams, and freight forwarders.',
     description:
-      'Give one physical shipping unit a unique identity. Its contents can remain in your WMS, ASN, spreadsheet, or another business record.',
-    outputs: ['One GS1-128 barcode: (00) SSCC-18', '4 × 6 and compact print layouts'],
+      'Show where one pallet, carton, or parcel is moving and give that physical shipping unit a unique identity.',
+    outputs: [
+      'Ship From, Ship To, PO, carrier, weight, and count',
+      'One GS1-128 barcode: (00) SSCC-18',
+      '4 × 6 and compact print layouts'
+    ],
     actionLabel: 'Create a transport label'
   },
   {

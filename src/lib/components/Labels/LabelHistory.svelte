@@ -7,6 +7,7 @@
     getHomogeneousDateOption,
     getPackagingLevelName,
     getPrintLayoutName,
+    getTransportCountTypeName,
     LABEL_TYPES
   } from '$lib/labels/workflows.js';
 
@@ -214,7 +215,20 @@
                     </div>
                   {/if}
                 {:else if label.label_type === LABEL_TYPES.SSCC_ONLY}
-                  <div>Logistic unit identifier; contents are not encoded</div>
+                  {#if label.ship_to}
+                    <div>Ship to: {label.ship_to}</div>
+                    {#if label.transport_count}
+                      <div class="mt-1 text-xs">
+                        Count: {label.transport_count}
+                        &nbsp;{getTransportCountTypeName(
+                          label.transport_count_type,
+                          label.transport_count
+                        )}
+                      </div>
+                    {/if}
+                  {:else}
+                    <div>Logistic unit identifier; contents are not encoded</div>
+                  {/if}
                   <div class="mt-1 text-xs">{getPrintLayoutName(label.print_layout)}</div>
                 {:else}
                   <div>GTIN {label.gtin || 'Unavailable'}</div>

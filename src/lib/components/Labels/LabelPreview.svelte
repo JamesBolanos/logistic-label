@@ -3,7 +3,10 @@
   import { onDestroy } from 'svelte';
   import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
   import { classifyHttpFailure } from '$lib/analytics/events.js';
-  import { getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
+  import {
+    getLabelSizeForPrintLayout,
+    getTemplateVersionForLabelType
+  } from '$lib/labels/workflows.js';
 
   // Props
   let { labelData = null, previewUrl = $bindable(null) } = $props();
@@ -57,7 +60,7 @@
       trackProductEvent('label_preview_succeeded', {
         label_type: labelData.label_type,
         label_size: getLabelSizeForPrintLayout(labelData.print_layout),
-        template_version: 'v2',
+        template_version: getTemplateVersionForLabelType(labelData.label_type),
         duration_ms: Date.now() - startedAt
       });
     } catch (err) {
