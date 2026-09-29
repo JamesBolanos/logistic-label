@@ -196,7 +196,7 @@ Label capability checklist (completed foundations are shown for context; correct
 - [x] Business-situation selector: track one pallet/carton/parcel or ship multiple identical cases/items; show later scenarios as unavailable rather than accepting ambiguous data.
 - [x] Allow SSCC-only labels without requiring GTIN, lot, date, quantity, or weight; validate additional fields according to the selected label type.
 - [x] AI-aware validation shared by UI/API/PDF for `AI (00)`, the homogeneous `AI (02)` plus `AI (37)` association, optional `AI (10)`, and supported GS1 date AIs.
-- [ ] PDF layout aligned to GS1 building blocks and physical barcode dimensions; choose sufficient label space for each supported data combination.
+- [x] PDF layouts aligned to GS1 building blocks and physical barcode dimensions: compact 4×6 for limited data and 6×8 when a homogeneous label adds lot/date traceability.
 - [x] SSCC barcode as the lowest barcode.
 - [x] HRI below each barcode.
 - [x] Review data titles and issuer information for each supported label type.

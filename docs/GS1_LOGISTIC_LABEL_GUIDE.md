@@ -121,7 +121,7 @@ Implementation implications:
 
 ## Barcode and 4x6 Requirements
 
-The app currently targets 4x6 labels, which the guideline treats as a compact label size suitable for SSCC-only or limited additional data.
+The app uses 4x6 as its compact label size for SSCC-only or limited additional data. It also offers 6x8 for homogeneous labels that add product traceability; the guideline identifies 6x8 or A5 as a useful larger size when additional trade-item data is needed.
 
 Barcode/layout requirements to encode in the renderer and tests:
 

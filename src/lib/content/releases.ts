@@ -21,7 +21,7 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     status: 'published',
     title: 'Choose a label by the shipping problem it solves',
     benefit:
-      'Start with a real-world shipping situation. The transport option now prints origin, destination, PO, carrier, gross weight, and count above its SSCC barcode.',
+      'Start with a real-world shipping situation. Both available options now use clear transport zones, while identical-content shipments can use a larger 6 × 8 layout for lot and date traceability.',
     featureKey: 'business_scenario_labels',
     href: '/labels',
     linkLabel: 'Choose a shipping label'

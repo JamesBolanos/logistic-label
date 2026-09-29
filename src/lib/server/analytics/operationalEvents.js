@@ -46,8 +46,8 @@ export async function recordOperationalEvent(input) {
         documentFormat: allow(input.documentFormat, ['pdf']),
         downloadSource: allow(input.downloadSource, ['new_label', 'history']),
         labelType: allow(input.labelType, ['sscc_only', 'homogeneous_unit']),
-        labelSize: allow(input.labelSize, ['4x6', '4x3']),
-        templateVersion: allow(input.templateVersion, ['v1', 'v2', 'v3']),
+        labelSize: allow(input.labelSize, ['4x6', '4x3', '6x8']),
+        templateVersion: allow(input.templateVersion, ['v1', 'v2', 'v3', 'v4']),
         durationMs: normalizeDuration(input.durationMs),
         isInternal: new Set(getAnalyticsOwnerUserIds()).has(input.userId)
       })

@@ -2,6 +2,7 @@ import { buildGs1Elements, getBarcodeModules, humanReadable } from './gs1Barcode
 import {
   DEFAULT_PRINT_LAYOUT,
   getHomogeneousDateOption,
+  getPackagingLevelName,
   getTransportCountTypeName,
   LABEL_TYPES,
   PRINT_LAYOUTS,
@@ -10,6 +11,8 @@ import {
 
 const PAGE_WIDTH = 288;
 const PAGE_HEIGHT = 432;
+const LARGE_PAGE_WIDTH = 432;
+const LARGE_PAGE_HEIGHT = 576;
 const COMPACT_PAGE_HEIGHT = 216;
 const MARGIN = 18;
 const POINTS_PER_INCH = 72;
@@ -21,6 +24,13 @@ const TARGET_X_DIMENSION_POINTS = (TARGET_X_DIMENSION_MM / MILLIMETERS_PER_INCH)
 const MINIMUM_BAR_HEIGHT_POINTS = (MINIMUM_BAR_HEIGHT_MM / MILLIMETERS_PER_INCH) * POINTS_PER_INCH;
 
 export async function generateLogisticLabelPDF(labelData, options = {}) {
+  if (
+    labelData.template_version === TEMPLATE_VERSIONS.STRUCTURED_CONTENT &&
+    labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT
+  ) {
+    return generateStructuredHomogeneousLabelPDF(labelData);
+  }
+
   if (
     labelData.template_version === TEMPLATE_VERSIONS.TRANSPORT &&
     labelData.label_type === LABEL_TYPES.SSCC_ONLY
@@ -165,6 +175,152 @@ function formatTransportCount(labelData) {
   )}`;
 }
 
+function generateStructuredHomogeneousLabelPDF(labelData) {
+  const elements = buildGs1Elements(labelData);
+  const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
+  validateGuidedLabelBarcodeFit(labelData, elements);
+
+  const content = [];
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
+    drawStructuredHomogeneousFourBySix(content, labelData, elements);
+    return createPdf(content.join('\n'), PAGE_WIDTH, PAGE_HEIGHT);
+  }
+
+  if (printLayout === PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE) {
+    drawStructuredHomogeneousSixByEight(content, labelData, elements);
+    return createPdf(content.join('\n'), LARGE_PAGE_WIDTH, LARGE_PAGE_HEIGHT);
+  }
+
+  throw new Error('Unsupported identical-contents print layout');
+}
+
+function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
+  const left = 12;
+  const right = PAGE_WIDTH - 12;
+  const middle = PAGE_WIDTH / 2;
+  const contentElements = getHomogeneousContentElements(elements);
+  const ssccElements = getSSCCElements(elements);
+
+  // The compact label contains routing data plus two complete barcode blocks.
+  // Optional traceability is reserved for 6 × 8 rather than shrinking symbols.
+  drawOutlineRect(content, left, 4, right - left, 416, 1.2);
+  drawLine(content, left, 354, right, 354, 2.2);
+  drawLine(content, middle, 354, middle, 420, 0.8);
+  drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
+  drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
+
+  drawLine(content, left, 322, right, 322, 1.2);
+  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 252, 347, 331, 13);
+
+  drawLine(content, left, 286, right, 286, 1.2);
+  drawLine(content, 196, 286, 196, 322, 0.8);
+  drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 166, 314, 298, 13);
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 202, 68, 314, 298, 11);
+
+  drawLine(content, left, 246, right, 246, 2.2);
+  drawLine(content, 190, 246, 190, 286, 0.8);
+  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 160, 278, 260, 13);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 74, 278, 260, 11);
+
+  drawCenteredText(content, 'CONTENT AND COUNT', PAGE_WIDTH / 2, 239, 7, true);
+  drawCompliantBarcode(content, contentElements, 145, PAGE_WIDTH);
+  drawCenteredText(content, humanReadable(contentElements), PAGE_WIDTH / 2, 129, 9);
+
+  drawCenteredText(content, 'SSCC', PAGE_WIDTH / 2, 118, 7, true);
+  drawCompliantBarcode(content, ssccElements, 25, PAGE_WIDTH);
+  drawCenteredText(content, humanReadable(ssccElements), PAGE_WIDTH / 2, 10, 9);
+}
+
+function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
+  const left = 12;
+  const right = LARGE_PAGE_WIDTH - 12;
+  const middle = LARGE_PAGE_WIDTH / 2;
+  const contentElements = getHomogeneousContentElements(elements);
+  const traceabilityElements = getHomogeneousTraceabilityElements(elements);
+  const ssccElements = getSSCCElements(elements);
+  const dateOption = getHomogeneousDateOption(labelData.date_ai);
+
+  // GS1 identifies 6 × 8 (or A5) as a useful larger label when trade-item
+  // information must accompany the SSCC. The added height protects all three
+  // 31.75 mm barcode heights instead of compressing the symbols.
+  drawOutlineRect(content, left, 4, right - left, 564, 1.2);
+  drawLine(content, left, 494, right, 494, 2.2);
+  drawLine(content, middle, 494, middle, 568, 0.8);
+  drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 186, 556);
+  drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 222, 186, 556);
+
+  drawLine(content, left, 452, right, 452, 1.2);
+  drawLine(content, middle, 452, middle, 494, 0.8);
+  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 186, 486, 468, 15);
+  drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 222, 186, 486, 468, 15);
+
+  drawLine(content, left, 410, right, 410, 1.2);
+  drawLine(content, 232, 410, 232, 452, 0.8);
+  drawLine(content, 334, 410, 334, 452, 0.8);
+  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 202, 444, 426, 15);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 240, 84, 444, 426, 12);
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 342, 72, 444, 426, 11);
+
+  drawLine(content, left, 376, right, 376, 2.2);
+  drawLine(content, middle, 376, middle, 410, 0.8);
+  drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number || '-', 18, 186, 402);
+  drawInfoFieldFitted(
+    content,
+    dateOption?.dataTitle || 'DATE',
+    labelData.date_value || '-',
+    222,
+    186,
+    402
+  );
+
+  if (traceabilityElements.length) {
+    drawBarcodeBlock(
+      content,
+      'CONTENT AND COUNT',
+      contentElements,
+      366,
+      268,
+      252,
+      LARGE_PAGE_WIDTH
+    );
+    drawBarcodeBlock(
+      content,
+      'LOT AND DATE TRACEABILITY',
+      traceabilityElements,
+      244,
+      146,
+      130,
+      LARGE_PAGE_WIDTH
+    );
+    drawBarcodeBlock(content, 'SSCC', ssccElements, 122, 24, 9, LARGE_PAGE_WIDTH);
+    return;
+  }
+
+  drawBarcodeBlock(content, 'CONTENT AND COUNT', contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
+  drawBarcodeBlock(content, 'SSCC', ssccElements, 194, 96, 80, LARGE_PAGE_WIDTH);
+}
+
+function drawBarcodeBlock(content, title, elements, titleY, barcodeY, hriY, pageWidth) {
+  drawCenteredText(content, title, pageWidth / 2, titleY, 7, true);
+  drawCompliantBarcode(content, elements, barcodeY, pageWidth);
+  drawCenteredText(content, humanReadable(elements), pageWidth / 2, hriY, 9);
+}
+
+function getHomogeneousContentElements(elements) {
+  return elements.filter((item) => item.ai === '02' || item.ai === '37');
+}
+
+function getSSCCElements(elements) {
+  return elements.filter((item) => item.ai === '00');
+}
+
+function formatHomogeneousCount(labelData) {
+  return `${Number(labelData.quantity).toLocaleString('en-US')} ${getPackagingLevelName(
+    labelData.packaging_level,
+    labelData.quantity
+  )}`;
+}
+
 function generateGuidedLabelPDF(labelData, options) {
   const elements = buildGs1Elements(labelData);
   validateGuidedLabelBarcodeFit(labelData, elements);
@@ -303,6 +459,10 @@ function drawHomogeneousTraceabilityFields(content, labelData) {
 export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elements(labelData)) {
   if (labelData.label_type !== LABEL_TYPES.HOMOGENEOUS_UNIT) return;
 
+  const isLargeLayout = labelData.print_layout === PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE;
+  const pageWidth = isLargeLayout ? LARGE_PAGE_WIDTH : PAGE_WIDTH;
+  const labelSize = isLargeLayout ? '6 × 8' : '4 × 6';
+
   const groups = [
     {
       name: 'content and count',
@@ -316,7 +476,7 @@ export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elem
 
   for (const group of groups) {
     if (!group.elements.length) continue;
-    if (calculateBarcodeGeometry(group.elements).requiredWidth <= PAGE_WIDTH) continue;
+    if (calculateBarcodeGeometry(group.elements).requiredWidth <= pageWidth) continue;
 
     const suggestion =
       group.name === 'optional lot and date'
@@ -324,7 +484,9 @@ export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elem
         : 'Review the GTIN and quantity values.';
 
     throw Object.assign(
-      new Error(`The ${group.name} barcode is too wide for a compliant 4 × 6 label. ${suggestion}`),
+      new Error(
+        `The ${group.name} barcode is too wide for a compliant ${labelSize} label. ${suggestion}`
+      ),
       { code: 'BARCODE_TOO_WIDE' }
     );
   }

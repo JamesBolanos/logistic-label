@@ -58,6 +58,20 @@ describe('analytics event contract', () => {
     ).toMatchObject({ label_size: '4x3' });
   });
 
+  it('accepts structured identical-contents metadata', () => {
+    expect(
+      sanitizeAnalyticsParameters('label_saved', {
+        label_type: 'homogeneous_unit',
+        label_size: '6x8',
+        template_version: 'v4'
+      })
+    ).toEqual({
+      label_type: 'homogeneous_unit',
+      label_size: '6x8',
+      template_version: 'v4'
+    });
+  });
+
   it('accepts only the current public contact placements', () => {
     expect(
       sanitizeAnalyticsParameters('custom_contact_clicked', {

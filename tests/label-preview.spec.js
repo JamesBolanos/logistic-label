@@ -229,12 +229,19 @@ test('signed-in user can generate both available shipping situations', async ({
         exact: true
       })
       .click();
+    await page.getByLabel('Ship From').fill('Preview Test Company\n10 Origin Road');
+    await page.getByLabel('Ship To').fill('Customer DC\n20 Destination Road');
+    await page.getByLabel('PO Number').fill('PO-200');
+    await page.getByLabel('Carrier').fill('Example Freight');
+    await page.getByRole('spinbutton', { name: /^Gross Weight/ }).fill('500.5');
+    await page.getByLabel('Gross Weight unit').selectOption('kg');
     await page.getByLabel('Contained trade item GTIN').fill('00012345600012');
     await page.getByLabel('What does this GTIN identify?').selectOption('case');
     await page.getByLabel('Number of trade items identified by this GTIN').fill('12');
     await page.getByLabel('Batch or lot number — AI (10)').fill('123456');
     await page.getByLabel('GS1 date type').selectOption('13');
     await page.getByLabel('Date', { exact: true }).fill('2026-09-28');
+    await expect(page.getByRole('radio', { name: /^6 × 8 — detailed contents/ })).toBeChecked();
     const homogeneousPreviewResponsePromise = page.waitForResponse((response) => {
       const requestUrl = new URL(response.url());
       return requestUrl.pathname === '/api/pdf/preview' && response.request().method() === 'POST';
@@ -252,7 +259,13 @@ test('signed-in user can generate both available shipping situations', async ({
       lot_number: '123456',
       date_ai: '13',
       date_value: '2026-09-28',
-      print_layout: '4x6_single'
+      print_layout: '6x8_single',
+      ship_from: 'Preview Test Company\n10 Origin Road',
+      ship_to: 'Customer DC\n20 Destination Road',
+      purchase_order: 'PO-200',
+      carrier: 'Example Freight',
+      gross_weight: 500.5,
+      gross_weight_unit: 'kg'
     });
     expect(homogeneousPreviewResponse.headers()['content-type']).toContain('application/pdf');
     expect(Number(homogeneousPreviewResponse.headers()['content-length'])).toBeGreaterThan(0);
@@ -267,15 +280,20 @@ test('signed-in user can generate both available shipping situations', async ({
       .filter({ hasText: 'Identical contents' });
     await expect(homogeneousHistoryRow).toBeVisible();
     await expect(homogeneousHistoryRow).toContainText('GTIN 00012345600012');
+    await expect(homogeneousHistoryRow).toContainText('Ship to: Customer DC 20 Destination Road');
     await expect(homogeneousHistoryRow).toContainText('Lot: 123456');
     await expect(homogeneousHistoryRow).toContainText('Packaging date: 2026-09-28');
+    await expect(homogeneousHistoryRow).toContainText('6 × 8 — detailed contents');
 
     const oversizedTraceabilityResponse = await page.request.post('/api/pdf/preview', {
       data: {
         label_type: 'homogeneous_unit',
+        print_layout: '6x8_single',
         gtin: '00012345600012',
         packaging_level: 'case',
         quantity: 12,
+        ship_from: 'Preview Test Company',
+        ship_to: 'Customer DC',
         lot_number: 'ABCDEFGHIJKLMNOPQRST',
         date_ai: '17',
         date_value: '2026-09-28'
@@ -291,7 +309,9 @@ test('signed-in user can generate both available shipping situations', async ({
         label_type: 'homogeneous_unit',
         gtin: '00012345600012',
         packaging_level: 'case',
-        quantity: 9999
+        quantity: 9999,
+        ship_from: 'Preview Test Company',
+        ship_to: 'Customer DC'
       }
     });
     expect(maximumCountPreviewResponse.ok()).toBe(true);
@@ -317,7 +337,9 @@ test('signed-in user can generate both available shipping situations', async ({
             label_type: 'homogeneous_unit',
             gtin: '00012345600012',
             packaging_level: 'case',
-            quantity: 12
+            quantity: 12,
+            ship_from: 'Preview Test Company',
+            ship_to: 'Customer DC'
           }
         })
       )
@@ -333,7 +355,7 @@ test('signed-in user can generate both available shipping situations', async ({
     const concurrentSSCCs = concurrentLabels.map((label) => label.sscc);
     expect(new Set(concurrentSSCCs).size).toBe(concurrentLabelCount);
     expect(concurrentLabels.every((label) => label.label_type === 'homogeneous_unit')).toBe(true);
-    expect(concurrentLabels.every((label) => label.template_version === 'v2')).toBe(true);
+    expect(concurrentLabels.every((label) => label.template_version === 'v4')).toBe(true);
 
     const settingsResponse = await page.request.get('/api/settings');
     expect(settingsResponse.ok()).toBe(true);
@@ -396,8 +418,8 @@ test('signed-in user can generate both available shipping situations', async ({
         expect.objectContaining({
           event_name: 'label_saved',
           label_type: 'homogeneous_unit',
-          label_size: '4x6',
-          template_version: 'v2'
+          label_size: '6x8',
+          template_version: 'v4'
         }),
         expect.objectContaining({
           event_name: 'pdf_response_succeeded',

@@ -41,9 +41,11 @@ export const LABEL_SCENARIOS = Object.freeze([
     description:
       'Use this when every contained trade item has the same GTIN. The quantity is the number of items identified by that exact GTIN.',
     outputs: [
+      'Ship From, Ship To, PO, carrier, and Gross Weight',
       'Contents: (02) GTIN plus (37) count',
       'Optional lot and one applicable date',
-      'Logistic unit: (00) SSCC-18'
+      'Logistic unit: (00) SSCC-18',
+      '4 × 6 basic or 6 × 8 detailed layout'
     ],
     actionLabel: 'Create a one-product label'
   },
