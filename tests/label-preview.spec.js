@@ -122,9 +122,9 @@ test('signed-in user can generate both available shipping situations', async ({
     await page.getByLabel('Ship To').fill('Customer DC, 20 Destination Road');
     await page.getByLabel('PO Number').fill('PO-100');
     await page.getByLabel('Carrier').fill('Example Freight');
-    await page.getByLabel('Gross Weight', { exact: true }).fill('540.5');
+    await page.getByRole('spinbutton', { name: /^Gross Weight/ }).fill('540.5');
     await page.getByLabel('Gross Weight unit').selectOption('kg');
-    await page.getByLabel('Count', { exact: true }).fill('12');
+    await page.getByRole('spinbutton', { name: /^Count/ }).fill('12');
     await page.getByLabel('Count type').selectOption('cartons');
     await expect(page.getByRole('radio', { name: /^3 × 3 — unavailable/ })).toBeDisabled();
     await page.getByRole('radio', { name: /^4 × 6 — two copies/ }).check();
