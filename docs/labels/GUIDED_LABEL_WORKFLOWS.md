@@ -19,6 +19,7 @@ Use this workflow to identify and route one physical logistic unit. Human-readab
 
 - Required user data: Ship From, Ship To, configured GS1 Company Prefix, extension digit, and next serial reference.
 - Optional human-readable data: PO Number, carrier, Gross Weight with `kg` or `lb`, and Count with an explicit type such as cartons or pallets.
+- The 4 × 6 layout uses bordered transport zones: paired Ship From/Ship To addresses, prominent PO and carrier blocks, paired Gross Weight/Count measures, and a dedicated bottom SSCC block. Address line breaks are preserved so the company or destination name can be emphasized separately from its address.
 - Encoded barcode data: `AI (00)` SSCC only.
 - Not encoded: the printed transport fields, GTIN, lot, and date. The generic workflow deliberately keeps one reliable SSCC barcode and does not imply a customer-specific routing-guide implementation.
 - Print layouts: one 4 × 6 label, two identical 4 × 3 copies on one 4 × 6 sheet with a cut guide, or one 4 × 3 label.

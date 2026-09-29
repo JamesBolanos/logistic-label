@@ -11,8 +11,8 @@ describe('guided label PDF rendering', () => {
       template_version: 'v3',
       print_layout: '4x6_single',
       sscc: '012345670000000015',
-      ship_from: 'Test Shipper 10 Origin Road',
-      ship_to: 'Customer DC 20 Destination Road',
+      ship_from: 'Test Shipper\n10 Origin Road',
+      ship_to: 'Customer DC\n20 Destination Road',
       purchase_order: 'PO-100',
       carrier: 'Example Freight',
       gross_weight: 540.5,
@@ -24,10 +24,14 @@ describe('guided label PDF rendering', () => {
     const content = pdf.toString('utf8');
     expect(content).toContain('SHIP FROM');
     expect(content).toContain('SHIP TO');
+    expect(content).toContain('Test Shipper');
+    expect(content).toContain('10 Origin Road');
     expect(content).toContain('PO-100');
     expect(content).toContain('Example Freight');
     expect(content).toContain('540.5 kg');
     expect(content).toContain('12 Cartons');
+    expect(content).toContain('1.2 w 12 18 264 402 re S');
+    expect(content).toContain('2.2 w 12 332 m 276 332 l S');
     expect(content.split('\\(00\\)')).toHaveLength(2);
     expect(content).not.toContain('\\(02\\)');
   });

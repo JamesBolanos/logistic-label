@@ -73,31 +73,42 @@ function drawTransportLabel(content, labelData, elements, originY, compact) {
   const count = formatTransportCount(labelData);
 
   if (!compact) {
-    drawWrappedInfoField(content, 'SHIP FROM', labelData.ship_from, MARGIN, columnWidth, 414, 2);
-    drawWrappedInfoField(content, 'SHIP TO', labelData.ship_to, rightColumn, columnWidth, 414, 2);
-    drawInfoFieldFitted(
+    const left = 12;
+    const right = PAGE_WIDTH - 12;
+    const middle = PAGE_WIDTH / 2;
+
+    // A boxed zone layout lets warehouse staff scan the label visually in the
+    // same order every time while keeping the SSCC symbol isolated at the bottom.
+    drawOutlineRect(content, left, 18, right - left, 402, 1.2);
+    drawLine(content, left, 332, right, 332, 2.2);
+    drawLine(content, middle, 332, middle, 420, 0.8);
+    drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
+    drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
+
+    drawLine(content, left, 282, right, 282, 2.2);
+    drawLargeInfoField(
       content,
       'PO NUMBER',
       labelData.purchase_order || '-',
-      MARGIN,
-      columnWidth,
-      362
+      18,
+      252,
+      318,
+      292,
+      20
     );
-    drawInfoFieldFitted(
-      content,
-      'CARRIER',
-      labelData.carrier || '-',
-      rightColumn,
-      columnWidth,
-      362
-    );
-    drawLine(content, MARGIN, 330, PAGE_WIDTH - MARGIN, 330);
-    drawInfoFieldFitted(content, 'GROSS WEIGHT', grossWeight, MARGIN, columnWidth, 313);
-    drawInfoFieldFitted(content, 'COUNT', count, rightColumn, columnWidth, 313);
-    drawLine(content, MARGIN, 279, PAGE_WIDTH - MARGIN, 279);
-    drawCenteredInfoField(content, 'SSCC', labelData.sscc, PAGE_WIDTH / 2, 260, 242, 14);
-    drawCompliantBarcode(content, elements, 72, PAGE_WIDTH);
-    drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, 56, 10);
+
+    drawLine(content, left, 220, right, 220, 2.2);
+    drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 252, 268, 234, 27);
+
+    drawLine(content, left, 168, right, 168, 2.2);
+    drawLine(content, middle, 168, middle, 220, 0.8);
+    drawLargeInfoField(content, 'GROSS WEIGHT', grossWeight, 18, 120, 206, 181, 15);
+    drawLargeInfoField(content, 'COUNT', count, 150, 120, 206, 181, 15);
+
+    drawCenteredText(content, 'SSCC', PAGE_WIDTH / 2, 154, 8, true);
+    drawCenteredText(content, labelData.sscc, PAGE_WIDTH / 2, 138, 13, true);
+    drawCompliantBarcode(content, elements, 40, PAGE_WIDTH);
+    drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, 25, 9);
     return;
   }
 
@@ -457,10 +468,46 @@ function drawInfoFieldFitted(content, label, value, x, width, labelY) {
   );
 }
 
-function drawWrappedInfoField(content, label, value, x, width, labelY, maxLines) {
-  drawText(content, label, x, labelY, 7);
-  const lines = wrapText(String(value ?? ''), width, 8, true, maxLines);
-  lines.forEach((line, index) => drawText(content, line, x, labelY - 14 - index * 11, 8, true));
+function drawLargeInfoField(content, label, value, x, width, labelY, valueY, preferredSize) {
+  drawText(content, label, x, labelY, 8, true);
+  const valueText = String(value ?? '');
+  const valueSize = fitTextSize(valueText, width, preferredSize, 8);
+  drawText(
+    content,
+    truncateTextToWidth(valueText, width, valueSize, true),
+    x,
+    valueY,
+    valueSize,
+    true
+  );
+}
+
+function drawAddressBlock(content, label, value, x, width, labelY) {
+  drawText(content, label, x, labelY, 8, true);
+  const addressLines = getAddressLines(value, width, 4);
+  addressLines.forEach((line, index) => {
+    const isCompanyLine = index === 0;
+    const size = isCompanyLine ? 10 : 8;
+    drawText(content, line, x, labelY - 16 - index * 11, size, isCompanyLine);
+  });
+}
+
+function getAddressLines(value, width, maxLines) {
+  const segments = String(value ?? '')
+    .split(/\r?\n|\s*,\s*/)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+  const lines = [];
+
+  for (const segment of segments) {
+    const isCompanyLine = lines.length === 0;
+    const size = isCompanyLine ? 10 : 8;
+    const remaining = maxLines - lines.length;
+    if (!remaining) break;
+    lines.push(...wrapText(segment, width, size, isCompanyLine, remaining));
+  }
+
+  return lines.length ? lines.slice(0, maxLines) : ['-'];
 }
 
 function wrapText(text, width, size, bold, maxLines) {
@@ -545,8 +592,12 @@ function estimateTextWidth(text, size, bold = false) {
   return text.length * size * averageGlyphWidth;
 }
 
-function drawLine(content, x1, y1, x2, y2) {
-  content.push(`0.8 w ${x1} ${y1} m ${x2} ${y2} l S`);
+function drawLine(content, x1, y1, x2, y2, lineWidth = 0.8) {
+  content.push(`${lineWidth} w ${x1} ${y1} m ${x2} ${y2} l S`);
+}
+
+function drawOutlineRect(content, x, y, width, height, lineWidth = 0.8) {
+  content.push(`${lineWidth} w ${x} ${y} ${width} ${height} re S`);
 }
 
 function drawCutGuide(content, y, pageWidth) {

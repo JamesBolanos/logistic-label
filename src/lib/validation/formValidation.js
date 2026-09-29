@@ -144,8 +144,8 @@ export function sanitizeLabelForm(formData) {
       weight_pounds: null,
       packaging_level: null,
       print_layout: String(formData.print_layout || DEFAULT_PRINT_LAYOUT),
-      ship_from: normalizeSingleLine(formData.ship_from),
-      ship_to: normalizeSingleLine(formData.ship_to),
+      ship_from: normalizeAddress(formData.ship_from),
+      ship_to: normalizeAddress(formData.ship_to),
       purchase_order: normalizeSingleLine(formData.purchase_order) || null,
       carrier: normalizeSingleLine(formData.carrier) || null,
       gross_weight: hasValue(formData.gross_weight) ? Number(formData.gross_weight) : null,
@@ -183,8 +183,8 @@ export function sanitizeLabelForm(formData) {
  * @param {Record<string, string>} errors
  */
 function validateTransportFields(formData, errors) {
-  const shipFrom = normalizeSingleLine(formData.ship_from);
-  const shipTo = normalizeSingleLine(formData.ship_to);
+  const shipFrom = normalizeAddress(formData.ship_from);
+  const shipTo = normalizeAddress(formData.ship_to);
   const purchaseOrder = normalizeSingleLine(formData.purchase_order);
   const carrier = normalizeSingleLine(formData.carrier);
 
@@ -229,6 +229,15 @@ function normalizeSingleLine(value) {
   return String(value || '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** @param {unknown} value */
+function normalizeAddress(value) {
+  return String(value || '')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/[\t ]+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
 }
 
 /** @param {unknown} value */

@@ -5,7 +5,7 @@ describe('guided label workflows', () => {
   it('accepts a transport label and ignores product-content fields', () => {
     const input = {
       label_type: 'sscc_only',
-      ship_from: ' Test Shipper   10 Origin Road ',
+      ship_from: ' Test Shipper  \n  10 Origin Road ',
       ship_to: 'Customer DC 20 Destination Road',
       purchase_order: 'PO-100',
       carrier: 'Example Freight',
@@ -27,7 +27,7 @@ describe('guided label workflows', () => {
       quantity: null,
       packaging_level: null,
       print_layout: '4x6_single',
-      ship_from: 'Test Shipper 10 Origin Road',
+      ship_from: 'Test Shipper\n10 Origin Road',
       ship_to: 'Customer DC 20 Destination Road',
       purchase_order: 'PO-100',
       carrier: 'Example Freight',

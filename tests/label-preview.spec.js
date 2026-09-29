@@ -118,8 +118,8 @@ test('signed-in user can generate both available shipping situations', async ({
     await expect(page.getByRole('group', { name: 'Transport information' })).toBeVisible({
       timeout: 10000
     });
-    await page.getByLabel('Ship From').fill('Preview Test Company, 10 Origin Road');
-    await page.getByLabel('Ship To').fill('Customer DC, 20 Destination Road');
+    await page.getByLabel('Ship From').fill('Preview Test Company\n10 Origin Road');
+    await page.getByLabel('Ship To').fill('Customer DC\n20 Destination Road');
     await page.getByLabel('PO Number').fill('PO-100');
     await page.getByLabel('Carrier').fill('Example Freight');
     await page.getByRole('spinbutton', { name: /^Gross Weight/ }).fill('540.5');
@@ -141,8 +141,8 @@ test('signed-in user can generate both available shipping situations', async ({
     expect(ssccPreviewResponse.request().postDataJSON()).toMatchObject({
       label_type: 'sscc_only',
       print_layout: '4x6_two_up',
-      ship_from: 'Preview Test Company, 10 Origin Road',
-      ship_to: 'Customer DC, 20 Destination Road',
+      ship_from: 'Preview Test Company\n10 Origin Road',
+      ship_to: 'Customer DC\n20 Destination Road',
       purchase_order: 'PO-100',
       carrier: 'Example Freight',
       gross_weight: 540.5,
@@ -218,7 +218,7 @@ test('signed-in user can generate both available shipping situations', async ({
       .getByRole('row')
       .filter({ hasText: 'Transport unit tracking' });
     await expect(ssccHistoryRow).toBeVisible();
-    await expect(ssccHistoryRow).toContainText('Ship to: Customer DC, 20 Destination Road');
+    await expect(ssccHistoryRow).toContainText('Ship to: Customer DC 20 Destination Road');
     await expect(ssccHistoryRow).toContainText('Count: 12 Cartons');
     await expect(ssccHistoryRow).toContainText('4 × 6 — two copies');
 

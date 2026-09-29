@@ -119,6 +119,9 @@
             {#if errors.ship_from}
               <p class="mt-1 text-sm text-red-600">{errors.ship_from}</p>
             {/if}
+            <p class="mt-1 text-xs text-gray-500">
+              Put the company name on the first line, followed by the origin address.
+            </p>
           </div>
 
           <div>
@@ -136,6 +139,9 @@
             {#if errors.ship_to}
               <p class="mt-1 text-sm text-red-600">{errors.ship_to}</p>
             {/if}
+            <p class="mt-1 text-xs text-gray-500">
+              Put the destination name on the first line, followed by its physical address.
+            </p>
           </div>
         </div>
 
