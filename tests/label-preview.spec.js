@@ -115,7 +115,7 @@ test('signed-in user can generate both available shipping situations', async ({
         exact: true
       })
       .click();
-    await expect(page.getByText(/The barcode contains.*AI \(00\)/)).toBeVisible({
+    await expect(page.getByRole('group', { name: 'Transport information' })).toBeVisible({
       timeout: 10000
     });
     await page.getByLabel('Ship From').fill('Preview Test Company, 10 Origin Road');
