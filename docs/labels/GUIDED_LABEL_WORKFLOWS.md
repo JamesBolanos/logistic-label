@@ -56,4 +56,6 @@ This workflow must remain distinct from a logistic unit that is itself an ordera
 - Saved `v1` labels continue through the legacy renderer. Previously saved `v2` SSCC-only and homogeneous labels retain their original layouts. New transport labels use `v3`; new structured homogeneous labels use `v4`.
 - The database migrations add workflow, print-layout, and selected-date metadata and make product-content fields optional without changing existing records.
 
-Automated checks cover form rules, GTIN normalization, workflow metadata, maximum supported count, PDF AI content, saved history, and simultaneous SSCC allocation. Representative printed labels still require physical scanner or verifier testing before that verification item is complete.
+After a preview succeeds, an automated preflight summary shows the selected label type and layout, encoded AIs, check-digit results, required AI associations, barcode fit, and SSCC placement. It contains no label identifiers or shipment contents and is not a GS1 verification certificate.
+
+Automated checks also cover form rules, GTIN normalization, workflow metadata, maximum supported count, PDF AI content, saved history, and simultaneous SSCC allocation. Representative printed labels still require physical scanner or verifier testing. That work is postponed until physical hardware is available; a virtual printer can validate page dimensions, scaling, and the print path, but not print grade or scanner performance.

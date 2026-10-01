@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-01-label-preflight-summary',
+    publishedAt: '2026-10-01',
+    category: 'improvement',
+    status: 'published',
+    title: 'Preview explains the automated label checks',
+    benefit:
+      'Before saving, review the selected layout, encoded GS1 Application Identifiers, check digits, required associations, barcode fit, and the remaining physical-print warning.',
+    featureKey: 'label_preflight_summary',
+    href: '/labels',
+    linkLabel: 'Review a label preview'
+  },
+  {
     id: '2026-10-01-identical-content-count-label',
     publishedAt: '2026-10-01',
     category: 'fix',
