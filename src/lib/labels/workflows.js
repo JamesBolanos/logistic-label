@@ -213,3 +213,12 @@ export function getPackagingLevelName(value, quantity = 2) {
   if (value === 'other') return 'Other trade item';
   return plural.endsWith('s') ? plural.slice(0, -1) : plural;
 }
+
+/** @param {unknown} value @param {string | number} [quantity] */
+export function getPackagingLevelPrintName(value, quantity = 2) {
+  // "Individual trade items" explains the choice well in the form, but it is
+  // too long for a compact label data cell. "Each" is the concise operational
+  // unit name and keeps the count explicit instead of truncating its meaning.
+  if (value === 'each') return 'Each';
+  return getPackagingLevelName(value, quantity);
+}

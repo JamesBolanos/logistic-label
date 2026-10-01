@@ -165,4 +165,25 @@ describe('guided label PDF rendering', () => {
       content.indexOf('\\(13\\)260928\\(10\\)LOT-26/09')
     );
   });
+
+  it.each(['4x6_single', '6x8_single'])(
+    'prints an individual-item count without truncation on %s',
+    async (printLayout) => {
+      const pdf = await generateLogisticLabelPDF({
+        label_type: 'homogeneous_unit',
+        template_version: 'v4',
+        print_layout: printLayout,
+        sscc: '012345670000000015',
+        gtin: '07433200838006',
+        packaging_level: 'each',
+        quantity: 120,
+        ship_from: 'Test Shipper',
+        ship_to: 'Customer DC'
+      });
+
+      const content = pdf.toString('utf8');
+      expect(content).toContain('(120 Each)');
+      expect(content).not.toContain('Individu...');
+    }
+  );
 });

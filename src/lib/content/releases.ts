@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-01-identical-content-count-label',
+    publishedAt: '2026-10-01',
+    category: 'fix',
+    status: 'published',
+    title: 'Individual-item counts fit on the label',
+    benefit:
+      'Identical-content labels now print the concise unit “Each” so counts such as “120 Each” remain complete on both supported label sizes.',
+    featureKey: 'identical_content_count_label',
+    href: '/labels',
+    linkLabel: 'Create an identical-contents label'
+  },
+  {
     id: '2026-09-29-business-scenario-labels',
     publishedAt: '2026-09-29',
     category: 'improvement',
