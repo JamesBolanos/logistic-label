@@ -162,7 +162,7 @@ Event names below are proposed contracts. Establish one recording point per even
 
 ## 4. Improvements
 
-- [ ] Guide new users through company setup and first-label creation.
+- [x] Guide new users through company setup, preview, and first-label creation with a dashboard checklist derived from existing settings, events, and saved labels.
 - [ ] After saving a label, refresh history immediately. If the automatic PDF download fails, explain that the saved label can be downloaded from history without creating another SSCC.
 - [ ] Gather feedback from repeat creators, one-time creators, configured non-creators, and signup-only users; record the task, printer, required output, and obstacle.
 - [ ] Add a categorized feature/customization request path and distinguish general suggestions from concrete project requirements.

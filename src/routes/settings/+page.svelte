@@ -115,7 +115,10 @@
 
   {#if statusMessage}
     <div class="rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-      {statusMessage}
+      <p>{statusMessage}</p>
+      <a href="/labels" class="mt-2 inline-flex font-semibold text-blue-700 hover:text-blue-800">
+        Continue to choose a shipping situation →
+      </a>
     </div>
   {/if}
 
@@ -167,7 +170,8 @@
             <p class="mt-1 text-sm text-red-600">{errors.gs1_company_prefix}</p>
           {/if}
           <p class="mt-1 text-xs text-gray-500">
-            Use the numeric prefix assigned to your organization by GS1.
+            Use the numeric prefix licensed to your organization by a GS1 Member Organisation. Do
+            not invent a prefix.
           </p>
         </div>
 
@@ -187,6 +191,9 @@
           {#if errors.extension_digit}
             <p class="mt-1 text-sm text-red-600">{errors.extension_digit}</p>
           {/if}
+          <p class="mt-1 text-xs text-gray-500">
+            This digit expands SSCC capacity. It does not identify a packaging level.
+          </p>
         </div>
       </div>
 
@@ -207,7 +214,8 @@
           <p class="mt-1 text-sm text-red-600">{errors.next_serial_reference}</p>
         {/if}
         <p class="mt-1 text-xs text-gray-500">
-          This number increments after each generated SSCC.
+          The application tries this number next when saving a label, then advances the sequence.
+          Change it only when coordinating an existing numbering sequence.
         </p>
       </div>
 

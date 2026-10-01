@@ -2,6 +2,7 @@
 <script>
     import { onMount } from 'svelte';
     import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
+    import OnboardingChecklist from '$lib/components/Dashboard/OnboardingChecklist.svelte';
     import { trackProductEvent } from '$lib/analytics/client.js';
     import { getLabelTypeName, getPackagingLevelName, LABEL_TYPES } from '$lib/labels/workflows.js';
     
@@ -15,6 +16,7 @@
     
     // Recent activity
     let recentLabels = $state([]);
+    let onboarding = $state(null);
     let isLoading = $state(true);
     let error = $state(null);
     
@@ -38,6 +40,7 @@
         const data = await response.json();
         stats = data.stats;
         recentLabels = data.recentLabels;
+        onboarding = data.onboarding;
       } catch (err) {
         console.error('Dashboard error:', err);
         error = err.message || 'Error loading dashboard data';
@@ -78,6 +81,10 @@
           </button>
         </div>
       {:else}
+        {#if onboarding && !onboarding.completed}
+          <OnboardingChecklist progress={onboarding} />
+        {/if}
+
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <!-- Total Labels -->

@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-01-new-user-onboarding',
+    publishedAt: '2026-10-01',
+    category: 'improvement',
+    status: 'published',
+    title: 'The dashboard guides your first label',
+    benefit:
+      'A short checklist now shows the next step from company setup through preview and the first saved label, with clearer explanations for SSCC settings.',
+    featureKey: 'first_label_onboarding',
+    href: '/dashboard',
+    linkLabel: 'Continue label setup'
+  },
+  {
     id: '2026-10-01-label-preflight-summary',
     publishedAt: '2026-10-01',
     category: 'improvement',
