@@ -7,6 +7,10 @@
     getLabelSizeForPrintLayout,
     getTemplateVersionForLabelType
   } from '$lib/labels/workflows.js';
+  import {
+    LABEL_VERIFICATION_HEADER,
+    parseLabelVerificationReport
+  } from '$lib/labels/verification.js';
 
   // Props
   let { labelData = null, previewUrl = $bindable(null) } = $props();
@@ -14,6 +18,7 @@
   // State
   let isLoading = $state(false);
   let error = $state(null);
+  let verification = $state(null);
   let objectUrl = null;
 
   onDestroy(() => {
@@ -35,6 +40,7 @@
 
     isLoading = true;
     error = null;
+    verification = null;
 
     try {
       // Call the API to generate a preview
@@ -53,6 +59,7 @@
         throw new Error(errorData.message || 'Failed to generate preview');
       }
 
+      verification = parseLabelVerificationReport(response.headers.get(LABEL_VERIFICATION_HEADER));
       const pdf = await response.blob();
       revokePreviewUrl();
       objectUrl = URL.createObjectURL(pdf);
@@ -113,6 +120,71 @@
         save the label. Print at 100% scale to preserve barcode dimensions.
       </p>
     </div>
+    {#if verification}
+      <section
+        class="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"
+        aria-labelledby="automated-label-checks-heading"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+            aria-hidden="true"
+          >
+            ✓
+          </div>
+          <div>
+            <h4 id="automated-label-checks-heading" class="font-semibold text-emerald-950">
+              Automated label checks
+            </h4>
+            <p class="mt-1 text-sm text-emerald-900">
+              The preview passed the application checks listed below.
+            </p>
+          </div>
+        </div>
+
+        <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+          <div>
+            <dt class="font-medium text-gray-600">Label type</dt>
+            <dd class="mt-1 text-gray-950">{verification.labelType}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-gray-600">Print layout</dt>
+            <dd class="mt-1 text-gray-950">{verification.printLayout}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-gray-600">Barcode data</dt>
+            <dd class="mt-1 text-gray-950">
+              {verification.symbology}: {verification.applicationIdentifiers
+                .map((ai) => `(${ai})`)
+                .join(', ')}
+            </dd>
+          </div>
+        </dl>
+
+        <ul class="mt-4 space-y-2 text-sm">
+          {#each verification.checks as check (check.id)}
+            <li class="flex items-start gap-2 text-gray-800">
+              <span class={check.passed ? 'text-emerald-700' : 'text-red-700'} aria-hidden="true">
+                {check.passed ? '✓' : '×'}
+              </span>
+              <span>{check.label}</span>
+            </li>
+          {/each}
+        </ul>
+
+        <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
+          <p class="font-semibold">Physical verification is still required</p>
+          <ul class="mt-1 list-disc space-y-1 pl-5">
+            {#each verification.warnings as warning (warning)}
+              <li>{warning}</li>
+            {/each}
+          </ul>
+        </div>
+        <p class="mt-3 text-xs text-gray-600">
+          These automated checks are not a GS1 verification certificate.
+        </p>
+      </section>
+    {/if}
   {:else}
     <div
       class="flex flex-col items-center justify-center h-64 bg-gray-50 border border-gray-200 rounded-md"

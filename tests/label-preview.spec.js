@@ -17,8 +17,9 @@ test('signed-in user can generate both available shipping situations', async ({
 
   try {
     await page.goto('/', { waitUntil: 'networkidle' });
-    await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
-    await expect(page.getByText('Choose a label by the shipping problem it solves')).toBeVisible();
+    const whatsNewPanel = page.getByRole('region', { name: "What's new" });
+    await expect(whatsNewPanel).toBeVisible();
+    await expect(whatsNewPanel.getByRole('listitem')).toHaveCount(2);
     await page.getByRole('link', { name: 'View all updates' }).click();
     await expect(page).toHaveURL(/\/updates$/);
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
@@ -152,6 +153,19 @@ test('signed-in user can generate both available shipping situations', async ({
     });
     expect(ssccPreviewResponse.headers()['content-type']).toContain('application/pdf');
     expect(Number(ssccPreviewResponse.headers()['content-length'])).toBeGreaterThan(0);
+    expect(decodeURIComponent(ssccPreviewResponse.headers()['x-label-verification'])).toContain(
+      '"applicationIdentifiers":["00"]'
+    );
+
+    const transportVerification = page.getByRole('region', {
+      name: 'Automated label checks'
+    });
+    await expect(transportVerification).toBeVisible();
+    await expect(transportVerification).toContainText('Transport unit tracking');
+    await expect(transportVerification).toContainText('4 × 6 — two copies');
+    await expect(transportVerification).toContainText('GS1-128: (00)');
+    await expect(transportVerification).toContainText('SSCC check digit is valid');
+    await expect(transportVerification).toContainText('Physical verification is still required');
 
     const transportData = {
       label_type: 'sscc_only',
@@ -269,6 +283,19 @@ test('signed-in user can generate both available shipping situations', async ({
     });
     expect(homogeneousPreviewResponse.headers()['content-type']).toContain('application/pdf');
     expect(Number(homogeneousPreviewResponse.headers()['content-length'])).toBeGreaterThan(0);
+    expect(decodeURIComponent(homogeneousPreviewResponse.headers()['x-label-verification'])).toContain(
+      '"applicationIdentifiers":["02","37","13","10","00"]'
+    );
+
+    const homogeneousVerification = page.getByRole('region', {
+      name: 'Automated label checks'
+    });
+    await expect(homogeneousVerification).toContainText('Identical contents');
+    await expect(homogeneousVerification).toContainText('6 × 8 — detailed contents');
+    await expect(homogeneousVerification).toContainText('GS1-128: (02), (37), (13), (10), (00)');
+    await expect(homogeneousVerification).toContainText(
+      'AI (02) content is paired with AI (37) count'
+    );
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
     await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({

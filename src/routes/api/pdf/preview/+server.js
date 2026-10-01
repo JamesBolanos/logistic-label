@@ -5,6 +5,12 @@ import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/for
 import { getLabelSettings } from '$lib/server/db/settings';
 import { generateSSCC } from '$lib/utils/gs1Utils';
 import { getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
+import {
+  buildSuccessfulLabelVerification,
+  LABEL_VERIFICATION_HEADER,
+  serializeLabelVerificationReport
+} from '$lib/labels/verification.js';
+import { buildGs1Elements } from '$lib/server/pdf/gs1Barcode.js';
 import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
 import {
   durationSince,
@@ -106,6 +112,13 @@ export async function POST({ request, locals }) {
       company_name: settings.company_name
     });
 
+    // Send only controlled verification metadata. Label contents stay in the PDF
+    // and are never copied into response headers or product analytics.
+    const verification = buildSuccessfulLabelVerification(
+      previewLabelData,
+      buildGs1Elements(previewLabelData).map(({ ai }) => ai)
+    );
+
     await recordOperationalEvent({
       eventName: 'label_preview_succeeded',
       userId: user.id,
@@ -122,7 +135,8 @@ export async function POST({ request, locals }) {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'inline; filename="gs1_label_preview.pdf"',
         'Content-Length': pdfBuffer.length.toString(),
-        'Cache-Control': 'no-store'
+        'Cache-Control': 'no-store',
+        [LABEL_VERIFICATION_HEADER]: serializeLabelVerificationReport(verification)
       }
     });
   } catch (error) {

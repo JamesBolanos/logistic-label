@@ -151,7 +151,7 @@ Event names below are proposed contracts. Establish one recording point per even
 
 - [x] Make SSCC allocation atomic and verify simultaneous label creation against an isolated database.
 - [x] Correct the generated 4×6 and 4×3 barcode dimensions, quiet zones, HRI, and SSCC placement for the two guided workflows.
-- [ ] Print and validate representative labels with a scanner/verifier.
+- [ ] Print and validate representative labels with a scanner/verifier. Postponed until a physical printer and scanner are available; a separate virtual-printer project can verify page dimensions, scaling, and the print path but cannot close this physical-quality check.
 - [ ] Clarify weight. If it means logistic gross weight, use logistic weight AIs such as `340n`, not trade item net weight `320n`.
 - [x] Complete password recovery.
 - [ ] Handle returned Google sign-in errors.
@@ -201,7 +201,7 @@ Label capability checklist (completed foundations are shown for context; correct
 - [x] HRI below each barcode.
 - [x] Review data titles and issuer information for each supported label type.
 - [x] Offer SSCC-only 4×6 single, 4×6 two-copy, and 4×3 single layouts; keep 3×3 unavailable because a compliant SSCC barcode does not fit.
-- [ ] Basic verification report before download: label type, AIs used, check digits, required associations, warnings.
+- [x] Basic verification report before download: label type, layout, AIs used, check digits, required associations, barcode fit, SSCC placement, and physical-verification warnings.
 - [ ] Extend existing SSCC/GTIN/lot search with created-date filtering.
 
 ### Excel Export (.xlsx)

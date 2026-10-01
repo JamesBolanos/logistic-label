@@ -59,6 +59,7 @@
 
 - Shared form validation in `src/lib/validation/formValidation.js` for login/signup and label inputs.
 - The same label rules validate browser and API requests. The PDF renderer receives only validated, normalized guided-label data and rejects barcode content that cannot fit at the supported dimensions.
+- A successful preview response includes a controlled verification summary for the UI: label type, layout, AIs, check results, and fixed warnings. It never includes the SSCC, GTIN, addresses, lot, or other shipment contents.
 
 ## Styling
 
@@ -78,6 +79,6 @@
 - Add Apple OAuth when the developer account/callback requirements are ready.
 - Implement SSCC allocation safeguards, including preventing SSCC reallocation for at least one year after shipment date.
 - Extend the guided workflow only with scenario-specific fields and valid AI combinations from `docs/GS1_LOGISTIC_LABEL_GUIDE.md`.
-- Verify barcode output against physical scanners/GS1 certification requirements.
+- Verify barcode output against physical scanners/GS1 certification requirements when the required hardware is available. A virtual printer can test the PDF/print path but cannot verify physical print grade or scanner performance.
 - Expand integration and business-rule coverage as product areas change.
 - Keep the explicit Vercel adapter aligned with the supported SvelteKit version.
