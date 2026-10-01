@@ -2,7 +2,7 @@ import { buildGs1Elements, getBarcodeModules, humanReadable } from './gs1Barcode
 import {
   DEFAULT_PRINT_LAYOUT,
   getHomogeneousDateOption,
-  getPackagingLevelName,
+  getPackagingLevelPrintName,
   getTransportCountTypeName,
   LABEL_TYPES,
   PRINT_LAYOUTS,
@@ -315,7 +315,7 @@ function getSSCCElements(elements) {
 }
 
 function formatHomogeneousCount(labelData) {
-  return `${Number(labelData.quantity).toLocaleString('en-US')} ${getPackagingLevelName(
+  return `${Number(labelData.quantity).toLocaleString('en-US')} ${getPackagingLevelPrintName(
     labelData.packaging_level,
     labelData.quantity
   )}`;
