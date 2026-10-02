@@ -72,7 +72,9 @@
         }
 
         trackProductEvent('login', { method: 'email' });
-        goto(returnUrl);
+        // Refresh server layout data after the session cookie changes so the navbar
+        // immediately reflects the authenticated user.
+        await goto(returnUrl, { invalidateAll: true });
       } catch (error) {
         console.error('LoginForm fetch error', error);
         formError = 'An unexpected error occurred. Please try again.';

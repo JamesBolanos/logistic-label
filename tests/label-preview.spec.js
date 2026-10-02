@@ -46,6 +46,14 @@ test('signed-in user can generate both available shipping situations', async ({
 
     await expect(page).toHaveURL(/\/dashboard|\/labels/, { timeout: 10000 });
 
+    // Verify the first client-side redirect refreshes authenticated layout data.
+    // A later page.goto() would hide a stale-navbar regression by forcing a reload.
+    const expectedDisplayName = email.split('@')[0];
+    const navigation = page.getByRole('navigation');
+    await expect(navigation.getByText(expectedDisplayName, { exact: true })).toBeVisible();
+    await expect(navigation.getByRole('button', { name: 'Logout', exact: true })).toBeVisible();
+    await expect(navigation.getByRole('link', { name: 'Login', exact: true })).toHaveCount(0);
+
     await page.goto('/dashboard');
     const onboardingChecklist = page.getByRole('region', {
       name: 'Create your first logistic label'
