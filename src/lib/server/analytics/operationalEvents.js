@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { and, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { operationalEvent } from '$lib/server/db/schema.js';
 import { isProductEventName } from '$lib/analytics/events.js';
@@ -58,6 +59,18 @@ export async function recordOperationalEvent(input) {
     console.error(`Operational event recording failed for ${input.eventName}:`, error);
     return false;
   }
+}
+
+export async function hasOperationalEvent(userId, eventName) {
+  if (!db || !userId || !isProductEventName(eventName)) return false;
+
+  const [event] = await db
+    .select({ id: operationalEvent.id })
+    .from(operationalEvent)
+    .where(and(eq(operationalEvent.userId, userId), eq(operationalEvent.eventName, eventName)))
+    .limit(1);
+
+  return Boolean(event);
 }
 
 export function durationSince(startedAt) {

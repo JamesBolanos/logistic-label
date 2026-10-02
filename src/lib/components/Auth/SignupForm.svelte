@@ -73,7 +73,9 @@
 
       trackProductEvent('sign_up', { method: 'email' });
       formSuccess = 'Account created successfully! Redirecting...';
-      setTimeout(() => goto('/dashboard'), 1000);
+      // Authentication changes the session cookie outside SvelteKit's load tracking.
+      // Reload layout data so the navbar shows the new user on the first dashboard visit.
+      setTimeout(() => goto('/dashboard', { invalidateAll: true }), 1000);
     } catch {
       formError = 'An unexpected error occurred. Please try again.';
       trackProductEvent('workflow_failed', {

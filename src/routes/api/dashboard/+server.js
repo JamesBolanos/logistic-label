@@ -1,5 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { getLabelStats } from '$lib/server/db/labels';
+import { getLabelSettings } from '$lib/server/db/settings';
+import { hasOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
+import { buildOnboardingProgress } from '$lib/onboarding/progress.js';
 
 export async function GET({ locals }) {
   const user = locals.user;
@@ -9,11 +12,21 @@ export async function GET({ locals }) {
   }
 
   try {
-    const dashboard = await getLabelStats(user.id);
+    const [dashboard, settings, previewCompleted] = await Promise.all([
+      getLabelStats(user.id),
+      getLabelSettings(user.id),
+      hasOperationalEvent(user.id, 'label_preview_succeeded')
+    ]);
+    const onboarding = buildOnboardingProgress({
+      settingsConfigured: settings.is_configured,
+      previewCompleted,
+      totalLabels: dashboard.stats.totalLabels
+    });
 
     return json({
       success: true,
-      ...dashboard
+      ...dashboard,
+      onboarding
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);

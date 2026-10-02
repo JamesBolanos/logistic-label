@@ -42,7 +42,8 @@
 ## Dashboard data
 
 - Endpoint: `/api/dashboard`
-- Requires an authenticated session; computes totals, today count, last label, unique GTINs, and recent labels from Postgres.
+- Requires an authenticated session; computes totals, today count, last label, unique GTINs, recent labels, and first-label onboarding progress from Postgres.
+- Onboarding is derived from existing settings, successful preview events, and saved-label totals. It adds no user-profile state or database table, and existing label creators are treated as complete.
 
 ## Labels and PDF
 

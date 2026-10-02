@@ -46,6 +46,24 @@ test('signed-in user can generate both available shipping situations', async ({
 
     await expect(page).toHaveURL(/\/dashboard|\/labels/, { timeout: 10000 });
 
+    // Verify the first client-side redirect refreshes authenticated layout data.
+    // A later page.goto() would hide a stale-navbar regression by forcing a reload.
+    const expectedDisplayName = email.split('@')[0];
+    const navigation = page.getByRole('navigation');
+    await expect(navigation.getByText(expectedDisplayName, { exact: true })).toBeVisible();
+    await expect(navigation.getByRole('button', { name: 'Logout', exact: true })).toBeVisible();
+    await expect(navigation.getByRole('link', { name: 'Login', exact: true })).toHaveCount(0);
+
+    await page.goto('/dashboard');
+    const onboardingChecklist = page.getByRole('region', {
+      name: 'Create your first logistic label'
+    });
+    await expect(onboardingChecklist).toBeVisible();
+    await expect(onboardingChecklist).toContainText('1 of 4 complete');
+    await expect(
+      onboardingChecklist.getByRole('link', { name: 'Configure label settings' })
+    ).toBeVisible();
+
     const ownerStatisticsResponse = await page.request.get('/admin/statistics');
     expect(ownerStatisticsResponse.status()).toBe(403);
 
@@ -59,6 +77,22 @@ test('signed-in user can generate both available shipping situations', async ({
     await page.getByLabel('Next Serial Reference').fill('1');
     await page.getByRole('button', { name: 'Save Settings' }).click();
     await expect(page.getByText('Label settings saved.')).toBeVisible({ timeout: 15000 });
+    await expect(
+      page.getByRole('link', { name: /Continue to choose a shipping situation/ })
+    ).toBeVisible();
+
+    const configuredDashboardResponse = await page.request.get('/api/dashboard');
+    expect(configuredDashboardResponse.ok()).toBe(true);
+    expect((await configuredDashboardResponse.json()).onboarding).toMatchObject({
+      completed: false,
+      completedCount: 2,
+      steps: {
+        settingsConfigured: true,
+        previewCompleted: false,
+        firstLabelSaved: false
+      },
+      nextAction: { label: 'Preview your first label' }
+    });
 
     const labelSettingsResponsePromise = page.waitForResponse((response) => {
       const requestUrl = new URL(response.url());
@@ -465,6 +499,11 @@ test('signed-in user can generate both available shipping situations', async ({
         })
       ])
     );
+
+    await page.goto('/dashboard');
+    await expect(
+      page.getByRole('region', { name: 'Create your first logistic label' })
+    ).toHaveCount(0);
   } finally {
     await deleteTestUser(email, { requireExisting: accountCreationConfirmed });
   }
