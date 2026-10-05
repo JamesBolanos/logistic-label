@@ -99,9 +99,14 @@ test('signed-in user can generate both available shipping situations', async ({
       return requestUrl.pathname === '/api/settings' && response.request().method() === 'GET';
     });
 
-    await page.goto('/labels');
+    // Public guide links should open the generator with the selected workflow ready to use.
+    await page.goto('/labels?type=sscc_only');
     const labelSettingsResponse = await labelSettingsResponsePromise;
     expect(labelSettingsResponse.ok()).toBe(true);
+    await expect(page.getByRole('group', { name: 'Transport information' })).toBeVisible({
+      timeout: 10000
+    });
+    await page.getByRole('button', { name: 'Choose a different situation' }).click();
 
     const legacyLabel = await createLegacyLabelForTestUser(email);
     expect(legacyLabel).toMatchObject({

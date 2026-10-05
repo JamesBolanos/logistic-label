@@ -72,7 +72,7 @@ const controlledValues: Record<string, ReadonlySet<string>> = {
   source: new Set(['new_label', 'history']),
   step: new Set(workflowSteps),
   error_category: new Set(failureCategories),
-  placement: new Set(['home_hero', 'home_cta']),
+  placement: new Set(['home_hero', 'home_cta', 'guide_cta']),
   change_category: new Set(['fix', 'improvement', 'new_feature'])
 };
 

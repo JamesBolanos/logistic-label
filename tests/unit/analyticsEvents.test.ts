@@ -82,6 +82,9 @@ describe('analytics event contract', () => {
     expect(
       sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'home_cta' })
     ).toEqual({ placement: 'home_cta' });
+    expect(
+      sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'guide_cta' })
+    ).toEqual({ placement: 'guide_cta' });
     expect(sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'unknown' })).toEqual(
       {}
     );

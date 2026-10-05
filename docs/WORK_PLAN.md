@@ -157,8 +157,8 @@ Event names below are proposed contracts. Establish one recording point per even
 - [x] Handle returned Google sign-in errors with safe recovery guidance and a retry path.
 - [x] Remove the unsupported history Delete action so saved SSCC records are not presented as disposable.
 - [x] Preserve date-only values as calendar dates in label data, history, and PDF display without timezone conversion.
-- [ ] Give automated tests an explicit isolated database and dedicated server; prevent accidental production use.
-- [ ] Verify account cleanup after success, failures immediately after signup, later failures, and timeouts; recover run-owned leftovers after interrupted tests.
+- [x] Give automated tests an explicit isolated database and dedicated server; prevent accidental production use.
+- [x] Delete run-owned accounts in test cleanup and dispose the temporary Neon branch after every CI result; expire interrupted-run branches automatically.
 
 ## 4. Improvements
 
@@ -171,7 +171,7 @@ Event names below are proposed contracts. Establish one recording point per even
 - [ ] Preserve saved label data and template versions when products, company settings, or layouts change.
 - [ ] Separate shared label validation/data from layout and export rendering to support future sizes and formats.
 - [ ] Choose the next size, template, batch workflow, or export format from repeated requests or a scoped customer project.
-- [ ] Improve the public sample label, walkthrough, supported-format information, and custom-implementation call to action.
+- [x] Improve the public sample label, walkthrough, supported-format information, and custom-implementation call to action.
 
 ## 5. New Features
 

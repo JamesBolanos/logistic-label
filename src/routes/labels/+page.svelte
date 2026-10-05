@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { page } from '$app/state';
   import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
   import LabelWorkflowSelector from '$lib/components/Labels/LabelWorkflowSelector.svelte';
   import LabelForm from '$lib/components/Labels/LabelForm.svelte';
@@ -9,10 +10,16 @@
   import { classifyHttpFailure } from '$lib/analytics/events.js';
   import {
     getLabelSizeForPrintLayout,
-    getTemplateVersionForLabelType
+    getTemplateVersionForLabelType,
+    isSupportedLabelType
   } from '$lib/labels/workflows.js';
 
-  let selectedLabelType = $state(null);
+  // A public guide can deep-link to a supported workflow. Unsupported values
+  // still fall back to the selector instead of creating an ambiguous draft.
+  const requestedLabelType = page.url.searchParams.get('type');
+  let selectedLabelType = $state(
+    isSupportedLabelType(requestedLabelType) ? requestedLabelType : null
+  );
   let labelData = $state(null);
   let previewUrl = $state(null);
   let generatedLabelId = $state(null);
