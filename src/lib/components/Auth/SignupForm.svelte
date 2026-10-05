@@ -4,8 +4,14 @@
   import { dev } from '$app/environment';
   import { authClient } from '$lib/auth-client';
   import { trackProductEvent } from '$lib/analytics/client.js';
+  import {
+    getGoogleAuthErrorCallbackURL,
+    GOOGLE_AUTH_START_ERROR_MESSAGE
+  } from '$lib/auth/googleAuthErrors';
   import { validateRegistrationForm } from '$lib/validation/formValidation';
   import Captcha from './Captcha.svelte';
+
+  let { initialError = '' } = $props();
 
   let email = $state('');
   let password = $state('');
@@ -14,6 +20,7 @@
   let isSocialLoading = $state(false);
   let errors = $state({});
   let formError = $state('');
+  let displayedError = $derived(formError || initialError);
   let formSuccess = $state('');
   let captchaVerified = $state(false);
   let captchaToken = $state('');
@@ -92,17 +99,27 @@
     formError = '';
 
     try {
-      await authClient.signIn.social({
+      const { error } = await authClient.signIn.social({
         provider: 'google',
-        callbackURL: '/dashboard?authMethod=google'
+        callbackURL: '/dashboard?authMethod=google',
+        errorCallbackURL: getGoogleAuthErrorCallbackURL('/signup')
       });
-    } catch (error) {
-      console.error('Google sign-in error', error);
+
+      if (error) {
+        formError = GOOGLE_AUTH_START_ERROR_MESSAGE;
+        trackProductEvent('workflow_failed', {
+          step: 'login',
+          error_category: 'authentication'
+        });
+        isSocialLoading = false;
+      }
+    } catch {
+      console.error('Unable to start Google sign-in');
       trackProductEvent('workflow_failed', {
         step: 'login',
         error_category: 'network'
       });
-      formError = 'Unable to start Google sign-in. Please try again.';
+      formError = GOOGLE_AUTH_START_ERROR_MESSAGE;
       isSocialLoading = false;
     }
   }
@@ -120,9 +137,9 @@
 <div class="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
   <h2 class="text-2xl font-bold mb-6 text-center">Create an Account</h2>
 
-  {#if formError}
+  {#if displayedError}
     <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
-      {formError}
+      {displayedError}
     </div>
   {/if}
 

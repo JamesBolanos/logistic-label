@@ -2,10 +2,14 @@
 <script>
     import { page } from '$app/state';
     import LoginForm from '$lib/components/Auth/LoginForm.svelte';
+    import { getGoogleAuthErrorMessage } from '$lib/auth/googleAuthErrors';
     
     // Check for return URL and expired token notification
     let returnUrl = $derived(page.url.searchParams.get('returnUrl') || '/dashboard');
     let tokenExpired = $derived(page.url.searchParams.get('expired') === 'true');
+    let googleAuthError = $derived(
+      getGoogleAuthErrorMessage(page.url.searchParams.get('error'))
+    );
   </script>
   
   <svelte:head>
@@ -22,5 +26,5 @@
       </div>
     {/if}
     
-    <LoginForm {returnUrl} />
+    <LoginForm {returnUrl} initialError={googleAuthError} />
   </div>

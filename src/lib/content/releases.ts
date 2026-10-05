@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-04-google-sign-in-errors',
+    publishedAt: '2026-10-04',
+    category: 'fix',
+    status: 'published',
+    title: 'Google sign-in failures explain the next step',
+    benefit:
+      'If Google sign-in is cancelled or cannot finish, the account page now shows safe recovery guidance and keeps the Google and email sign-in options available.',
+    featureKey: 'google_sign_in_errors',
+    href: '/login',
+    linkLabel: 'Sign in'
+  },
+  {
     id: '2026-10-01-new-user-onboarding',
     publishedAt: '2026-10-01',
     category: 'improvement',

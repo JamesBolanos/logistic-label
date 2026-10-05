@@ -152,9 +152,9 @@ Event names below are proposed contracts. Establish one recording point per even
 - [x] Make SSCC allocation atomic and verify simultaneous label creation against an isolated database.
 - [x] Correct the generated 4×6 and 4×3 barcode dimensions, quiet zones, HRI, and SSCC placement for the two guided workflows.
 - [ ] Print and validate representative labels with a scanner/verifier. Postponed until a physical printer and scanner are available; a separate virtual-printer project can verify page dimensions, scaling, and the print path but cannot close this physical-quality check.
-- [ ] Clarify weight. If it means logistic gross weight, use logistic weight AIs such as `340n`, not trade item net weight `320n`.
+- [x] Keep optional Gross Weight explicitly human-readable in the current transport workflows; do not imply a trade-item net-weight AI or encode weight without a defined business scenario.
 - [x] Complete password recovery.
-- [ ] Handle returned Google sign-in errors.
+- [x] Handle returned Google sign-in errors with safe recovery guidance and a retry path.
 - [x] Remove the unsupported history Delete action so saved SSCC records are not presented as disposable.
 - [x] Preserve date-only values as calendar dates in label data, history, and PDF display without timezone conversion.
 - [ ] Give automated tests an explicit isolated database and dedicated server; prevent accidental production use.
