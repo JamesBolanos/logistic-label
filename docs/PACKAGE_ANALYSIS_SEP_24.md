@@ -1,5 +1,6 @@
-cat << 'EOF' > GEMINI_PACKAGE_ANALYSIS.md
 # Package.json Analysis: logistic-label
+
+Historical snapshot captured September 24, 2026. Use `package.json`, `README.md`, and `docs/KANBAN.md` for current versions and project status.
 
 ## Key Information & Metadata
 
@@ -61,4 +62,3 @@ Your project has a strong emphasis on testing, formatting, and linting:
 1. **Explicit Version Targets:** Node `24.x` and npm `11.x` are set in the `engines` field, representing very modern runtime requirements.
 2. **Security / Dependency Overrides:** You have an explicit override `"cookie": "1.1.1"`. This is usually added to force nested transitive dependencies to use a patched version of `cookie`.
 3. **Specific Prettier Scope:** The `format` and `format:check` scripts target specific directories and files explicitly rather than running universally over all project files.
-EOF

@@ -1,5 +1,7 @@
 # Professional Delivery Fast-Track
 
+This document holds detailed delivery requirements and acceptance criteria. Current priority and workflow state are maintained only in [`docs/KANBAN.md`](./KANBAN.md). Completed foundation tasks are checked here when repository or deployment evidence exists; remaining unchecked tasks stay as reference backlog until selected on the Kanban board.
+
 ## Objective
 
 Turn the current MVP repository into a repeatable, testable, deployable, and maintainable product foundation without adding functional requirements.
@@ -189,7 +191,7 @@ Purpose: make quality expectations executable rather than informal.
 - [x] Add `svelte-check` and a `check` script. Enable useful JavaScript checking first, then introduce TypeScript incrementally in new or high-risk modules.
 - [x] Add Vitest for deterministic business-rule tests that do not require a browser or live database.
 - [x] Create a single `quality` script that runs the fast local checks in a documented order.
-- [ ] Ignore Playwright reports, test results, local storage, coverage, and environment files; remove generated artifacts from version control without deleting useful source fixtures. Ignore rules are complete; previously tracked Playwright artifacts have active changes from the test-cleanup work and must be removed when that work is consolidated without overwriting it.
+- [x] Ignore Playwright reports, test results, local storage, coverage, and environment files; remove generated artifacts from version control without deleting useful source fixtures.
 - [x] Add `CONTRIBUTING.md` with setup, branch, commit, testing, migration, and review expectations.
 - [x] Add a lightweight pull-request template containing purpose, risk, validation, migration, observability, and release-note checks.
 
@@ -204,16 +206,16 @@ Acceptance criteria:
 Purpose: protect the business-critical paths with the smallest useful test suite.
 
 - [ ] Inventory the business rules and classify each check as unit, integration, or end-to-end.
-- [ ] Add unit coverage for SSCC/check-digit rules, validation, date handling, and any deterministic PDF/layout calculations that can be tested without comparing implementation details.
-- [ ] Add database integration coverage for SSCC uniqueness/allocation, label ownership, settings ownership, and migrations.
-- [ ] Create the Neon non-production project and a dedicated test configuration that cannot access the production project. Require an explicit test marker in addition to environment-scoped credentials.
+- [x] Add unit coverage for the current SSCC/check-digit rules, validation, date handling, deterministic PDF/layout calculations, authentication recovery, analytics, and onboarding rules.
+- [ ] Expand database integration coverage beyond atomic SSCC allocation to label ownership, settings ownership, and migration boundaries.
+- [x] Create the Neon non-production project and a dedicated test configuration that cannot access the production project. Require explicit non-production environment and project-identity markers in addition to scoped credentials.
 - [ ] Add synthetic, deterministic seed builders separate from Drizzle schema migrations; make seed and cleanup commands refuse production targets.
 - [ ] Verify the complete committed Drizzle migration history against an empty disposable database and pending migrations against the previous released schema.
-- [ ] Make Playwright start its own application server and isolated test database in local and CI runs.
-- [ ] Finish the current Playwright account-cleanup work for success, post-signup failure, later failure, timeout, and interrupted-run leftovers.
-- [ ] Keep the browser suite small: email signup/login, Google sign-in smoke testing where safely automatable, settings, preview/generation, history/download, and authorization boundaries.
-- [ ] Define stable test data/builders and prohibit tests from relying on production users, production OAuth secrets, or execution order.
-- [ ] Delete disposable Neon test branches in an always-run cleanup step and add a bounded cleanup job for run-owned branches left by interrupted workflows.
+- [x] Make Playwright start its own application server and use an isolated test database in CI; require an explicitly confirmed non-production target for local E2E.
+- [x] Clean up the Playwright account after success or failure and expire the disposable database branch so interrupted runs cannot leave persistent test data.
+- [x] Keep the browser suite focused on signup/login, settings, preview/generation, history/download, public guidance, and access boundaries; do not automate an external Google consent screen.
+- [x] Define stable run-owned test data and prohibit tests from relying on production users, production OAuth secrets, or execution order.
+- [x] Delete disposable Neon test branches in an always-run cleanup step and set bounded expiration for branches left by interrupted workflows.
 
 Acceptance criteria:
 
@@ -257,15 +259,15 @@ Purpose: make a release a controlled procedure rather than an implicit platform 
 - [x] Configure the stable `staging.sscc-labels.com` domain for Google OAuth, real CAPTCHA-domain, callback, cookie, and logout verification.
 - [ ] Maintain an environment-variable inventory with purpose, exposure (`public` or `server-only`), required environments, and rotation owner.
 - [ ] Add migration scripts for generate, check, migrate, fresh-database verification, and previous-release verification; prohibit `push` in shared and production workflows.
-- [ ] Verify committed Drizzle migrations in the disposable CI database before applying them through a guarded step to the shared staging database; never let arbitrary preview builds migrate shared staging automatically.
+- [x] Apply committed Drizzle migrations in the disposable CI database before E2E and provide a guarded manual workflow for the existing staging database; arbitrary preview builds never migrate shared staging automatically.
 - [ ] Make the production release apply only reviewed, committed migrations through a guarded environment-aware step. A migration failure must stop the release.
 - [ ] Document and verify the expand-and-contract migration sequence, including forward recovery and when a destructive cleanup is allowed.
 - [ ] Add a non-destructive deployment smoke check covering the home page, login page, CAPTCHA rendering, and an authenticated health-critical path using a dedicated test account where appropriate.
 - [ ] Use Vercel Deployment Checks to prevent production-domain promotion until the selected GitHub quality and release checks pass.
-- [ ] Document the release flow from reviewed commit through preview verification, production deployment, smoke check, and release record.
+- [x] Document the reviewed-commit flow through isolated CI, stable staging verification, guarded database migration, and Vercel deployment.
 - [ ] Document rollback for application code and forward-recovery for database migrations; do not rely on reversing a destructive migration.
-- [ ] Verify custom domains, OAuth callbacks, CAPTCHA domains, security headers, and production environment scope after deployment.
-- [ ] Review the Vercel plan before commercial launch and record whether to move to a commercial Vercel plan or an approved alternative host.
+- [x] Verify the stable staging and production domains, OAuth callbacks, CAPTCHA domains, logout/session behavior, and environment scope after deployment.
+- [x] Record the Vercel Hobby non-commercial boundary and the need for a suitable commercial plan or approved alternative before commercial launch.
 
 Acceptance criteria:
 
@@ -334,10 +336,10 @@ Acceptance criteria:
 
 Purpose: prove the repository is ready to resume product delivery.
 
-- [ ] Run the complete quality pipeline from a clean checkout.
-- [ ] Deploy a release candidate to the isolated preview/staging environment and complete the smoke checklist.
-- [ ] Release the foundation changes to production using the documented process and verify production without creating customer records.
-- [ ] Review all temporary exceptions and convert unresolved risks into prioritized backlog items.
+- [x] Run the complete quality pipeline from clean GitHub Actions checkouts.
+- [x] Deploy reviewed changes to the isolated stable staging environment and complete authentication/data smoke checks.
+- [x] Release the established foundation and subsequent increments to production and verify public behavior without creating customer records.
+- [x] Review unresolved delivery, operations, security, and recovery work and transfer its current priority to `docs/KANBAN.md`.
 - [ ] Record baseline lead time, deployment result, test duration, and known operational limits for comparison after later releases.
 - [ ] Publish a concise repository release note; add a user-facing What's New entry only for changes that affect users.
 
