@@ -105,6 +105,12 @@
       <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-12">
         What You Can Use Today
       </h2>
+      <p class="-mt-8 mb-10 text-center text-gray-600">
+        Unsure which option fits?
+        <a href="/guide" class="font-medium text-blue-600 hover:text-blue-500">
+          Compare the supported labels and their barcodes.
+        </a>
+      </p>
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
         {#each features as feature (feature.title)}
           <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">

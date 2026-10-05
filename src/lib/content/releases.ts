@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-04-supported-label-guide',
+    publishedAt: '2026-10-04',
+    category: 'improvement',
+    status: 'published',
+    title: 'Compare supported labels before creating one',
+    benefit:
+      'A public visual guide now explains when to use each available label, the information and GS1 barcodes it contains, supported PDF sizes, and situations that need another solution.',
+    featureKey: 'supported_label_guide',
+    href: '/guide',
+    linkLabel: 'Compare supported labels'
+  },
+  {
     id: '2026-10-04-google-sign-in-errors',
     publishedAt: '2026-10-04',
     category: 'fix',
