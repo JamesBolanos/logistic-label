@@ -7,15 +7,18 @@
 - Better Auth for email/password sessions and Google OAuth.
 - Neon Postgres with Drizzle ORM and checked-in SQL migrations.
 - Server hooks expose the authenticated Better Auth user/session via `locals`.
-- PDF generation renders 4×6 and 4×3 labels with vector GS1-128 barcodes.
+- PDF generation renders 4×3, 4×6, and 6×8 labels with vector GS1-128 barcodes.
 
 ## Routing
 
 - Pages under `src/routes/`
   - `/` landing
   - `/login`, `/signup`
+  - `/reset-password`
+  - `/guide`, `/updates`, `/privacy` (public)
   - `/dashboard` (protected)
   - `/labels` (listing/creation pages)
+  - `/admin/statistics` (owner-only)
 - API endpoints under `src/routes/api/`
   - `auth/`: Better Auth mounted under `/api/auth/*`
   - `dashboard/`: aggregated dashboard data
@@ -35,7 +38,7 @@
 ## Data layer
 
 - `src/lib/server/db/index.js` creates the Neon HTTP client and Drizzle database instance.
-- `src/lib/server/db/schema.js` defines Better Auth tables plus `logistic_label`.
+- `src/lib/server/db/schema.js` defines Better Auth tables, user settings, logistic labels, and operational events.
 - `drizzle/` contains SQL migrations.
 - Label rows are scoped by Better Auth user id.
 
@@ -72,14 +75,12 @@
 - Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy) are set in `src/hooks.server.js` (server-side).
 - `src/lib/server/config/environment.js` validates required Production configuration at server startup. Vercel supplies `VERCEL_ENV`; other deployments can set `APP_ENV=production`.
 
-## Known gaps / next steps
+## Current constraints
 
-- Configure production `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, Google OAuth credentials, and Neon URL in Vercel.
-- For Google OAuth in production, set `BETTER_AUTH_URL=https://www.sscc-labels.com` and register both `https://www.sscc-labels.com/api/auth/callback/google` and `https://sscc-labels.com/api/auth/callback/google` as authorized redirect URIs in Google Cloud.
-- Configure and validate the Resend sending domain and environment-specific API keys for password recovery. Email verification remains a future flow.
-- Add Apple OAuth when the developer account/callback requirements are ready.
-- Implement SSCC allocation safeguards, including preventing SSCC reallocation for at least one year after shipment date.
-- Extend the guided workflow only with scenario-specific fields and valid AI combinations from `docs/GS1_LOGISTIC_LABEL_GUIDE.md`.
-- Verify barcode output against physical scanners/GS1 certification requirements when the required hardware is available. A virtual printer can test the PDF/print path but cannot verify physical print grade or scanner performance.
-- Expand integration and business-rule coverage as product areas change.
-- Keep the explicit Vercel adapter aligned with the supported SvelteKit version.
+- Production and stable staging have separate Neon projects and environment-scoped authentication, Google OAuth, reCAPTCHA, and Resend configuration. The application validates the database environment and project identity before connecting.
+- SSCC allocation is atomic and unique, but the product still needs an explicit one-year minimum non-reallocation policy tied to identifier retention.
+- New workflows must use scenario-specific fields and valid AI combinations from `docs/GS1_LOGISTIC_LABEL_GUIDE.md`; unsupported scenarios remain unavailable rather than accepting ambiguous data.
+- Automated preflight checks cannot establish physical barcode print grade or scanner performance. Representative printed labels remain blocked until suitable hardware is available.
+- The explicit Vercel adapter is the supported deployment target and must remain compatible with SvelteKit upgrades.
+
+Current priority and status are maintained only in [`KANBAN.md`](./KANBAN.md).

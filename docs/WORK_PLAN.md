@@ -2,13 +2,15 @@
 
 Goal: provide a dependable free logistics label tool and attract requests for tailored implementations, using the current SvelteKit app and the GS1 Logistic Label Guideline.
 
+This document contains detailed product analysis and candidate requirements. Current priority and workflow state are maintained only in [`docs/KANBAN.md`](./KANBAN.md); an unchecked item here is not automatically Ready or In progress.
+
 ## Foundation Fast-Track
 
 The operational delivery foundation is established: reproducible local checks, GitHub CI, isolated E2E data, stable staging, production/non-production database separation, and dependency maintenance are working. Remaining monitoring, recovery, migration, and security hardening stays visible in [`docs/PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md) and no longer blocks incremental product work.
 
-## Delivery Board
+## Original Delivery Sequence
 
-This is the planning checklist. Unchecked items are outstanding work, not implemented features. Detailed private usage snapshots belong in the git-ignored `usage_log/` folder.
+This sequence records the product strategy that shaped the backlog. Use the Kanban board to select current work. Detailed private usage snapshots belong in the git-ignored `usage_log/` folder.
 
 | Order | Workstream | Status | Outcome to verify |
 |---|---|---|---|

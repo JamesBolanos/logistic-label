@@ -2,6 +2,8 @@
 
 Describe the problem, the resulting behavior, and any user-visible change.
 
+- Kanban item:
+
 ## Risk and validation
 
 - Risk level: low / medium / high
@@ -19,6 +21,7 @@ Describe the problem, the resulting behavior, and any user-visible change.
 - [ ] New operational behavior has useful logging or an explicit observability follow-up.
 - [ ] Rollback or forward-recovery steps are understood for medium/high-risk changes.
 - [ ] A user-facing release note is included below, or marked not applicable.
+- [ ] The Kanban state and concise work-log handoff are updated, or marked not applicable.
 
 ## Release note
 
