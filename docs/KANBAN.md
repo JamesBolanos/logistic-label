@@ -16,9 +16,7 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
-| ID        | State  | Outcome                                                                           | Acceptance evidence                                                                             |
-| --------- | ------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `DOC-001` | Review | Replace conflicting status lists with this Kanban board and a concise AI work log | Tracked Markdown audited; stale entry points reconciled; local links and `npm run quality` pass |
+No item is active. The WIP limit is available for the next Ready item.
 
 ## Ready
 
@@ -67,6 +65,7 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | Label correctness   | Atomic SSCC allocation, shared validation, GS1-128 rendering, physical-dimension preflight checks, and legacy label compatibility                                     | [Architecture](./ARCHITECTURE.md)                                                                                                      |
 | Supported workflows | Transport identification and identical-content logistic-unit flows with scenario-specific forms and 4 × 3, 4 × 6, and 6 × 8 PDF layouts                               | [Workflow reference](./labels/GUIDED_LABEL_WORKFLOWS.md)                                                                               |
 | User guidance       | First-label onboarding, automated label checks, public What's New history, and a public supported-label guide with direct generator links                             | `/dashboard`, `/updates`, and `/guide`                                                                                                 |
+| Documentation flow  | One authoritative Kanban board, concise AI handoffs, reconciled repository documentation, and a token-efficient AI read order                                         | `DOC-001`; `AGENTS.md`, `docs/KANBAN.md`, and `docs/WORK_LOG.md`                                                                       |
 
 ## Documentation Map
 

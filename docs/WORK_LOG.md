@@ -15,13 +15,13 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
-## 2026-10-05 — `DOC-001` — Review
+## 2026-10-05 — `DOC-001` — Accomplished
 
 - Result: audited tracked Markdown and consolidated current status into a WIP-limited Kanban board.
 - Decisions: `docs/KANBAN.md` is the only current status source; detailed plans remain requirements references; `.aider*` history is not project documentation; `docs/PRIVACY.md` is the only privacy-policy file.
 - Reconciliation: update stale README, architecture, and professional-delivery statements; remove the root privacy duplicate; clean shell wrapper text from the dated package analysis.
 - Validation: all local Markdown links resolve; `npm run quality` passes with 17 test files and 88 unit tests.
-- Next: developer reviews the documentation in the IDE; after merge, move `DOC-001` to Accomplished and select `UX-001`.
+- Next: merge PR #30, then select `UX-001` as the only active item.
 
 ## 2026-10-04 — Public supported-label guide — Accomplished
 
