@@ -20,8 +20,8 @@
         icon: 'layout'
       },
       {
-        title: 'High-quality PDF output',
-        description: 'Generate print-ready PDF labels designed for clear output and practical label printer workflows.',
+        title: 'PDF and ZPL downloads',
+        description: 'Download PDF labels for viewing and printing, or ZPL files for compatible thermal printers at 203, 300, or 600 dpi.',
         icon: 'file'
       },
       {

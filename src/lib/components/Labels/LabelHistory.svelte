@@ -17,6 +17,9 @@
   let currentPage = $state(1);
   let totalPages = $state(1);
   let searchTerm = $state('');
+  let zplDpi = $state('203');
+  let downloadingId = $state(null);
+  let downloadError = $state(null);
 
   onMount(() => fetchLabels());
 
@@ -70,45 +73,60 @@
     return `${option.label}: ${dateValue}`;
   }
 
-  async function downloadLabel(id) {
+  async function downloadLabel(id, format = 'pdf') {
+    if (downloadingId) return;
+    downloadingId = id;
+    downloadError = null;
+    const dpi = zplDpi;
     const startedAt = Date.now();
     let responseStatus = null;
 
     try {
-      const response = await fetch(`/api/pdf/download/${id}`, {
-        headers: {
-          'X-Operation-ID': createOperationId(),
-          'X-Download-Source': 'history'
+      const response = await fetch(
+        `/api/${format}/download/${id}${format === 'zpl' ? `?dpi=${dpi}` : ''}`,
+        {
+          headers: {
+            'X-Operation-ID': createOperationId(),
+            'X-Download-Source': 'history'
+          }
         }
-      });
+      );
       responseStatus = response.status;
 
-      if (!response.ok) throw new Error('Failed to download label');
+      if (!response.ok) {
+        const message = format === 'zpl' ? await response.text() : 'Failed to download PDF';
+        throw new Error(message || 'Failed to download label');
+      }
 
       const blob = await response.blob();
-      trackProductEvent('pdf_response_succeeded', {
-        format: 'pdf',
-        source: 'history',
-        duration_ms: Date.now() - startedAt
-      });
+      if (format === 'pdf')
+        trackProductEvent('pdf_response_succeeded', {
+          format: 'pdf',
+          source: 'history',
+          duration_ms: Date.now() - startedAt
+        });
 
       const url = window.URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `label_${id}.pdf`;
+      anchor.download = format === 'zpl' ? `gs1_label_${id}_${dpi}dpi.zpl` : `label_${id}.pdf`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
       window.URL.revokeObjectURL(url);
-      trackProductEvent('pdf_download_started', { format: 'pdf', source: 'history' });
+      if (format === 'pdf')
+        trackProductEvent('pdf_download_started', { format: 'pdf', source: 'history' });
     } catch (err) {
       console.error('Error downloading label:', err);
-      trackProductEvent('workflow_failed', {
-        step: 'pdf_download',
-        error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
-        duration_ms: Date.now() - startedAt
-      });
-      error = err.message || 'Failed to download label';
+      if (format === 'pdf')
+        trackProductEvent('workflow_failed', {
+          step: 'pdf_download',
+          error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
+          duration_ms: Date.now() - startedAt
+        });
+      downloadError = err.message || 'Failed to download label';
+    } finally {
+      downloadingId = null;
     }
   }
 </script>
@@ -136,6 +154,27 @@
       </button>
     </div>
   </div>
+
+  <div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
+    <label for="zpl-resolution" class="font-medium text-gray-700">ZPL printer resolution</label>
+    <select
+      id="zpl-resolution"
+      bind:value={zplDpi}
+      disabled={downloadingId !== null}
+      class="rounded-md border border-gray-300 px-3 py-2"
+    >
+      <option value="203">203 dpi (8 dots/mm)</option>
+      <option value="300">300 dpi (12 dots/mm)</option>
+      <option value="600">600 dpi (24 dots/mm)</option>
+    </select>
+    <p class="text-gray-500">Match your ZPL printer. Downloads reuse the saved SSCC.</p>
+  </div>
+
+  {#if downloadError}
+    <p role="alert" class="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
+      {downloadError} Your label is still saved. Retry its download below.
+    </p>
+  {/if}
 
   {#if isLoading}
     <div class="flex h-40 items-center justify-center">
@@ -258,10 +297,22 @@
                 <button
                   type="button"
                   onclick={() => downloadLabel(label.id)}
-                  class="text-blue-600 hover:text-blue-900"
+                  disabled={downloadingId !== null}
+                  class="text-blue-600 hover:text-blue-900 disabled:opacity-50"
                 >
-                  Download
+                  Download PDF
                 </button>
+                <button
+                  type="button"
+                  onclick={() => downloadLabel(label.id, 'zpl')}
+                  disabled={downloadingId !== null}
+                  class="ml-3 text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                >
+                  Download ZPL
+                </button>
+                {#if downloadingId === label.id}
+                  <span role="status" class="ml-2 text-gray-500">Downloading...</span>
+                {/if}
               </td>
             </tr>
           {/each}

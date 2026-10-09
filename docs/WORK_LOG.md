@@ -15,6 +15,22 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-08 — `EXPORT-002` — Public guidance ready for review
+
+- Result: enabled the ZPL announcement in What's New and `/updates`; the home feature card and public guide now explain PDF/ZPL downloads.
+- Decisions: users choose a printer resolution in Saved labels and send the downloaded file through their printer software; guidance explains SSCC reuse, label sizes, and PDF print scale. Publishing app content does not deploy the site.
+- Material files: `src/lib/content/releases.ts`, `src/routes/guide/+page.svelte`, and `src/routes/+page.svelte`.
+- Validation: `npm run quality` passes (19 files, 112 unit tests, Vercel build); direct requests to the built server confirm the ZPL announcement and guidance on `/`, `/updates`, and `/guide` without database access.
+- Next: developer review, merge, and deployment to make the feature and its announcement available on the live site.
+
+## 2026-10-08 — `EXPORT-002` — Review
+
+- Result: saved-label ZPL downloads with 203/300/600 dpi selection, owner-scoped access, retryable download errors, and existing SSCC reuse.
+- Decisions: PDF and ZPL share versioned layouts and GS1-128 encoding; ZPL uses whole-dot graphic bars and escaped UTF-8 text. No migration, external rendering service, or direct printer delivery. Release note remains draft until release.
+- Material files: shared `src/lib/server/labels/layout.js`, ZPL adapter and download endpoint, history controls, and `docs/labels/ZPL_EXPORT.md`.
+- Validation: `npm run quality` passes with 19 files and 112 unit tests, including 24 new renderer/endpoint checks; focused browser download/retry check passes; 11 representative original/refactored PDFs match byte-for-byte. Physical printer/scanner verification remains unavailable.
+- Next: developer review and merge; publish the draft release note when released.
+
 ## 2026-10-05 — `DOC-001` — Accomplished
 
 - Result: audited tracked Markdown and consolidated current status into a WIP-limited Kanban board.

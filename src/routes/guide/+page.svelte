@@ -13,7 +13,7 @@
   <title>Supported Logistic Labels - SSCC Labels</title>
   <meta
     name="description"
-    content="Compare the supported SSCC transport and identical-contents GS1-128 logistic labels, their data, barcodes, sizes, and intended use."
+    content="Compare supported GS1-128 logistic labels, their data, barcodes, and sizes. Learn how to download PDF or ZPL files and select your printer resolution."
   />
 </svelte:head>
 
@@ -110,7 +110,7 @@
             </section>
 
             <section>
-              <h3 class="font-semibold text-gray-900">Available PDF layouts</h3>
+              <h3 class="font-semibold text-gray-900">Available PDF and ZPL layouts</h3>
               <ul class="mt-2 space-y-2 text-sm text-gray-700">
                 {#each guide.sizes as item (item)}<li>{item}</li>{/each}
               </ul>
@@ -129,6 +129,53 @@
       </div>
     </article>
   {/each}
+
+  <section
+    id="download-formats"
+    class="scroll-mt-24 rounded-2xl border border-blue-200 bg-blue-50 p-6 sm:p-8"
+    aria-labelledby="download-formats-heading"
+  >
+    <h2 id="download-formats-heading" class="text-2xl font-bold text-gray-900">
+      Download and print your label
+    </h2>
+    <p class="mt-3 max-w-3xl text-gray-700">
+      Both supported label types are available as PDF and ZPL. Downloads keep the saved label's
+      layout, information, and SSCC, so downloading another format does not create a new SSCC.
+    </p>
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      <div>
+        <h3 class="font-semibold text-gray-900">PDF for viewing and printing</h3>
+        <p class="mt-2 text-sm leading-6 text-gray-700">
+          A PDF downloads automatically when you generate and save a label. You can download it
+          again from Saved labels. Print at 100% scale on matching label stock to preserve barcode
+          dimensions.
+        </p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-900">ZPL for compatible thermal printers</h3>
+        <ol class="mt-2 list-decimal space-y-2 pl-5 text-sm leading-6 text-gray-700">
+          <li>Generate and save your label, or use an existing record in Saved labels.</li>
+          <li>
+            Set ZPL printer resolution to match your printer: 203, 300, or 600 dpi. Check your
+            printer settings if you are unsure.
+          </li>
+          <li>
+            Click Download ZPL, then send the downloaded .zpl file using your printer software.
+          </li>
+        </ol>
+      </div>
+    </div>
+    <p class="mt-5 text-sm text-gray-700">
+      Use media and a printer wide enough for the selected layout. A 6 × 8 label requires a six-inch
+      print width. The two-copy layout places both copies on one 4 × 6 sheet.
+    </p>
+    <a
+      href="/labels/history"
+      class="mt-6 inline-flex rounded-md bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+    >
+      Open saved labels
+    </a>
+  </section>
 
   <section
     class="rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8"

@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-08-zpl-download',
+    publishedAt: '2026-10-08',
+    category: 'new feature',
+    status: 'published',
+    title: 'Download saved labels as ZPL',
+    benefit:
+      'Download saved labels as .zpl files for compatible thermal printers. In Saved labels, choose 203, 300, or 600 dpi to match your printer and download using the existing SSCC.',
+    featureKey: 'zpl_download',
+    href: '/labels/history',
+    linkLabel: 'Download a saved label'
+  },
+  {
     id: '2026-10-04-supported-label-guide',
     publishedAt: '2026-10-04',
     category: 'improvement',

@@ -1,6 +1,6 @@
 # Product Kanban
 
-Last reviewed: 2026-10-05 (America/Managua)
+Last reviewed: 2026-10-08 (America/Managua)
 
 This is the only current source for work status and priority. Detailed requirements remain in the linked plans and runbooks, but their checklists do not determine what is active.
 
@@ -16,17 +16,39 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
-No item is active. The WIP limit is available for the next Ready item.
+None.
+
+## Review
+
+### `EXPORT-002` — Download saved labels as ZPL
+
+- Need: users need a `.zpl` file for ZPL-compatible thermal printers.
+- Outcome: download a saved label as PDF or ZPL, selecting 203, 300, or 600 dpi for ZPL without allocating another SSCC.
+- Acceptance: authenticated, owner-scoped downloads; original template/layout and GS1 data preserved; supported printer resolutions use whole-dot barcode modules and checked quiet zones; user text cannot inject printer commands; visible download/retry controls; existing PDFs remain compatible; public guide explains PDF/ZPL downloads and the announcement appears in What's New and `/updates`.
+- Evidence: `npm run quality` passes (19 files, 112 unit tests, Vercel build); focused browser ZPL/PDF download and retry check passes; 11 representative PDFs match the original renderer byte-for-byte; built public pages `/`, `/updates`, and `/guide` render the ZPL announcement and guidance.
+- Release: release note enabled and public guidance complete in app content; ready for developer review, merge, and deployment.
+- Dependencies: existing saved-label/settings APIs and GS1 encoder; no migration, print bridge, or external rendering service. Physical printer verification remains `VERIFY-001`.
+- Architecture: includes the `ARCH-001` shared-layout extraction needed by this concrete export.
+- Source: user request on 2026-10-08; [ZPL export reference](./labels/ZPL_EXPORT.md).
 
 ## Ready
 
 Items are ordered. Start only the first item unless new evidence changes priority.
 
-| Order | ID             | Outcome                                                                                                          | Why now                                                                   | Detailed source                                                                      |
-| ----: | -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-|     1 | `UX-001`       | Refresh label history immediately after saving and explain history recovery when an automatic PDF download fails | Small reliability improvement that prevents unnecessary new SSCC creation | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
-|     2 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior                    | GS1 identifier integrity and real-world data safety                       | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
-|     3 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements            | Converts user interest into actionable product and business evidence      | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
+### `UX-001` — Immediate history refresh and PDF recovery
+
+- Need: a saved label is currently missing from history until its automatic PDF download succeeds, encouraging unnecessary SSCC creation after a download failure.
+- Outcome: show the saved record immediately and explain how to download it from history without creating another SSCC.
+- Acceptance: history refreshes after save confirmation while the PDF request is pending; HTTP/network download failures show saved-label recovery guidance; history downloads reuse the saved record; successful downloads and save failures retain their correct behavior.
+- Status: returned to Ready while the user-requested ZPL export takes priority.
+- Evidence planned: focused browser regression checks and `npm run quality`.
+- Dependencies: existing save, history-list, and PDF-download APIs; no migration or new service.
+- Source: [Work Plan §4](./WORK_PLAN.md#4-improvements).
+
+| Order | ID             | Outcome                                                                                               | Why now                                                              | Detailed source                                                                      |
+| ----: | -------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+|     2 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
+|     3 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
 
 ## Backlog
 
@@ -38,7 +60,6 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `PRODUCT-001`  | Saved products       | Validate the need and smallest useful product list before building it                                          | Define product fields separately from shipment values                                      |
 | `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                  | Depends on lifecycle rules from `DATA-001`                                                 |
 | `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                 | Existing `v1`–`v4` compatibility is the baseline                                           |
-| `ARCH-001`     | Extensibility        | Separate shared label data/validation from PDF and future export renderers                                     | Start only when a concrete new format needs it                                             |
 | `EXPORT-001`   | Excel                | Define audience, source dataset, columns, filters, and identifier handling before implementing `.xlsx`         | Scope remains an analysis decision                                                         |
 | `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                       | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides |
 | `DELIVERY-001` | Migrations/releases  | Complete fresh and incremental migration verification, release gates, smoke checks, and recovery documentation | Detailed delivery backlog remains in the professional plan                                 |
@@ -51,7 +72,7 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | ID              | Item                                                                         | Reason to wait                                                       | Resume condition                                              |
 | --------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
 | `VERIFY-001`    | Print representative labels and verify them with a physical scanner/verifier | Required hardware is unavailable                                     | Printer and suitable scanner/verifier available               |
-| `PRINT-001`     | ZPL and LAN-printer delivery through a local print bridge                    | Separate virtual-printer project and real printer testing are needed | Print-bridge research produces a bounded integration contract |
+| `PRINT-001`     | LAN-printer delivery through a local print bridge                            | Separate virtual-printer project and real printer testing are needed | Print-bridge research produces a bounded integration contract |
 | `ANALYTICS-001` | Compare update viewers, feature-link users, and later successful use         | Current cohort is small and coverage began recently                  | Enough external usage accumulates for a meaningful comparison |
 | `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                                        | Repeated user/customer need or contractual requirement        |
 
