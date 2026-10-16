@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { printSavedLabel } from '$lib/printing/print-bridge-client';
   import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
   import { classifyHttpFailure } from '$lib/analytics/events.js';
   import {
@@ -20,6 +21,28 @@
   let zplDpi = $state('203');
   let downloadingId = $state(null);
   let downloadError = $state(null);
+  let printingId = $state(null);
+  let printMessage = $state('');
+  let printError = $state('');
+
+  async function printLabel(id) {
+    if (printingId !== null || downloadingId !== null) return;
+    printingId = id;
+    printMessage = '';
+    printError = '';
+    try {
+      const result = await printSavedLabel(id);
+      printMessage =
+        result === 'virtual'
+          ? 'Captured by the bridge in Virtual mode. No physical label was printed.'
+          : 'Sent to the printer. Check the physical label before sending another copy.';
+    } catch (error) {
+      printError =
+        error.message || 'Unable to send the label. Check the printer before trying again.';
+    } finally {
+      printingId = null;
+    }
+  }
 
   onMount(() => fetchLabels());
 
@@ -74,7 +97,7 @@
   }
 
   async function downloadLabel(id, format = 'pdf') {
-    if (downloadingId) return;
+    if (downloadingId !== null || printingId !== null) return;
     downloadingId = id;
     downloadError = null;
     const dpi = zplDpi;
@@ -175,6 +198,15 @@
       {downloadError} Your label is still saved. Retry its download below.
     </p>
   {/if}
+
+  <p class="mb-4 text-sm text-gray-600">
+    Print via bridge uses the printer and resolution saved in <a
+      href="/settings"
+      class="font-medium text-blue-700 underline">Settings</a
+    >. Sending again prints another copy of the same label.
+  </p>
+  {#if printError}<p role="alert" class="mb-4 text-sm text-red-700">{printError}</p>{/if}
+  {#if printMessage}<p role="status" class="mb-4 text-sm text-green-700">{printMessage}</p>{/if}
 
   {#if isLoading}
     <div class="flex h-40 items-center justify-center">
@@ -297,7 +329,7 @@
                 <button
                   type="button"
                   onclick={() => downloadLabel(label.id)}
-                  disabled={downloadingId !== null}
+                  disabled={downloadingId !== null || printingId !== null}
                   class="text-blue-600 hover:text-blue-900 disabled:opacity-50"
                 >
                   Download PDF
@@ -305,10 +337,18 @@
                 <button
                   type="button"
                   onclick={() => downloadLabel(label.id, 'zpl')}
-                  disabled={downloadingId !== null}
+                  disabled={downloadingId !== null || printingId !== null}
                   class="ml-3 text-blue-600 hover:text-blue-900 disabled:opacity-50"
                 >
                   Download ZPL
+                </button>
+                <button
+                  type="button"
+                  onclick={() => printLabel(label.id)}
+                  disabled={downloadingId !== null || printingId !== null}
+                  class="ml-3 text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                >
+                  {printingId === label.id ? 'Sending...' : 'Print via bridge'}
                 </button>
                 {#if downloadingId === label.id}
                   <span role="status" class="ml-2 text-gray-500">Downloading...</span>

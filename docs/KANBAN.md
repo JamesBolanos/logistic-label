@@ -1,6 +1,6 @@
 # Product Kanban
 
-Last reviewed: 2026-10-08 (America/Managua)
+Last reviewed: 2026-10-16 (America/Managua)
 
 This is the only current source for work status and priority. Detailed requirements remain in the linked plans and runbooks, but their checklists do not determine what is active.
 
@@ -20,20 +20,31 @@ None.
 
 ## Review
 
+### `PRINT-001` — Send saved labels through the local print bridge
+
+- Need: send existing ZPL labels to a LAN printer without downloading a file first.
+- Outcome: GitHub bridge download/setup guidance, per-user bridge/printer parameters in `label_settings`, independent printer-settings save, connection check, and a Print via bridge action in Saved labels.
+- Acceptance: explain the browser-to-bridge-to-printer flow and link the bridge-owned installation tutorial; preserve label formats and SSCCs; authenticated settings access; browser-only bridge calls; explicit printer port and DPI; prevent concurrent clicks and automatic retries; distinguish virtual capture from physical delivery; retain PDF/ZPL downloads.
+- Evidence: `npm run quality` passes (22 files, 151 unit tests, Vercel build); three focused mocked browser checks pass, including the real CSP; migration snapshots confirm only the five intended settings columns changed.
+- Dependencies: installed local print bridge, allowed app origin, and a reachable ZPL-compatible LAN printer. Live migration and physical verification remain developer release steps.
+- Release: implementation ready for review; apply the settings migration before deploying. `EXPORT-002` returns to Ready while this user-requested follow-on is the sole review item.
+- Reference: [LAN printing](./labels/LAN_PRINTING.md).
+
+## Ready
+
+Items are ordered. Start only the first item unless new evidence changes priority.
+
 ### `EXPORT-002` — Download saved labels as ZPL
 
 - Need: users need a `.zpl` file for ZPL-compatible thermal printers.
 - Outcome: download a saved label as PDF or ZPL, selecting 203, 300, or 600 dpi for ZPL without allocating another SSCC.
 - Acceptance: authenticated, owner-scoped downloads; original template/layout and GS1 data preserved; supported printer resolutions use whole-dot barcode modules and checked quiet zones; user text cannot inject printer commands; visible download/retry controls; existing PDFs remain compatible; public guide explains PDF/ZPL downloads and the announcement appears in What's New and `/updates`.
 - Evidence: `npm run quality` passes (19 files, 112 unit tests, Vercel build); focused browser ZPL/PDF download and retry check passes; 11 representative PDFs match the original renderer byte-for-byte; built public pages `/`, `/updates`, and `/guide` render the ZPL announcement and guidance.
+- Status: prior review evidence retained; returned to Ready while `PRINT-001` takes the review slot.
 - Release: release note enabled and public guidance complete in app content; ready for developer review, merge, and deployment.
 - Dependencies: existing saved-label/settings APIs and GS1 encoder; no migration, print bridge, or external rendering service. Physical printer verification remains `VERIFY-001`.
 - Architecture: includes the `ARCH-001` shared-layout extraction needed by this concrete export.
 - Source: user request on 2026-10-08; [ZPL export reference](./labels/ZPL_EXPORT.md).
-
-## Ready
-
-Items are ordered. Start only the first item unless new evidence changes priority.
 
 ### `UX-001` — Immediate history refresh and PDF recovery
 

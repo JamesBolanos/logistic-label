@@ -1,9 +1,7 @@
 <script>
   import { onMount } from 'svelte';
-  import {
-    createOperationId,
-    trackProductEvent
-  } from '$lib/analytics/client.js';
+  import PrintBridgeSettings from '$lib/components/Labels/PrintBridgeSettings.svelte';
+  import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
   import { classifyHttpFailure } from '$lib/analytics/events.js';
 
   const defaultSettings = {
@@ -38,7 +36,8 @@
         company_name: data.settings.company_name || defaultSettings.company_name,
         gs1_company_prefix: data.settings.gs1_company_prefix || '',
         extension_digit: data.settings.extension_digit || defaultSettings.extension_digit,
-        next_serial_reference: data.settings.next_serial_reference || defaultSettings.next_serial_reference
+        next_serial_reference:
+          data.settings.next_serial_reference || defaultSettings.next_serial_reference
       };
     } catch (error) {
       formError = error.message || 'Failed to load settings';
@@ -84,8 +83,7 @@
       formError = error.message || 'Failed to save settings';
       trackProductEvent('workflow_failed', {
         step: 'settings_save',
-        error_category:
-          responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
+        error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
         duration_ms: Date.now() - startedAt
       });
     } finally {
@@ -96,7 +94,10 @@
 
 <svelte:head>
   <title>Label Settings - GS1-128 Logistic Label Generator</title>
-  <meta name="description" content="Configure GS1 Company Prefix settings for logistic label generation." />
+  <meta
+    name="description"
+    content="Configure GS1 Company Prefix settings for logistic label generation."
+  />
 </svelte:head>
 
 <div class="max-w-3xl space-y-6">
@@ -230,4 +231,5 @@
       </div>
     {/if}
   </form>
+  <PrintBridgeSettings />
 </div>

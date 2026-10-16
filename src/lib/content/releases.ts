@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-15-lan-printing',
+    publishedAt: '2026-10-15',
+    category: 'new feature',
+    status: 'published',
+    title: 'Send saved labels to a LAN printer',
+    benefit:
+      'Follow the linked Print Bridge setup guide, configure your network printer in Settings, then use Print via bridge in Saved labels. Existing labels and SSCCs are reused, with PDF and ZPL downloads still available.',
+    featureKey: 'lan_printing',
+    href: '/settings',
+    linkLabel: 'Configure your printer'
+  },
+  {
     id: '2026-10-08-zpl-download',
     publishedAt: '2026-10-08',
     category: 'new feature',

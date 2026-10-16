@@ -15,6 +15,29 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-16 — `PRINT-001` — Web-printing explanation and setup tutorial
+
+- Result: the public guide and LAN printer settings explain browser → local bridge → network printer, with download and setup-guide links. The bridge-owned [tutorial](https://github.com/JamesBolanos/print-bridge/blob/main/DOCS/sscc-labels-setup.md) covers macOS/Windows installation, origins, address/port/DPI setup, first print, upgrades, and troubleshooting.
+- Decisions: keep installation instructions in the bridge repo; explain that Test bridge connection checks the listener, not paper output. Site copy distinguishes the computer address from the printer address. No printing behavior or schema changes in this increment.
+- Validation: `npm run quality` passes (151 tests, Vercel build); both Svelte components pass autofixer; tutorial links and instructions checked against source. Bridge documentation published in commit `1b56549`; no installer release needed.
+- Next: developer review/deployment of the label-maker changes and their previously generated settings migration.
+
+## 2026-10-15 — `PRINT-001` — Bridge download and defaults
+
+- Result: added a GitHub installer download link to LAN printer settings and instructions distinguishing fresh installs from upgrades.
+- Decisions: bridge v1.0.0-beta.4 defaults allow the apex and www HTTPS label-maker origins; existing bridge configurations remain untouched. Link targets the latest GitHub release for macOS Apple silicon and Windows 64-bit installers.
+- Validation: label-maker `npm run quality` passes (151 tests and Vercel build); Svelte autofixer is clean. Bridge `make check` and `make lint` pass, including CORS and saved-origin preservation tests.
+- Release verified 2026-10-16: [Print Bridge v1.0.0-beta.4](https://github.com/JamesBolanos/print-bridge/releases/tag/v1.0.0-beta.4) published both installers; GitHub CI and installer workflows passed. Existing bridge settings are preserved on upgrade.
+- Next: developer review/deployment of the label-maker changes with their settings migration.
+
+## 2026-10-15 — `PRINT-001` — Review
+
+- Result: saved-label LAN printing through the local bridge, per-user printer settings, and a connection check. PDF/ZPL downloads and label generation are unchanged.
+- Decisions: independent printer-settings PATCH preserves the SSCC sequence; browser sends the existing ZPL exactly once, with explicit printer port and saved DPI; virtual capture and uncertain delivery are shown separately. No print-job tables or physical-print confirmation records.
+- Material files: printing client and validation, printer-settings component, history action, settings API/persistence, loopback CSP, and generated `0008_print_bridge_settings.sql` plus snapshot/journal. Migration changes only five columns in `label_settings`.
+- Validation: `npm run quality` passes (22 files, 151 tests, Vercel build); three mocked Playwright checks pass on dedicated port 5187, including the app CSP and existing PDF/ZPL downloads. Svelte autofixer reports no issues. No database or physical printer was used by these checks.
+- Next: developer review, guarded migration testing/application, and deployment; verify the deployed HTTPS origin with the installed bridge and physical printer. Migration has been generated, not applied.
+
 ## 2026-10-08 — `EXPORT-002` — Public guidance ready for review
 
 - Result: enabled the ZPL announcement in What's New and `/updates`; the home feature card and public guide now explain PDF/ZPL downloads.

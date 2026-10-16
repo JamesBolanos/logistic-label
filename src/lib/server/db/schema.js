@@ -125,6 +125,11 @@ export const labelSettings = pgTable('label_settings', {
   gs1CompanyPrefix: varchar('gs1_company_prefix', { length: 12 }),
   extensionDigit: varchar('extension_digit', { length: 1 }).notNull().default('0'),
   nextSerialReference: integer('next_serial_reference').notNull().default(1),
+  printBridgeHost: text('print_bridge_host').notNull().default('127.0.0.1'),
+  printBridgePort: integer('print_bridge_port').notNull().default(8080),
+  printerHostname: text('printer_hostname').notNull().default(''),
+  printerPort: integer('printer_port').notNull().default(9100),
+  printerDpi: integer('printer_dpi').notNull().default(203),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
