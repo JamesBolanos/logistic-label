@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-20-data-export-excel',
+    publishedAt: '2026-10-20',
+    category: 'new feature',
+    status: 'published',
+    title: 'Download all of your data as Excel',
+    benefit:
+      'Export your account details, company settings (including GS1 company prefix), and every label you created in a single .xlsx file. Available in Settings under Data Export.',
+    featureKey: 'data_export_excel',
+    href: '/settings',
+    linkLabel: 'Export your data'
+  },
+  {
     id: '2026-10-15-lan-printing',
     publishedAt: '2026-10-15',
     category: 'new feature',
