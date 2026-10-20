@@ -20,15 +20,14 @@ None.
 
 ## Review
 
-### `PRINT-001` — Send saved labels through the local print bridge
+### `DOC-002` — Document feature deployment from staging to production
 
-- Need: send existing ZPL labels to a LAN printer without downloading a file first.
-- Outcome: GitHub bridge download/setup guidance, per-user bridge/printer parameters in `label_settings`, independent printer-settings save, connection check, and a Print via bridge action in Saved labels.
-- Acceptance: explain the browser-to-bridge-to-printer flow and link the bridge-owned installation tutorial; preserve label formats and SSCCs; authenticated settings access; browser-only bridge calls; explicit printer port and DPI; prevent concurrent clicks and automatic retries; distinguish virtual capture from physical delivery; retain PDF/ZPL downloads.
-- Evidence: `npm run quality` passes (22 files, 151 unit tests, Vercel build); three focused mocked browser checks pass, including the real CSP; migration snapshots confirm only the five intended settings columns changed.
-- Dependencies: installed local print bridge, allowed app origin, and a reachable ZPL-compatible LAN printer. Live migration and physical verification remain developer release steps.
-- Release: implementation ready for review; apply the settings migration before deploying. `EXPORT-002` returns to Ready while this user-requested follow-on is the sole review item.
-- Reference: [LAN printing](./labels/LAN_PRINTING.md).
+- Need: a push to `master` can deploy application code before its required production migration; developers need one complete release procedure.
+- Outcome: a root-level deployment guide covering the current GitHub/Vercel/Neon flow, commands, documentation, verification, and recovery.
+- Acceptance: commands and environment targets match repository configuration; distinguish automated checks from manual release gates; explain features with and without migrations and the documentation required before and after release.
+- Evidence: workflow/runbook cross-check complete; 56 local document links and 15 shell examples validated; Markdown formatting and `npm run quality` pass (151 unit tests and Vercel build). No E2E needed for documentation-only work.
+- Dependencies: existing guarded migration workflow and environment runbook; developer owns Git, migration, and deployment actions.
+- Release: ready for developer review and merge; [deployment guide](../HOW_TO_DEPLOY_A_NEW_FEATURE.md).
 
 ## Ready
 
@@ -40,7 +39,7 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 - Outcome: download a saved label as PDF or ZPL, selecting 203, 300, or 600 dpi for ZPL without allocating another SSCC.
 - Acceptance: authenticated, owner-scoped downloads; original template/layout and GS1 data preserved; supported printer resolutions use whole-dot barcode modules and checked quiet zones; user text cannot inject printer commands; visible download/retry controls; existing PDFs remain compatible; public guide explains PDF/ZPL downloads and the announcement appears in What's New and `/updates`.
 - Evidence: `npm run quality` passes (19 files, 112 unit tests, Vercel build); focused browser ZPL/PDF download and retry check passes; 11 representative PDFs match the original renderer byte-for-byte; built public pages `/`, `/updates`, and `/guide` render the ZPL announcement and guidance.
-- Status: prior review evidence retained; returned to Ready while `PRINT-001` takes the review slot.
+- Status: prior review evidence retained; awaits developer closeout after the `PRINT-001` production release.
 - Release: release note enabled and public guidance complete in app content; ready for developer review, merge, and deployment.
 - Dependencies: existing saved-label/settings APIs and GS1 encoder; no migration, print bridge, or external rendering service. Physical printer verification remains `VERIFY-001`.
 - Architecture: includes the `ARCH-001` shared-layout extraction needed by this concrete export.
@@ -80,14 +79,21 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 ## Blocked or Deferred
 
-| ID              | Item                                                                         | Reason to wait                                                       | Resume condition                                              |
-| --------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `VERIFY-001`    | Print representative labels and verify them with a physical scanner/verifier | Required hardware is unavailable                                     | Printer and suitable scanner/verifier available               |
-| `PRINT-001`     | LAN-printer delivery through a local print bridge                            | Separate virtual-printer project and real printer testing are needed | Print-bridge research produces a bounded integration contract |
-| `ANALYTICS-001` | Compare update viewers, feature-link users, and later successful use         | Current cohort is small and coverage began recently                  | Enough external usage accumulates for a meaningful comparison |
-| `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                                        | Repeated user/customer need or contractual requirement        |
+| ID              | Item                                                                         | Reason to wait                                      | Resume condition                                              |
+| --------------- | ---------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| `VERIFY-001`    | Print representative labels and verify them with a physical scanner/verifier | Required hardware is unavailable                    | Printer and suitable scanner/verifier available               |
+| `ANALYTICS-001` | Compare update viewers, feature-link users, and later successful use         | Current cohort is small and coverage began recently | Enough external usage accumulates for a meaningful comparison |
+| `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                       | Repeated user/customer need or contractual requirement        |
 
 ## Accomplished
+
+### `PRINT-001` — Send saved labels through the local print bridge
+
+- Outcome: bridge setup guidance, per-user printer settings, connection check, and Print via bridge for saved labels; PDF/ZPL downloads and existing SSCCs are preserved.
+- Acceptance evidence: prior `npm run quality` passed (151 unit tests and Vercel build); three focused mocked browser checks passed; migration snapshots contained only the five intended settings columns.
+- Release evidence: on 2026-10-16 the developer reported production deployment and successful recovery through the guarded production migration workflow. The AI did not independently inspect production or execute the migration.
+- Remaining hardware validation belongs to `VERIFY-001`; successful database recovery does not establish physical printer/scanner compatibility.
+- Reference: [LAN printing](./labels/LAN_PRINTING.md).
 
 | Area                | Delivered outcome                                                                                                                                                     | Evidence                                                                                                                               |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -103,22 +109,23 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 Use this map to avoid loading every Markdown file into an AI session.
 
-| Document                                                                     | Role                                                                    |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`../AGENTS.md`](../AGENTS.md)                                               | Stable AI collaboration rules and read order                            |
-| [`KANBAN.md`](./KANBAN.md)                                                   | Current priority and status; authoritative board                        |
-| [`WORK_LOG.md`](./WORK_LOG.md)                                               | Concise dated handoffs and decision evidence                            |
-| [`WORK_PLAN.md`](./WORK_PLAN.md)                                             | Detailed product analysis and candidate requirements                    |
-| [`PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md)           | Detailed delivery, security, operations, and recovery backlog           |
-| [`../README.md`](../README.md)                                               | Setup, stack, environment contract, and repository entry point          |
-| [`../CONTRIBUTING.md`](../CONTRIBUTING.md)                                   | Branch, quality, PR, dependency, and release workflow                   |
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md)                                       | Current system structure and durable technical constraints              |
-| [`GS1_REQUIREMENTS.md`](./GS1_REQUIREMENTS.md)                               | SSCC allocation and aggregation rules                                   |
-| [`GS1_LOGISTIC_LABEL_GUIDE.md`](./GS1_LOGISTIC_LABEL_GUIDE.md)               | App-specific analysis of the source GS1 guideline                       |
-| [`labels/GUIDED_LABEL_WORKFLOWS.md`](./labels/GUIDED_LABEL_WORKFLOWS.md)     | Current workflow inputs, AIs, layouts, and compatibility                |
-| [`PRIVACY.md`](./PRIVACY.md)                                                 | Canonical repository privacy statement                                  |
-| `analytics/*.md`, `auth/*.md`, `professional-delivery/*.md`                  | Focused measurement, authentication, environment, and baseline runbooks |
-| [`PACKAGE_ANALYSIS_SEP_24.md`](./PACKAGE_ANALYSIS_SEP_24.md)                 | Historical package snapshot; not a current status source                |
-| [`../.github/pull_request_template.md`](../.github/pull_request_template.md) | Pull-request review checklist                                           |
+| Document                                                                     | Role                                                                                 |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [`../AGENTS.md`](../AGENTS.md)                                               | Stable AI collaboration rules and read order                                         |
+| [`KANBAN.md`](./KANBAN.md)                                                   | Current priority and status; authoritative board                                     |
+| [`WORK_LOG.md`](./WORK_LOG.md)                                               | Concise dated handoffs and decision evidence                                         |
+| [`WORK_PLAN.md`](./WORK_PLAN.md)                                             | Detailed product analysis and candidate requirements                                 |
+| [`PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md)           | Detailed delivery, security, operations, and recovery backlog                        |
+| [`../README.md`](../README.md)                                               | Setup, stack, environment contract, and repository entry point                       |
+| [`../CONTRIBUTING.md`](../CONTRIBUTING.md)                                   | Branch, quality, PR, dependency, and release workflow                                |
+| [`../HOW_TO_DEPLOY_A_NEW_FEATURE.md`](../HOW_TO_DEPLOY_A_NEW_FEATURE.md)     | Staging-to-production release steps, migration commands, and documentation checklist |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md)                                       | Current system structure and durable technical constraints                           |
+| [`GS1_REQUIREMENTS.md`](./GS1_REQUIREMENTS.md)                               | SSCC allocation and aggregation rules                                                |
+| [`GS1_LOGISTIC_LABEL_GUIDE.md`](./GS1_LOGISTIC_LABEL_GUIDE.md)               | App-specific analysis of the source GS1 guideline                                    |
+| [`labels/GUIDED_LABEL_WORKFLOWS.md`](./labels/GUIDED_LABEL_WORKFLOWS.md)     | Current workflow inputs, AIs, layouts, and compatibility                             |
+| [`PRIVACY.md`](./PRIVACY.md)                                                 | Canonical repository privacy statement                                               |
+| `analytics/*.md`, `auth/*.md`, `professional-delivery/*.md`                  | Focused measurement, authentication, environment, and baseline runbooks              |
+| [`PACKAGE_ANALYSIS_SEP_24.md`](./PACKAGE_ANALYSIS_SEP_24.md)                 | Historical package snapshot; not a current status source                             |
+| [`../.github/pull_request_template.md`](../.github/pull_request_template.md) | Pull-request review checklist                                                        |
 
 Ignored `.aider*` files are generated local AI-tool history and are not project documentation.

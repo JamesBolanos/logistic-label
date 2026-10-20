@@ -61,6 +61,8 @@ Use the existing build cache unless the failure specifically indicates stale bui
 
 ## Schema Change Procedure
 
+For the complete feature/PR promotion flow, validation gates, documentation updates, and recovery steps, follow [How to deploy a new feature](../../HOW_TO_DEPLOY_A_NEW_FEATURE.md).
+
 1. Generate and review the committed Drizzle migration locally.
 2. Let GitHub Actions apply the migration and run E2E tests on its disposable Neon branch.
 3. Promote the reviewed commit to the `staging` Git branch and wait for its Vercel deployment.

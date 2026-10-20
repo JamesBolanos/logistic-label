@@ -15,6 +15,14 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-16 — `DOC-002` — Feature deployment guide
+
+- Result: added root-level `HOW_TO_DEPLOY_A_NEW_FEATURE.md` and linked it from contributor guidance, the environment runbook, and the Kanban documentation map.
+- Decisions: document the current manual release gates rather than imply CI enforces them; distinguish staged-revision quality checks, shared-database migrations, production promotion, recovery, and required documentation. Include workflow cancellation and branch synchronization caveats.
+- Release context: the developer reported successful production migration recovery for `PRINT-001`; its Kanban entry now records that release evidence while physical hardware validation remains under `VERIFY-001`. Production was not independently inspected.
+- Validation: Markdown formatting, 56 local document links, and shell syntax for all 15 command examples pass; `npm run quality` passes (151 unit tests, no Svelte diagnostics, and Vercel build). No E2E needed for documentation-only changes.
+- Next: developer review and merge of the guide; no Git, migration, or deployment actions were executed.
+
 ## 2026-10-16 — `PRINT-001` — Web-printing explanation and setup tutorial
 
 - Result: the public guide and LAN printer settings explain browser → local bridge → network printer, with download and setup-guide links. The bridge-owned [tutorial](https://github.com/JamesBolanos/print-bridge/blob/main/DOCS/sscc-labels-setup.md) covers macOS/Windows installation, origins, address/port/DPI setup, first print, upgrades, and troubleshooting.
