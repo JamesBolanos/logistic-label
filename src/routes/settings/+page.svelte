@@ -1,235 +1,153 @@
 <script>
-  import { onMount } from 'svelte';
-  import PrintBridgeSettings from '$lib/components/Labels/PrintBridgeSettings.svelte';
-  import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
-  import { classifyHttpFailure } from '$lib/analytics/events.js';
+  let exporting = false;
+  let message = '';
 
-  const defaultSettings = {
-    company_name: 'Company Name',
-    gs1_company_prefix: '',
-    extension_digit: '0',
-    next_serial_reference: 1
-  };
-
-  let formData = $state({ ...defaultSettings });
-  let errors = $state({});
-  let isLoading = $state(true);
-  let isSaving = $state(false);
-  let statusMessage = $state('');
-  let formError = $state('');
-
-  onMount(loadSettings);
-
-  async function loadSettings() {
-    isLoading = true;
-    formError = '';
+  async function exportData() {
+    if (exporting) return;
+    exporting = true;
+    message = '';
 
     try {
-      const response = await fetch('/api/settings');
-      const data = await response.json();
-
+      const response = await fetch('/api/export/excel');
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to load settings');
+        throw new Error('Export failed');
       }
 
-      formData = {
-        company_name: data.settings.company_name || defaultSettings.company_name,
-        gs1_company_prefix: data.settings.gs1_company_prefix || '',
-        extension_digit: data.settings.extension_digit || defaultSettings.extension_digit,
-        next_serial_reference:
-          data.settings.next_serial_reference || defaultSettings.next_serial_reference
-      };
-    } catch (error) {
-      formError = error.message || 'Failed to load settings';
-    } finally {
-      isLoading = false;
-    }
-  }
-
-  async function saveSettings() {
-    const startedAt = Date.now();
-    let responseStatus = null;
-    isSaving = true;
-    errors = {};
-    formError = '';
-    statusMessage = '';
-
-    try {
-      const response = await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Operation-ID': createOperationId()
-        },
-        body: JSON.stringify(formData)
-      });
-      responseStatus = response.status;
-      const data = await response.json();
-
-      if (!response.ok) {
-        errors = data.errors || {};
-        throw new Error(data.message || 'Failed to save settings');
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get('content-disposition') || '';
+      let filename = 'logistic-label-data.xlsx';
+      const match = contentDisposition.match(/filename="([^"]+)"/);
+      if (match?.[1]) {
+        filename = match[1];
       }
 
-      formData = {
-        company_name: data.settings.company_name,
-        gs1_company_prefix: data.settings.gs1_company_prefix,
-        extension_digit: data.settings.extension_digit,
-        next_serial_reference: data.settings.next_serial_reference
-      };
-      statusMessage = 'Label settings saved.';
-      trackProductEvent('company_settings_saved', { setup_type: data.setupType });
-    } catch (error) {
-      formError = error.message || 'Failed to save settings';
-      trackProductEvent('workflow_failed', {
-        step: 'settings_save',
-        error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
-        duration_ms: Date.now() - startedAt
-      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      message = 'Data exported successfully.';
+    } catch (err) {
+      console.error(err);
+      message = 'Failed to export data. Please try again.';
     } finally {
-      isSaving = false;
+      exporting = false;
     }
   }
 </script>
 
 <svelte:head>
-  <title>Label Settings - GS1-128 Logistic Label Generator</title>
-  <meta
-    name="description"
-    content="Configure GS1 Company Prefix settings for logistic label generation."
-  />
+  <title>Settings | Logistic Label</title>
 </svelte:head>
 
-<div class="max-w-3xl space-y-6">
-  <div>
-    <h1 class="text-2xl font-bold text-gray-900">Label Settings</h1>
-    <p class="mt-2 text-sm text-gray-600">
-      Configure the GS1 Company Prefix used to allocate SSCCs for your logistic labels.
-    </p>
-  </div>
+<main class="settings-page">
+  <header class="page-header">
+    <h1>Settings</h1>
+    <p>Manage your account and export your data.</p>
+  </header>
 
-  {#if formError}
-    <div class="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-      {formError}
-    </div>
-  {/if}
-
-  {#if statusMessage}
-    <div class="rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-      <p>{statusMessage}</p>
-      <a href="/labels" class="mt-2 inline-flex font-semibold text-blue-700 hover:text-blue-800">
-        Continue to choose a shipping situation →
-      </a>
-    </div>
-  {/if}
-
-  <form
-    onsubmit={(event) => {
-      event.preventDefault();
-      saveSettings();
-    }}
-    class="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow"
-  >
-    {#if isLoading}
-      <div class="flex h-32 items-center justify-center">
-        <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
-      </div>
-    {:else}
+  <section class="card">
+    <header class="card-header">
       <div>
-        <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">
-          Company Name
-        </label>
-        <input
-          id="company_name"
-          type="text"
-          bind:value={formData.company_name}
-          class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          maxlength="120"
-          required
-        />
-        {#if errors.company_name}
-          <p class="mt-1 text-sm text-red-600">{errors.company_name}</p>
-        {/if}
+        <h2>Data Export</h2>
+        <p>Download all of your data as an Excel file for your records.</p>
       </div>
+    </header>
+    <div class="card-body">
+      <p>
+        This export includes your account information, company settings (including GS1 company
+        prefix), and every label you've created in the system.
+      </p>
+      <button class="export-button" on:click={exportData} disabled={exporting}>
+        {exporting ? 'Exporting...' : 'Download all my data (.XLSX)'}
+      </button>
+      {#if message}
+        <p class="message">{message}</p>
+      {/if}
+    </div>
+  </section>
+</main>
 
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <div class="sm:col-span-2">
-          <label for="gs1_company_prefix" class="block text-sm font-medium text-gray-700 mb-1">
-            GS1 Company Prefix
-          </label>
-          <input
-            id="gs1_company_prefix"
-            type="text"
-            inputmode="numeric"
-            bind:value={formData.gs1_company_prefix}
-            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="1234567"
-            maxlength="12"
-            required
-          />
-          {#if errors.gs1_company_prefix}
-            <p class="mt-1 text-sm text-red-600">{errors.gs1_company_prefix}</p>
-          {/if}
-          <p class="mt-1 text-xs text-gray-500">
-            Use the numeric prefix licensed to your organization by a GS1 Member Organisation. Do
-            not invent a prefix.
-          </p>
-        </div>
+<style>
+  .settings-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
 
-        <div>
-          <label for="extension_digit" class="block text-sm font-medium text-gray-700 mb-1">
-            Extension Digit
-          </label>
-          <input
-            id="extension_digit"
-            type="text"
-            inputmode="numeric"
-            bind:value={formData.extension_digit}
-            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            maxlength="1"
-            required
-          />
-          {#if errors.extension_digit}
-            <p class="mt-1 text-sm text-red-600">{errors.extension_digit}</p>
-          {/if}
-          <p class="mt-1 text-xs text-gray-500">
-            This digit expands SSCC capacity. It does not identify a packaging level.
-          </p>
-        </div>
-      </div>
+  .page-header h1 {
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+  }
 
-      <div>
-        <label for="next_serial_reference" class="block text-sm font-medium text-gray-700 mb-1">
-          Next Serial Reference
-        </label>
-        <input
-          id="next_serial_reference"
-          type="number"
-          bind:value={formData.next_serial_reference}
-          class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          min="1"
-          step="1"
-          required
-        />
-        {#if errors.next_serial_reference}
-          <p class="mt-1 text-sm text-red-600">{errors.next_serial_reference}</p>
-        {/if}
-        <p class="mt-1 text-xs text-gray-500">
-          The application tries this number next when saving a label, then advances the sequence.
-          Change it only when coordinating an existing numbering sequence.
-        </p>
-      </div>
+  .page-header p {
+    margin: 0;
+    color: #4b5563;
+  }
 
-      <div class="flex justify-end">
-        <button
-          type="submit"
-          disabled={isSaving}
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {isSaving ? 'Saving...' : 'Save Settings'}
-        </button>
-      </div>
-    {/if}
-  </form>
-  <PrintBridgeSettings />
-</div>
+  .card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .card-header h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+  }
+
+  .card-header p {
+    margin: 0;
+    color: #4b5563;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 1.5rem 1.5rem;
+  }
+
+  .card-body p {
+    margin: 0;
+    color: #1f2937;
+    line-height: 1.6;
+  }
+
+  .export-button {
+    align-self: flex-start;
+    background: #1f2937;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: opacity 150ms ease-in-out;
+  }
+
+  .export-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .export-button:not(:disabled):hover {
+    opacity: 0.9;
+  }
+
+  .message {
+    color: #1f2937;
+  }
+</style>
