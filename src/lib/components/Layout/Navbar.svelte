@@ -2,7 +2,7 @@
 <script>
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
-    import { authClient } from '$lib/auth-client';
+    import { authClient } from '#lib/auth-client.js';
     
     // User state
     let user = $derived(page.data.user);
@@ -14,7 +14,7 @@
     async function handleLogout() {
       try {
         await authClient.signOut();
-        await goto('/login', { invalidateAll: true });
+        await goto('/login', { refreshAll: true });
       } catch (error) {
         console.error('Logout error:', error);
       }

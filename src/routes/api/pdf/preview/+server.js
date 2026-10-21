@@ -1,22 +1,22 @@
 // src/routes/api/pdf/preview/+server.js
 import { json } from '@sveltejs/kit';
-import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
-import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
-import { getLabelSettings } from '$lib/server/db/settings';
-import { generateSSCC } from '$lib/utils/gs1Utils';
-import { getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
+import { generateLogisticLabelPDF } from '#lib/server/pdf/labelGenerator.js';
+import { validateLabelForm, sanitizeLabelForm } from '#lib/server/validation/formValidation.js';
+import { getLabelSettings } from '#lib/server/db/settings.js';
+import { generateSSCC } from '#lib/utils/gs1Utils.js';
+import { getLabelSizeForPrintLayout } from '#lib/labels/workflows.js';
 import {
   buildSuccessfulLabelVerification,
   LABEL_VERIFICATION_HEADER,
   serializeLabelVerificationReport
-} from '$lib/labels/verification.js';
-import { buildGs1Elements } from '$lib/server/pdf/gs1Barcode.js';
-import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
+} from '#lib/labels/verification.js';
+import { buildGs1Elements } from '#lib/server/pdf/gs1Barcode.js';
+import { pdfRateLimiter } from '#lib/server/auth/ratelimit.js';
 import {
   durationSince,
   getOperationId,
   recordOperationalEvent
-} from '$lib/server/analytics/operationalEvents.js';
+} from '#lib/server/analytics/operationalEvents.js';
 
 export async function POST({ request, locals }) {
   const startedAt = Date.now();

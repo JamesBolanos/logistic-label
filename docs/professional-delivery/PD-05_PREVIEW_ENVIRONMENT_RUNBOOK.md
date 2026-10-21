@@ -8,11 +8,11 @@ The production Neon project remains connected to the Vercel Production environme
 
 The non-production Neon project is not connected through the Vercel Marketplace integration. Keep exactly these long-lived branches:
 
-| Branch      | Purpose                                                          | Data                           |
-| ----------- | ---------------------------------------------------------------- | ------------------------------ |
-| `main`      | Default non-production branch and explicitly selected local work | Synthetic only                 |
-| `staging`   | Shared database for Vercel Preview and `staging.sscc-labels.com` | Synthetic production-like data |
-| `test-base` | Clean parent for disposable CI branches                          | Minimal deterministic baseline |
+| Branch      | Purpose                                                                     | Data                           |
+| ----------- | --------------------------------------------------------------------------- | ------------------------------ |
+| `main`      | Default non-production branch and the developer database used by local work | Synthetic only                 |
+| `staging`   | Shared database for Vercel Preview and `staging.sscc-labels.com`            | Synthetic production-like data |
+| `test-base` | Clean parent for disposable CI branches                                     | Minimal deterministic baseline |
 
 GitHub Actions creates `test/ci-<run-id>-<attempt>` from `test-base` for E2E execution. The workflow sets an expiration and deletes the branch in an always-run cleanup step. A temporary branch left by an interrupted run may be deleted after confirming that its corresponding GitHub Actions job is no longer running.
 
@@ -70,8 +70,9 @@ For the complete feature/PR promotion flow, validation gates, documentation upda
 5. Redeploy if needed and smoke-test `staging.sscc-labels.com`.
 6. From the same reviewed `staging` commit, run the workflow again with the `production` target and enter `APPLY_PRODUCTION_MIGRATIONS` in the confirmation field. The production GitHub project variable, exact confirmation, database environment, and Neon project identity must all agree before Drizzle connects.
 7. Verify the production migration completed before merging or promoting application code that requires the new schema.
+8. To bring the developer database up to date, run the workflow with the `dev` target from the `master` or `staging` Git branch. It loads the existing non-production `main` branch and applies the committed migrations; it refuses to create a missing branch.
 
-Selecting `none` runs the ordinary manually dispatched quality workflow. Database migration jobs do not run on pushes or pull requests. The existing database environment and Neon project-identity guards still apply to both targets. Never print connection strings or commit pulled environment files.
+Selecting `none` runs the ordinary manually dispatched quality workflow. Database migration jobs do not run on pushes or pull requests. The `dev` target needs no confirmation because it never reaches the production project; the `production` target always does. The existing database environment and Neon project-identity guards still apply to every target. Never print connection strings or commit pulled environment files.
 
 Use separate project-scoped GitHub Actions secrets: `NEON_API_KEY` for the non-production project and `NEON_PRODUCTION_API_KEY` for the production project. This keeps the E2E and staging credential unable to discover or modify production resources.
 

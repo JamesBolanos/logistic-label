@@ -159,6 +159,19 @@ Smoke-test with synthetic staging data:
 
 Record the staged SHA, check/migration run links, smoke outcome, and material limitations in the release PR. Keep credentials, personal data, labels, and raw private logs out of tracked documentation.
 
+### Migrating the developer database
+
+The nonproduction Neon branch named `main` is the database behind the local development configuration in `.env.local`. The `staging` target does not touch it, so its migrations run as a separate dispatch:
+
+```bash
+gh workflow run ci.yml --ref master \
+  -f database_migration_target=dev
+```
+
+UI equivalent: **Actions → CI → Run workflow → branch `master` → target `dev`**. No confirmation is needed. The job accepts only the reviewed `master` or `staging` Git branches, targets the existing nonproduction Neon branch named `main`, and refuses to create a missing branch.
+
+Use this after a schema change reaches `master` so the local development database matches the committed migrations. It applies committed migration files to the developer database only and deploys nothing. The developer database holds synthetic data only; it is never the production database.
+
 ## 6. Prepare the production release and migrate first
 
 Open a release PR from `staging` into `master`:

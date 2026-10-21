@@ -1,9 +1,9 @@
 <!-- src/routes/+page.svelte -->
 <script>
     import { page } from '$app/state';
-    import { trackProductEvent } from '$lib/analytics/client.js';
-    import WhatsNewPanel from '$lib/components/Updates/WhatsNewPanel.svelte';
-    import { getRecentPublishedReleases } from '$lib/content/releases.js';
+    import { trackProductEvent } from '#lib/analytics/client.ts';
+    import WhatsNewPanel from '#lib/components/Updates/WhatsNewPanel.svelte';
+    import { getRecentPublishedReleases } from '#lib/content/releases.ts';
 
     let isLoggedIn = $derived(Boolean(page.data.user));
     const recentUpdates = getRecentPublishedReleases(2);

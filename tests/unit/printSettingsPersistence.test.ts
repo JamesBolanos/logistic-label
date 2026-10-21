@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   onConflictDoUpdate: vi.fn(),
   returning: vi.fn()
 }));
-vi.mock('$lib/server/db', () => ({ db: { insert: mocks.insert } }));
+vi.mock('#lib/server/db/index.js', () => ({ db: { insert: mocks.insert } }));
 import { upsertPrintSettings } from '../../src/lib/server/db/settings.js';
 import { labelSettings } from '../../src/lib/server/db/schema.js';
 import { defaultPrintSettings } from '../../src/lib/printing/settings';

@@ -4,8 +4,8 @@
     defaultPrintSettings,
     sanitizePrintSettings,
     validatePrintSettings
-  } from '$lib/printing/settings';
-  import { pingPrintBridge } from '$lib/printing/print-bridge-client';
+  } from '#lib/printing/settings.ts';
+  import { pingPrintBridge } from '#lib/printing/print-bridge-client.ts';
 
   let form = $state({ ...defaultPrintSettings });
   let errors = $state({});

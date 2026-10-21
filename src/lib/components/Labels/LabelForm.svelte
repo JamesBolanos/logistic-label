@@ -1,6 +1,6 @@
 <script>
-  import { validateLabelForm } from '$lib/validation/formValidation';
-  import { getAvailableScenarioForLabelType } from '$lib/labels/scenarios.js';
+  import { validateLabelForm } from '#lib/validation/formValidation.js';
+  import { getAvailableScenarioForLabelType } from '#lib/labels/scenarios.js';
   import {
     DEFAULT_PRINT_LAYOUT,
     HOMOGENEOUS_DATE_OPTIONS,
@@ -11,7 +11,7 @@
     SSCC_PRINT_LAYOUT_OPTIONS,
     TRANSPORT_COUNT_TYPES,
     TRANSPORT_WEIGHT_UNITS
-  } from '$lib/labels/workflows.js';
+  } from '#lib/labels/workflows.js';
 
   let { labelType, companyName = '', onsubmit, onback } = $props();
 

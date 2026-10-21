@@ -3,18 +3,24 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { waitUntil } from '@vercel/functions';
 import { getRequestEvent } from '$app/server';
-import { dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
-import { resolveAuthMethod } from '$lib/analytics/events.js';
-import { recordOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
-import { db, schema } from '$lib/server/db';
-import { sendPasswordResetEmail } from '$lib/server/email/passwordReset.js';
+import { dev } from '$app/env';
+import {
+  BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  VERCEL
+} from '$app/env/private';
+import { resolveAuthMethod } from '#lib/analytics/events.ts';
+import { recordOperationalEvent } from '#lib/server/analytics/operationalEvents.js';
+import { db, schema } from '#lib/server/db/index.js';
+import { sendPasswordResetEmail } from '#lib/server/email/passwordReset.js';
 
 if (!db) {
   console.warn('Better Auth is configured, but LOGISTIC_LABEL_DATABASE_URL is missing.');
 }
 
-const configuredBaseURL = env.BETTER_AUTH_URL ? new URL(env.BETTER_AUTH_URL) : null;
+const configuredBaseURL = BETTER_AUTH_URL ? new URL(BETTER_AUTH_URL) : null;
 const allowedHosts = [
   configuredBaseURL?.host,
   dev ? 'localhost:5173' : null,
@@ -25,7 +31,7 @@ const allowedHosts = [
 
 export const auth = betterAuth({
   database: db ? drizzleAdapter(db, { provider: 'pg', schema }) : undefined,
-  secret: env.BETTER_AUTH_SECRET || 'dev-only-change-me-before-production',
+  secret: BETTER_AUTH_SECRET || 'dev-only-change-me-before-production',
   baseURL:
     allowedHosts.length > 0
       ? {
@@ -53,8 +59,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: env.GOOGLE_CLIENT_ID || '',
-      clientSecret: env.GOOGLE_CLIENT_SECRET || ''
+      clientId: GOOGLE_CLIENT_ID || '',
+      clientSecret: GOOGLE_CLIENT_SECRET || ''
     }
   },
   databaseHooks: {
@@ -83,7 +89,7 @@ export const auth = betterAuth({
       }
     }
   },
-  advanced: env.VERCEL
+  advanced: VERCEL
     ? {
         backgroundTasks: {
           handler: waitUntil

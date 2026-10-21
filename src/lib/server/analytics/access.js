@@ -1,10 +1,10 @@
-import { env } from '$env/dynamic/private';
-import { isConfiguredAnalyticsOwner, parseAnalyticsUserIds } from '$lib/analytics/access.js';
+import { ANALYTICS_OWNER_USER_IDS } from '$app/env/private';
+import { isConfiguredAnalyticsOwner, parseAnalyticsUserIds } from '#lib/analytics/access.ts';
 
 export function isAnalyticsOwner(userId) {
-  return isConfiguredAnalyticsOwner(userId, env.ANALYTICS_OWNER_USER_IDS);
+  return isConfiguredAnalyticsOwner(userId, ANALYTICS_OWNER_USER_IDS);
 }
 
 export function getAnalyticsOwnerUserIds() {
-  return parseAnalyticsUserIds(env.ANALYTICS_OWNER_USER_IDS);
+  return parseAnalyticsUserIds(ANALYTICS_OWNER_USER_IDS);
 }

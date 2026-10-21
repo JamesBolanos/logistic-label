@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { resolveReportingDays } from '$lib/analytics/statistics.js';
-import { isAnalyticsOwner } from '$lib/server/analytics/access.js';
-import { getOwnerStatistics } from '$lib/server/analytics/statistics.js';
+import { resolveReportingDays } from '#lib/analytics/statistics.ts';
+import { isAnalyticsOwner } from '#lib/server/analytics/access.js';
+import { getOwnerStatistics } from '#lib/server/analytics/statistics.js';
 
 export async function load({ locals, setHeaders, url }) {
   if (!locals.user || !isAnalyticsOwner(locals.user.id)) {

@@ -3,12 +3,12 @@ import {
   getLabelSettings,
   upsertLabelSettings,
   upsertPrintSettings
-} from '$lib/server/db/settings';
+} from '#lib/server/db/settings.js';
 import {
   durationSince,
   getOperationId,
   recordOperationalEvent
-} from '$lib/server/analytics/operationalEvents.js';
+} from '#lib/server/analytics/operationalEvents.js';
 
 export async function GET({ locals }) {
   const user = locals.user;

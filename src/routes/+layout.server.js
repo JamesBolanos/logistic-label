@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { isAnalyticsOwner } from '$lib/server/analytics/access.js';
+import { APP_ENV, GOOGLE_ANALYTICS_ID, VERCEL_ENV } from '$app/env/private';
+import { isAnalyticsOwner } from '#lib/server/analytics/access.js';
 
 const DEFAULT_GOOGLE_ANALYTICS_ID = 'G-WWFKCEM8Q1';
 
@@ -23,10 +23,10 @@ export async function load({ locals }) {
 }
 
 function getAnalyticsMeasurementId() {
-  const deploymentEnvironment = env.VERCEL_ENV || env.APP_ENV;
+  const deploymentEnvironment = VERCEL_ENV || APP_ENV;
   if (deploymentEnvironment !== 'production') return null;
 
-  const measurementId = String(env.GOOGLE_ANALYTICS_ID || DEFAULT_GOOGLE_ANALYTICS_ID).trim();
+  const measurementId = String(GOOGLE_ANALYTICS_ID || DEFAULT_GOOGLE_ANALYTICS_ID).trim();
   return /^G-[A-Z0-9]+$/.test(measurementId) ? measurementId : null;
 }
 

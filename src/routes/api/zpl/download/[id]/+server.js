@@ -1,7 +1,7 @@
-import { getLabelById } from '$lib/server/db/labels';
-import { getLabelSettings } from '$lib/server/db/settings';
-import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
-import { generateLogisticLabelZPL, isZplDpi } from '$lib/server/zpl/labelGenerator';
+import { getLabelById } from '#lib/server/db/labels.js';
+import { getLabelSettings } from '#lib/server/db/settings.js';
+import { pdfRateLimiter } from '#lib/server/auth/ratelimit.js';
+import { generateLogisticLabelZPL, isZplDpi } from '#lib/server/zpl/labelGenerator.ts';
 
 export async function GET({ params, request, locals, url }) {
   if (!locals.user) return new Response('Authentication required', { status: 401 });

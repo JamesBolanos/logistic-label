@@ -1,14 +1,14 @@
 // src/routes/api/pdf/generate/+server.js
 import { json } from '@sveltejs/kit';
-import { createLabel } from '$lib/server/db/labels';
-import { validateGuidedLabelBarcodeFit } from '$lib/server/pdf/labelGenerator.js';
-import { validateLabelForm, sanitizeLabelForm } from '$lib/server/validation/formValidation';
-import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
+import { createLabel } from '#lib/server/db/labels.js';
+import { validateGuidedLabelBarcodeFit } from '#lib/server/pdf/labelGenerator.js';
+import { validateLabelForm, sanitizeLabelForm } from '#lib/server/validation/formValidation.js';
+import { pdfRateLimiter } from '#lib/server/auth/ratelimit.js';
 import {
   durationSince,
   getOperationId,
   recordOperationalEvent
-} from '$lib/server/analytics/operationalEvents.js';
+} from '#lib/server/analytics/operationalEvents.js';
 
 export async function POST({ request, locals }) {
   const startedAt = Date.now();

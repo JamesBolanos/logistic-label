@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte';
-  import { printSavedLabel } from '$lib/printing/print-bridge-client';
-  import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
-  import { classifyHttpFailure } from '$lib/analytics/events.js';
+  import { printSavedLabel } from '#lib/printing/print-bridge-client.ts';
+  import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
+  import { classifyHttpFailure } from '#lib/analytics/events.ts';
   import {
     getLabelTypeName,
     getHomogeneousDateOption,
@@ -10,7 +10,7 @@
     getPrintLayoutName,
     getTransportCountTypeName,
     LABEL_TYPES
-  } from '$lib/labels/workflows.js';
+  } from '#lib/labels/workflows.js';
 
   let labels = $state([]);
   let isLoading = $state(true);

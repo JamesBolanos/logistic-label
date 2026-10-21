@@ -1,8 +1,8 @@
 <!-- src/routes/login/+page.svelte -->
 <script>
     import { page } from '$app/state';
-    import LoginForm from '$lib/components/Auth/LoginForm.svelte';
-    import { getGoogleAuthErrorMessage } from '$lib/auth/googleAuthErrors';
+    import LoginForm from '#lib/components/Auth/LoginForm.svelte';
+    import { getGoogleAuthErrorMessage } from '#lib/auth/googleAuthErrors.ts';
     
     // Check for return URL and expired token notification
     let returnUrl = $derived(page.url.searchParams.get('returnUrl') || '/dashboard');

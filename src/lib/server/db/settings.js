@@ -1,12 +1,12 @@
 import { and, eq, isNotNull, sql } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { labelSettings } from '$lib/server/db/schema.js';
-import { generateSSCC, validateGS1CompanyPrefix } from '$lib/utils/gs1Utils';
+import { db } from '#lib/server/db/index.js';
+import { labelSettings } from '#lib/server/db/schema.js';
+import { generateSSCC, validateGS1CompanyPrefix } from '#lib/utils/gs1Utils.js';
 import {
   defaultPrintSettings,
   sanitizePrintSettings,
   validatePrintSettings
-} from '$lib/printing/settings';
+} from '#lib/printing/settings.ts';
 
 // Save only printer parameters; never overwrite the concurrently advancing SSCC sequence.
 export async function upsertPrintSettings(userId, data) {

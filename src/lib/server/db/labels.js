@@ -1,10 +1,10 @@
 import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
-import { allocateSSCC } from '$lib/server/db/settings';
-import { validateSSCC } from '$lib/utils/gs1Utils';
-import { db } from '$lib/server/db';
-import { logisticLabel } from '$lib/server/db/schema.js';
-import { durationSince, recordOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
-import { getLabelSizeForPrintLayout } from '$lib/labels/workflows.js';
+import { allocateSSCC } from '#lib/server/db/settings.js';
+import { validateSSCC } from '#lib/utils/gs1Utils.js';
+import { db } from '#lib/server/db/index.js';
+import { logisticLabel } from '#lib/server/db/schema.js';
+import { durationSince, recordOperationalEvent } from '#lib/server/analytics/operationalEvents.js';
+import { getLabelSizeForPrintLayout } from '#lib/labels/workflows.js';
 
 const MAX_SSCC_ALLOCATION_ATTEMPTS = 100;
 

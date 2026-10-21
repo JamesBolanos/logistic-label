@@ -1,14 +1,14 @@
 <!-- src/lib/components/Auth/SignupForm.svelte -->
 <script>
   import { goto } from '$app/navigation';
-  import { dev } from '$app/environment';
-  import { authClient } from '$lib/auth-client';
-  import { trackProductEvent } from '$lib/analytics/client.js';
+  import { dev } from '$app/env';
+  import { authClient } from '#lib/auth-client.js';
+  import { trackProductEvent } from '#lib/analytics/client.ts';
   import {
     getGoogleAuthErrorCallbackURL,
     GOOGLE_AUTH_START_ERROR_MESSAGE
-  } from '$lib/auth/googleAuthErrors';
-  import { validateRegistrationForm } from '$lib/validation/formValidation';
+  } from '#lib/auth/googleAuthErrors.ts';
+  import { validateRegistrationForm } from '#lib/validation/formValidation.js';
   import Captcha from './Captcha.svelte';
 
   let { initialError = '' } = $props();
@@ -82,7 +82,7 @@
       formSuccess = 'Account created successfully! Redirecting...';
       // Authentication changes the session cookie outside SvelteKit's load tracking.
       // Reload layout data so the navbar shows the new user on the first dashboard visit.
-      setTimeout(() => goto('/dashboard', { invalidateAll: true }), 1000);
+      setTimeout(() => goto('/dashboard', { refreshAll: true }), 1000);
     } catch {
       formError = 'An unexpected error occurred. Please try again.';
       trackProductEvent('workflow_failed', {

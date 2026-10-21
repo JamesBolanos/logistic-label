@@ -1,13 +1,13 @@
 // src/routes/api/pdf/download/[id]/+server.js
-import { getLabelById } from '$lib/server/db/labels';
-import { getLabelSettings } from '$lib/server/db/settings';
-import { generateLogisticLabelPDF } from '$lib/server/pdf/labelGenerator';
-import { pdfRateLimiter } from '$lib/server/auth/ratelimit';
+import { getLabelById } from '#lib/server/db/labels.js';
+import { getLabelSettings } from '#lib/server/db/settings.js';
+import { generateLogisticLabelPDF } from '#lib/server/pdf/labelGenerator.js';
+import { pdfRateLimiter } from '#lib/server/auth/ratelimit.js';
 import {
   durationSince,
   getOperationId,
   recordOperationalEvent
-} from '$lib/server/analytics/operationalEvents.js';
+} from '#lib/server/analytics/operationalEvents.js';
 
 export async function GET({ params, request, locals }) {
   const startedAt = Date.now();
