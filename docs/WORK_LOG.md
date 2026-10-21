@@ -15,6 +15,15 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `DELIVERY-002` — Developer database migration and staging promotion
+
+- Result: the developer database and the staging database are both migrated to the committed journal, and `staging.sscc-labels.com` serves the current release again.
+- Diagnosis: the `staging` Git branch had been left at pull request #30 from 2026-10-05, so the Vercel Preview deployment behind `staging.sscc-labels.com` was seventeen days old and was missing the LAN print bridge feature, the Excel export, the SvelteKit 3 migration, and the restored label settings form. The staging database had also not been migrated since 2026-09-29, so migration `0008` and the five printer columns on `label_settings` were missing there. The `dev` dispatch updated the developer database only, because it targets a different Neon branch.
+- Decisions: promote `master` to `staging` with pull request #41 instead of merging the individual features, because `staging` was a strict ancestor of `master` and one promotion carried every pending change with no unrelated work to reconcile. The staging migration was dispatched immediately after the merge, so the interval in which the new code ran against the old schema was about one minute. Migration `0008` only adds columns with defaults, so it is backward-compatible with the code that was deployed on staging.
+- Material files: `docs/KANBAN.md` records the closed items. No application code, schema, or migration file changed.
+- Validation: pull request #41 passed GitHub Quality and the isolated end-to-end job; the staging migration run reported the resolved target and then "migrations applied successfully"; `staging.sscc-labels.com` now resolves to the `git-staging` preview deployment created from the promotion, with the Vercel deployment status Ready; the developer database reports nine applied migrations and the five printer columns on `label_settings`. The staging pages themselves sit behind Vercel deployment protection, so a browser smoke test by the developer is still outstanding.
+- Next: the developer confirms the staging pages in a browser, and the next feature is promoted to `staging` before it reaches `master`.
+
 ## 2026-10-21 — `DELIVERY-002` — Developer database migration target in CI
 
 - Result: the CI workflow now offers a `dev` migration target. A manually dispatched run applies the committed migrations to the developer database in the non-production Neon project, which until now no target could reach.
