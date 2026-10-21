@@ -260,7 +260,7 @@ jobs:
           rm -f "$response_file"
 
   migrate-database:
-    name: Database migration (${{ inputs.database_migration_target || 'not requested' }})
+    name: Database migration
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.database_migration_target != 'none' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -339,7 +339,9 @@ jobs:
           PROJECT_ID: ${{ steps.target.outputs.project_id }}
           TARGET: ${{ inputs.database_migration_target }}
         run: |
-          echo "Applying committed migrations to the $TARGET database: Neon branch '$BRANCH_NAME' in project $PROJECT_ID ($DATABASE_ENVIRONMENT)."
+          summary="Applying committed migrations to the $TARGET database: Neon branch '$BRANCH_NAME' in project $PROJECT_ID ($DATABASE_ENVIRONMENT)."
+          echo "$summary"
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify existing Neon branch
         shell: bash
