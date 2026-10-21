@@ -15,6 +15,22 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `EXPORT-001` — Excel export announcement and board correction
+
+- Result: the user data export, already merged into `master` in pull request #39 (commit `f1219f8`), is now announced in What's New and `/updates`, and `EXPORT-001` moved from Backlog to Accomplished. The exporter itself was not changed.
+- Decisions: publish the announcement under the existing `data_export_excel` feature key using the wording reviewed on the earlier export branch, dated 2026-10-20 to match the merge. The gap was announcement and board state, not behavior, so no export or schema work was repeated.
+- Material files: `src/lib/content/releases.ts` (one published entry) and `docs/KANBAN.md` (board entry). No migration, no schema change, and no runtime behavior change.
+- Validation: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build). The new entry sorts ahead of the 2026-10-15 entry and the home page still lists two recent updates. A browser download of a generated workbook was not performed.
+- Next: developer review and merge of the SvelteKit 3 branch, then deployment so the announcement becomes visible.
+
+## 2026-10-21 — `DEPS-001` — SvelteKit 3 upgrade
+
+- Result: the application builds, type-checks, and runs on `@sveltejs/kit@3.0.0`; the `config_file_unsupported` failure that broke `npm run quality` is resolved.
+- Decisions: adapter configuration moved from `svelte.config.js` into the `sveltekit(...)` Vite plugin; internal imports use the `#lib` subpath alias declared in `package.json` with explicit file extensions; environment variables are declared once in `src/env.js` and imported by name from `$app/env/private` and `$app/env/public`; framework-level validators stay optional so `validateServerEnvironment()` remains the production gate; `cookie` moves to 2.0.1, the version Kit 3 declares, after a differential check confirmed the previous 1.1.1 pin was behaviorally identical for every function Kit uses; `json()` from `@sveltejs/kit` is retained because it also sets `content-length`.
+- Material files: `vite.config.js`, `package.json`, `jsconfig.json`, `tsconfig.check.json`, `README.md`, new `src/env.js`, and 49 source files updated for the `#lib` alias and the Kit 3 environment modules; `svelte.config.js` deleted.
+- Validation: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); dev and preview servers return HTTP 200 for `/`, `/login`, `/signup`, and `/privacy`; the public reCAPTCHA key reaches the browser payload in both modes and the private database variable resolves without warnings.
+- Next: developer review, merge, and deployment. The work is committed on `fix/sveltekit-3-migration`, branched from `origin/master`; pushing, the pull request, the merge, and any deployment remain developer actions. No migration was executed.
+
 ## 2026-10-16 — `DOC-002` — Feature deployment guide
 
 - Result: added root-level `HOW_TO_DEPLOY_A_NEW_FEATURE.md` and linked it from contributor guidance, the environment runbook, and the Kanban documentation map.

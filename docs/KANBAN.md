@@ -1,6 +1,6 @@
 # Product Kanban
 
-Last reviewed: 2026-10-16 (America/Managua)
+Last reviewed: 2026-10-21 (America/Managua)
 
 This is the only current source for work status and priority. Detailed requirements remain in the linked plans and runbooks, but their checklists do not determine what is active.
 
@@ -20,14 +20,15 @@ None.
 
 ## Review
 
-### `DOC-002` — Document feature deployment from staging to production
+### `DEPS-001` — SvelteKit 3 upgrade
 
-- Need: a push to `master` can deploy application code before its required production migration; developers need one complete release procedure.
-- Outcome: a root-level deployment guide covering the current GitHub/Vercel/Neon flow, commands, documentation, verification, and recovery.
-- Acceptance: commands and environment targets match repository configuration; distinguish automated checks from manual release gates; explain features with and without migrations and the documentation required before and after release.
-- Evidence: workflow/runbook cross-check complete; 56 local document links and 15 shell examples validated; Markdown formatting and `npm run quality` pass (151 unit tests and Vercel build). No E2E needed for documentation-only work.
-- Dependencies: existing guarded migration workflow and environment runbook; developer owns Git, migration, and deployment actions.
-- Release: ready for developer review and merge; [deployment guide](../HOW_TO_DEPLOY_A_NEW_FEATURE.md).
+- Need: `@sveltejs/kit@3.0.0` was merged into `master`, but that release removed `svelte.config.js`, the `$lib` alias, and the `$env/dynamic/*` modules, so `npm run quality` and every build failed.
+- Outcome: the application builds, type-checks, and runs on SvelteKit 3 with configuration, internal imports, and environment variables expressed through the Kit 3 APIs.
+- Acceptance: the adapter is configured through the `sveltekit(...)` Vite plugin and `svelte.config.js` is deleted; internal imports use the `#lib` subpath alias with explicit file extensions; environment variables are declared in `src/env.js` and imported from `$app/env/private` and `$app/env/public`; `npm run quality` passes and the dev and preview servers serve the application.
+- Evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); dev and preview servers return HTTP 200 for `/`, `/login`, `/signup`, and `/privacy`; the public reCAPTCHA key reaches the browser payload in both modes and the private database variable resolves without warnings; every imported environment name is declared and no declaration is unused.
+- Decisions: `cookie` moves to 2.0.1, the version Kit 3 declares, after confirming the previous 1.1.1 pin was behaviorally identical for every function Kit uses; framework-level environment validators stay optional so `validateServerEnvironment()` remains the production gate; `json()` from `@sveltejs/kit` is retained because it also sets `content-length`.
+- Release: no user-visible behavior change, so no What's New entry is required.
+- Dependencies: none; the developer owns Git, pull-request, and merge actions.
 
 ## Ready
 
@@ -70,7 +71,6 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `PRODUCT-001`  | Saved products       | Validate the need and smallest useful product list before building it                                          | Define product fields separately from shipment values                                      |
 | `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                  | Depends on lifecycle rules from `DATA-001`                                                 |
 | `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                 | Existing `v1`–`v4` compatibility is the baseline                                           |
-| `EXPORT-001`   | Excel                | Define audience, source dataset, columns, filters, and identifier handling before implementing `.xlsx`         | Scope remains an analysis decision                                                         |
 | `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                       | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides |
 | `DELIVERY-001` | Migrations/releases  | Complete fresh and incremental migration verification, release gates, smoke checks, and recovery documentation | Detailed delivery backlog remains in the professional plan                                 |
 | `OPS-001`      | Operations           | Add privacy-safe error monitoring, structured logs, readiness/uptime checks, and alerts                        | Keep operational telemetry separate from product analytics                                 |
@@ -87,6 +87,13 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 ## Accomplished
 
+### `EXPORT-001` — Download all user data as Excel
+
+- Outcome: a user can download their account details, company settings (including the GS1 company prefix), and every label they created as a single `.xlsx` file with "Account & Settings" and "Labels" sheets.
+- Acceptance evidence: the export endpoint returns 401 without a session and 503 without a database, and scopes every query to the current user id; the response uses the `.xlsx` MIME type with a dated attachment filename and `private, no-store`; a successful export records a `data_export_succeeded` operational event with `documentFormat: 'xlsx'`. `npm run quality` passes (22 files, 151 unit tests, and Vercel build). No browser download of a generated workbook was performed, so the produced file contents are verified by code review only.
+- Release evidence: merged into `master` in pull request #39 (commit `f1219f8`); the `data_export_excel` What's New entry is published from 2026-10-20 and reaches the home page, `/updates`, and the What's New panel.
+- Dependencies: none; the exporter reads the existing user, label-settings, and label tables.
+
 ### `PRINT-001` — Send saved labels through the local print bridge
 
 - Outcome: bridge setup guidance, per-user printer settings, connection check, and Print via bridge for saved labels; PDF/ZPL downloads and existing SSCCs are preserved.
@@ -94,6 +101,12 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 - Release evidence: on 2026-10-16 the developer reported production deployment and successful recovery through the guarded production migration workflow. The AI did not independently inspect production or execute the migration.
 - Remaining hardware validation belongs to `VERIFY-001`; successful database recovery does not establish physical printer/scanner compatibility.
 - Reference: [LAN printing](./labels/LAN_PRINTING.md).
+
+### `DOC-002` — Document feature deployment from staging to production
+
+- Outcome: a root-level deployment guide covering the current GitHub/Vercel/Neon flow, commands, documentation, verification, and recovery.
+- Acceptance evidence: workflow/runbook cross-check complete; 56 local document links and 15 shell examples validated; Markdown formatting and `npm run quality` pass (151 unit tests and Vercel build). No E2E needed for documentation-only work.
+- Release evidence: merged into `master` in commit `f521af6`; the guide is [HOW_TO_DEPLOY_A_NEW_FEATURE.md](../HOW_TO_DEPLOY_A_NEW_FEATURE.md).
 
 | Area                | Delivered outcome                                                                                                                                                     | Evidence                                                                                                                               |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
