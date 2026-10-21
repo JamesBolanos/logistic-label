@@ -147,6 +147,18 @@ Use the run-list/watch commands from section 4 to identify the new run and wait 
 
 Because the staging push deploys automatically before this manual migration, schema-dependent pages may temporarily fail. Do not use that interval as acceptance evidence. After migration, reload the app; redeploy staging if a failed build or changed environment variables require it. Verify the source SHA again.
 
+Smoke-test with synthetic staging data:
+
+- Home, login, guide, and updates pages load as relevant.
+- Sign-in, redirects, and logout work; test Google OAuth/CAPTCHA when affected.
+- Dashboard, settings, and existing saved labels load for the test account.
+- The new feature works, including its important validation/error paths.
+- PDF/ZPL downloads still reuse existing labels and SSCCs when those paths are affected.
+- Schema-dependent requests succeed; inspect relevant Vercel runtime errors.
+- Complete any feature-specific hardware checks, or explicitly record what remains unverified. A browser mock or bridge connection check is not proof of physical printing.
+
+Record the staged SHA, check/migration run links, smoke outcome, and material limitations in the release PR. Keep credentials, personal data, labels, and raw private logs out of tracked documentation.
+
 ### Migrating the developer database
 
 The nonproduction Neon branch named `main` is the database behind the local development configuration in `.env.local`. The `staging` target does not touch it, so its migrations run as a separate dispatch:
@@ -159,18 +171,6 @@ gh workflow run ci.yml --ref master \
 UI equivalent: **Actions → CI → Run workflow → branch `master` → target `dev`**. No confirmation is needed. The job accepts only the reviewed `master` or `staging` Git branches, targets the existing nonproduction Neon branch named `main`, and refuses to create a missing branch.
 
 Use this after a schema change reaches `master` so the local development database matches the committed migrations. It applies committed migration files to the developer database only and deploys nothing. The developer database holds synthetic data only; it is never the production database.
-
-Smoke-test with synthetic staging data:
-
-- Home, login, guide, and updates pages load as relevant.
-- Sign-in, redirects, and logout work; test Google OAuth/CAPTCHA when affected.
-- Dashboard, settings, and existing saved labels load for the test account.
-- The new feature works, including its important validation/error paths.
-- PDF/ZPL downloads still reuse existing labels and SSCCs when those paths are affected.
-- Schema-dependent requests succeed; inspect relevant Vercel runtime errors.
-- Complete any feature-specific hardware checks, or explicitly record what remains unverified. A browser mock or bridge connection check is not proof of physical printing.
-
-Record the staged SHA, check/migration run links, smoke outcome, and material limitations in the release PR. Keep credentials, personal data, labels, and raw private logs out of tracked documentation.
 
 ## 6. Prepare the production release and migrate first
 
