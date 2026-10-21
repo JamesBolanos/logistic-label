@@ -15,6 +15,15 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `DELIVERY-002` — Developer database migration target in CI
+
+- Result: the CI workflow now offers a `dev` migration target. A manually dispatched run applies the committed migrations to the developer database in the non-production Neon project, which until now no target could reach.
+- Decisions: the target is named `dev` because the database is the developer one behind `.env.local`, not a deployed environment. It is accepted only from the reviewed `master` or `staging` Git branches, so unreviewed schema cannot reach the shared developer database. It uses the non-production Neon credential, the `nonproduction` database environment, and needs no confirmation, so the production project stays unreachable from it. The job still loads an existing branch and refuses to create one, and it now lists the available branch names when the expected branch is missing. The job name reports the requested target instead of an unresolved expression, because the old name rendered as a literal expression on pushes and pull requests.
+- Diagnosis: the migration job was never broken. It is `workflow_dispatch` only by design, so pushes and pull requests skip it, and its input offered just `staging` and `production`. The developer database was therefore never migrated by GitHub and drifted three migrations behind the committed journal.
+- Material files: `.github/workflows/ci.yml`, `HOW_TO_DEPLOY_A_NEW_FEATURE.md`, `docs/professional-delivery/PD-05_PREVIEW_ENVIRONMENT_RUNBOOK.md`, `docs/KANBAN.md`.
+- Validation: the workflow file parses and passes the repository Prettier check; the `nonproduction` migration target and database environment pass the existing `resolveMigrationTarget` and `assertDatabaseEnvironment` guards; a read-only query confirmed the developer database belongs to the non-production project. No migration was executed and no branch was created.
+- Next: developer review and merge of pull request #40, then dispatch **Actions → CI → Run workflow → branch `master` → target `dev`** to bring the developer database up to date.
+
 ## 2026-10-21 — `EXPORT-003` — Restore the label settings form removed by the Excel export
 
 - Result: the Settings page again offers the company name, GS1 Company Prefix, extension digit, and next serial reference form together with the LAN printer settings, while keeping the Excel data export added in pull request #39. The page is rebuilt with the Tailwind classes the rest of the application uses instead of a scoped stylesheet.

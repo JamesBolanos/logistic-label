@@ -42,6 +42,17 @@ None.
 - Release: no user-visible behavior change, so no What's New entry is required.
 - Dependencies: none; the developer owns Git, pull-request, and merge actions.
 
+### `DELIVERY-002` — Developer database migration target in CI
+
+- Need: the CI migration job only offered the `staging` and `production` targets, so the database behind `.env.local` was never migrated by GitHub. It drifted three migrations behind the committed journal, and the migrations that add the label type and print bridge columns were missing.
+- Outcome: a manually dispatched `dev` target applies the committed migrations to the developer database in the non-production Neon project.
+- Acceptance: the dispatch offers `dev`; the job accepts only the reviewed `master` or `staging` Git branches, targets the existing non-production `main` branch, uses the non-production Neon credential, needs no confirmation, and refuses to create a missing branch; a wrong branch name fails with the list of available branches; the job name reports the requested target instead of an unresolved expression.
+- Evidence: the workflow file parses and passes the repository Prettier check; the `nonproduction` migration target and the `nonproduction` database environment pass the existing `resolveMigrationTarget` and `assertDatabaseEnvironment` guards; a read-only query confirmed the developer database is the non-production project `odd-recipe-33941658`. The dispatch itself can only run once `master` is healthy, so it is verified after the pull request merges.
+- Decisions: the target is named `dev` because it is the developer database rather than a deployed environment. It is restricted to the reviewed `master` and `staging` Git branches so unreviewed schema cannot reach the shared developer database. It requires no confirmation because the production project, credential, and confirmation field are never involved.
+- Release: no user-visible behavior change, so no What's New entry is required.
+- Dependencies: `DEPS-001`; the job checks out the dispatched ref and runs the migration tooling, so it needs a healthy `master`.
+- Delivery: reviewed with `DEPS-001` in pull request #40.
+
 ## Ready
 
 Items are ordered. Start only the first item unless new evidence changes priority.
