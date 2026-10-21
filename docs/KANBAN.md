@@ -20,6 +20,18 @@ None.
 
 ## Review
 
+### `EXPORT-003` — Restore the label settings form removed by the Excel export
+
+- Need: pull request #39 replaced the Settings page with the Data Export card instead of adding to it, removing the company name, GS1 Company Prefix, extension digit, and next serial reference form and the LAN printer settings section. No UI remains that writes those values, so the onboarding step "Configure label settings" leads to a page without the form.
+- Outcome: the Settings page offers the label settings form, the LAN printer settings, and the Excel data export together.
+- Acceptance: the form loads the current values, validates and saves through `/api/settings`, reports "Label settings saved.", and offers the link to continue to a shipping situation; the Data Export download still works; the LAN printer settings section is rendered again.
+- Evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build). A local browser check against the development server confirms the form renders with all four fields plus the export button and the LAN printer section. The CI end-to-end job applies migrations to a fresh branch and all 8 tests pass, including the label-settings save and persistence path; the local check could not complete that path because the configured development database is three migrations behind.
+- Decisions: the export was meant to be added to the page, not to replace it, so the form is restored rather than the export removed. The Settings page is rebuilt with the Tailwind classes every other page uses, instead of the scoped stylesheet introduced with the export. The `/sign-in` redirect created by the same change now points to `/login`, which is the actual login route.
+- Root cause: pull request #39 merged with a failed Quality check and a skipped end-to-end job, so the removed form was never exercised. Pull request #40 is the first change where Quality passes, so the end-to-end suite ran and reported the missing fields.
+- Release: covered by the `data_export_excel` entry published with this change. No separate announcement is added for the restored form, because the removal was never announced and a notice about restoring it would confuse users who never saw it removed.
+- Dependencies: none; the settings API and persistence layer were never affected.
+- Delivery: reviewed and merged with `DEPS-001` in pull request #40, which also carries the SvelteKit 3 migration.
+
 ### `DEPS-001` — SvelteKit 3 upgrade
 
 - Need: `@sveltejs/kit@3.0.0` was merged into `master`, but that release removed `svelte.config.js`, the `$lib` alias, and the `$env/dynamic/*` modules, so `npm run quality` and every build failed.

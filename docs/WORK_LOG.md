@@ -15,6 +15,15 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `EXPORT-003` — Restore the label settings form removed by the Excel export
+
+- Result: the Settings page again offers the company name, GS1 Company Prefix, extension digit, and next serial reference form together with the LAN printer settings, while keeping the Excel data export added in pull request #39. The page is rebuilt with the Tailwind classes the rest of the application uses instead of a scoped stylesheet.
+- Decisions: the export was meant to be added to the Settings page, not to replace it, so the form is restored rather than the export removed. The `/sign-in` redirect introduced by the same change now points to `/login`, which is the real login route, and the page title follows the application convention again. No schema, API, or analytics change was needed because the settings API and persistence layer were never affected.
+- Root cause: pull request #39 merged with a failed Quality check and a skipped end-to-end job, so the removed form was never exercised. Pull request #40 is the first change where Quality passes, so the end-to-end suite ran and reported the missing fields.
+- Material files: `src/routes/settings/+page.svelte` and `src/routes/settings/+page.server.js`.
+- Validation: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build). A local browser check against the development server confirms the form renders with all four fields, the Data Export button, and the LAN printer section. The CI end-to-end job applies migrations to a fresh branch and all 8 tests pass, including the label-settings save and persistence path; the local check could not complete that path because the configured development database is three migrations behind.
+- Next: developer review, merge, and deployment of pull request #40; the development database still needs `npm run db:migrate` for local use.
+
 ## 2026-10-21 — `EXPORT-001` — Excel export announcement and board correction
 
 - Result: the user data export, already merged into `master` in pull request #39 (commit `f1219f8`), is now announced in What's New and `/updates`, and `EXPORT-001` moved from Backlog to Accomplished. The exporter itself was not changed.
