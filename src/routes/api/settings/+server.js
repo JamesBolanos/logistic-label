@@ -1,10 +1,14 @@
 import { json } from '@sveltejs/kit';
-import { getLabelSettings, upsertLabelSettings } from '$lib/server/db/settings';
+import {
+  getLabelSettings,
+  upsertLabelSettings,
+  upsertPrintSettings
+} from '#lib/server/db/settings.js';
 import {
   durationSince,
   getOperationId,
   recordOperationalEvent
-} from '$lib/server/analytics/operationalEvents.js';
+} from '#lib/server/analytics/operationalEvents.js';
 
 export async function GET({ locals }) {
   const user = locals.user;
@@ -14,10 +18,33 @@ export async function GET({ locals }) {
 
   try {
     const settings = await getLabelSettings(user.id);
-    return json({ success: true, settings });
+    return json({ success: true, settings }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     console.error('Settings load error:', error);
     return json({ success: false, message: 'Failed to load settings' }, { status: 500 });
+  }
+}
+
+export async function PATCH({ request, locals }) {
+  if (!locals.user) return json({ message: 'Authentication required' }, { status: 401 });
+  let payload;
+  try {
+    payload = await request.json();
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error();
+  } catch {
+    return json({ message: 'Invalid printer settings' }, { status: 400 });
+  }
+  try {
+    const settings = await upsertPrintSettings(locals.user.id, payload);
+    return json({ success: true, settings }, { headers: { 'Cache-Control': 'private, no-store' } });
+  } catch (error) {
+    if (error.validation)
+      return json(
+        { message: 'Invalid printer settings', errors: error.validation.errors },
+        { status: 400 }
+      );
+    console.error('Printer settings save failed');
+    return json({ message: 'Failed to save printer settings' }, { status: 500 });
   }
 }
 

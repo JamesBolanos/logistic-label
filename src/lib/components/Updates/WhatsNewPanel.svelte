@@ -1,6 +1,6 @@
 <script>
-  import { formatReleaseDate } from '$lib/content/releases.js';
-  import { observeReleaseUpdate, trackProductEvent } from '$lib/analytics/client.js';
+  import { formatReleaseDate } from '#lib/content/releases.ts';
+  import { observeReleaseUpdate, trackProductEvent } from '#lib/analytics/client.ts';
 
   let { updates = [] } = $props();
 

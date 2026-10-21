@@ -1,13 +1,13 @@
 <script>
-  import { dev } from '$app/environment';
+  import { dev } from '$app/env';
   import { page } from '$app/state';
-  import { trackProductEvent } from '$lib/analytics/client.js';
-  import { authClient } from '$lib/auth-client';
-  import Captcha from '$lib/components/Auth/Captcha.svelte';
+  import { trackProductEvent } from '#lib/analytics/client.ts';
+  import { authClient } from '#lib/auth-client.js';
+  import Captcha from '#lib/components/Auth/Captcha.svelte';
   import {
     validatePasswordResetForm,
     validatePasswordResetRequest
-  } from '$lib/validation/formValidation';
+  } from '#lib/validation/formValidation.js';
 
   let token = $derived(page.url.searchParams.get('token'));
   let invalidToken = $derived(page.url.searchParams.get('error') === 'INVALID_TOKEN');

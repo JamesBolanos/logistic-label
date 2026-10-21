@@ -1,6 +1,6 @@
 # Product Kanban
 
-Last reviewed: 2026-10-05 (America/Managua)
+Last reviewed: 2026-10-21 (America/Managua)
 
 This is the only current source for work status and priority. Detailed requirements remain in the linked plans and runbooks, but their checklists do not determine what is active.
 
@@ -16,17 +16,73 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
-No item is active. The WIP limit is available for the next Ready item.
+None.
+
+## Review
+
+### `EXPORT-003` — Restore the label settings form removed by the Excel export
+
+- Need: pull request #39 replaced the Settings page with the Data Export card instead of adding to it, removing the company name, GS1 Company Prefix, extension digit, and next serial reference form and the LAN printer settings section. No UI remains that writes those values, so the onboarding step "Configure label settings" leads to a page without the form.
+- Outcome: the Settings page offers the label settings form, the LAN printer settings, and the Excel data export together.
+- Acceptance: the form loads the current values, validates and saves through `/api/settings`, reports "Label settings saved.", and offers the link to continue to a shipping situation; the Data Export download still works; the LAN printer settings section is rendered again.
+- Evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build). A local browser check against the development server confirms the form renders with all four fields plus the export button and the LAN printer section. The CI end-to-end job applies migrations to a fresh branch and all 8 tests pass, including the label-settings save and persistence path; the local check could not complete that path because the configured development database is three migrations behind.
+- Decisions: the export was meant to be added to the page, not to replace it, so the form is restored rather than the export removed. The Settings page is rebuilt with the Tailwind classes every other page uses, instead of the scoped stylesheet introduced with the export. The `/sign-in` redirect created by the same change now points to `/login`, which is the actual login route.
+- Root cause: pull request #39 merged with a failed Quality check and a skipped end-to-end job, so the removed form was never exercised. Pull request #40 is the first change where Quality passes, so the end-to-end suite ran and reported the missing fields.
+- Release: covered by the `data_export_excel` entry published with this change. No separate announcement is added for the restored form, because the removal was never announced and a notice about restoring it would confuse users who never saw it removed.
+- Dependencies: none; the settings API and persistence layer were never affected.
+- Delivery: reviewed and merged with `DEPS-001` in pull request #40, which also carries the SvelteKit 3 migration.
+
+### `DEPS-001` — SvelteKit 3 upgrade
+
+- Need: `@sveltejs/kit@3.0.0` was merged into `master`, but that release removed `svelte.config.js`, the `$lib` alias, and the `$env/dynamic/*` modules, so `npm run quality` and every build failed.
+- Outcome: the application builds, type-checks, and runs on SvelteKit 3 with configuration, internal imports, and environment variables expressed through the Kit 3 APIs.
+- Acceptance: the adapter is configured through the `sveltekit(...)` Vite plugin and `svelte.config.js` is deleted; internal imports use the `#lib` subpath alias with explicit file extensions; environment variables are declared in `src/env.js` and imported from `$app/env/private` and `$app/env/public`; `npm run quality` passes and the dev and preview servers serve the application.
+- Evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); dev and preview servers return HTTP 200 for `/`, `/login`, `/signup`, and `/privacy`; the public reCAPTCHA key reaches the browser payload in both modes and the private database variable resolves without warnings; every imported environment name is declared and no declaration is unused.
+- Decisions: `cookie` moves to 2.0.1, the version Kit 3 declares, after confirming the previous 1.1.1 pin was behaviorally identical for every function Kit uses; framework-level environment validators stay optional so `validateServerEnvironment()` remains the production gate; `json()` from `@sveltejs/kit` is retained because it also sets `content-length`.
+- Release: no user-visible behavior change, so no What's New entry is required.
+- Dependencies: none; the developer owns Git, pull-request, and merge actions.
+
+### `DELIVERY-002` — Developer database migration target in CI
+
+- Need: the CI migration job only offered the `staging` and `production` targets, so the database behind `.env.local` was never migrated by GitHub. It drifted three migrations behind the committed journal, and the migrations that add the label type and print bridge columns were missing.
+- Outcome: a manually dispatched `dev` target applies the committed migrations to the developer database in the non-production Neon project.
+- Acceptance: the dispatch offers `dev`; the job accepts only the reviewed `master` or `staging` Git branches, targets the existing non-production `main` branch, uses the non-production Neon credential, needs no confirmation, and refuses to create a missing branch; a wrong branch name fails with the list of available branches; the check list shows a plain job name instead of an unresolved expression, and the run reports the resolved target, project, branch, and database environment.
+- Evidence: the workflow file parses and passes the repository Prettier check; the `nonproduction` migration target and the `nonproduction` database environment pass the existing `resolveMigrationTarget` and `assertDatabaseEnvironment` guards; a read-only query confirmed the developer database is the non-production project `odd-recipe-33941658`. The dispatch itself can only run once `master` is healthy, so it is verified after the pull request merges.
+- Decisions: the target is named `dev` because it is the developer database rather than a deployed environment. It is restricted to the reviewed `master` and `staging` Git branches so unreviewed schema cannot reach the shared developer database. It requires no confirmation because the production project, credential, and confirmation field are never involved.
+- Release: no user-visible behavior change, so no What's New entry is required.
+- Dependencies: `DEPS-001`; the job checks out the dispatched ref and runs the migration tooling, so it needs a healthy `master`.
+- Delivery: reviewed with `DEPS-001` in pull request #40.
 
 ## Ready
 
 Items are ordered. Start only the first item unless new evidence changes priority.
 
-| Order | ID             | Outcome                                                                                                          | Why now                                                                   | Detailed source                                                                      |
-| ----: | -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-|     1 | `UX-001`       | Refresh label history immediately after saving and explain history recovery when an automatic PDF download fails | Small reliability improvement that prevents unnecessary new SSCC creation | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
-|     2 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior                    | GS1 identifier integrity and real-world data safety                       | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
-|     3 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements            | Converts user interest into actionable product and business evidence      | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
+### `EXPORT-002` — Download saved labels as ZPL
+
+- Need: users need a `.zpl` file for ZPL-compatible thermal printers.
+- Outcome: download a saved label as PDF or ZPL, selecting 203, 300, or 600 dpi for ZPL without allocating another SSCC.
+- Acceptance: authenticated, owner-scoped downloads; original template/layout and GS1 data preserved; supported printer resolutions use whole-dot barcode modules and checked quiet zones; user text cannot inject printer commands; visible download/retry controls; existing PDFs remain compatible; public guide explains PDF/ZPL downloads and the announcement appears in What's New and `/updates`.
+- Evidence: `npm run quality` passes (19 files, 112 unit tests, Vercel build); focused browser ZPL/PDF download and retry check passes; 11 representative PDFs match the original renderer byte-for-byte; built public pages `/`, `/updates`, and `/guide` render the ZPL announcement and guidance.
+- Status: prior review evidence retained; awaits developer closeout after the `PRINT-001` production release.
+- Release: release note enabled and public guidance complete in app content; ready for developer review, merge, and deployment.
+- Dependencies: existing saved-label/settings APIs and GS1 encoder; no migration, print bridge, or external rendering service. Physical printer verification remains `VERIFY-001`.
+- Architecture: includes the `ARCH-001` shared-layout extraction needed by this concrete export.
+- Source: user request on 2026-10-08; [ZPL export reference](./labels/ZPL_EXPORT.md).
+
+### `UX-001` — Immediate history refresh and PDF recovery
+
+- Need: a saved label is currently missing from history until its automatic PDF download succeeds, encouraging unnecessary SSCC creation after a download failure.
+- Outcome: show the saved record immediately and explain how to download it from history without creating another SSCC.
+- Acceptance: history refreshes after save confirmation while the PDF request is pending; HTTP/network download failures show saved-label recovery guidance; history downloads reuse the saved record; successful downloads and save failures retain their correct behavior.
+- Status: returned to Ready while the user-requested ZPL export takes priority.
+- Evidence planned: focused browser regression checks and `npm run quality`.
+- Dependencies: existing save, history-list, and PDF-download APIs; no migration or new service.
+- Source: [Work Plan §4](./WORK_PLAN.md#4-improvements).
+
+| Order | ID             | Outcome                                                                                               | Why now                                                              | Detailed source                                                                      |
+| ----: | -------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+|     2 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
+|     3 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
 
 ## Backlog
 
@@ -38,8 +94,6 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `PRODUCT-001`  | Saved products       | Validate the need and smallest useful product list before building it                                          | Define product fields separately from shipment values                                      |
 | `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                  | Depends on lifecycle rules from `DATA-001`                                                 |
 | `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                 | Existing `v1`–`v4` compatibility is the baseline                                           |
-| `ARCH-001`     | Extensibility        | Separate shared label data/validation from PDF and future export renderers                                     | Start only when a concrete new format needs it                                             |
-| `EXPORT-001`   | Excel                | Define audience, source dataset, columns, filters, and identifier handling before implementing `.xlsx`         | Scope remains an analysis decision                                                         |
 | `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                       | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides |
 | `DELIVERY-001` | Migrations/releases  | Complete fresh and incremental migration verification, release gates, smoke checks, and recovery documentation | Detailed delivery backlog remains in the professional plan                                 |
 | `OPS-001`      | Operations           | Add privacy-safe error monitoring, structured logs, readiness/uptime checks, and alerts                        | Keep operational telemetry separate from product analytics                                 |
@@ -48,14 +102,34 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 ## Blocked or Deferred
 
-| ID              | Item                                                                         | Reason to wait                                                       | Resume condition                                              |
-| --------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `VERIFY-001`    | Print representative labels and verify them with a physical scanner/verifier | Required hardware is unavailable                                     | Printer and suitable scanner/verifier available               |
-| `PRINT-001`     | ZPL and LAN-printer delivery through a local print bridge                    | Separate virtual-printer project and real printer testing are needed | Print-bridge research produces a bounded integration contract |
-| `ANALYTICS-001` | Compare update viewers, feature-link users, and later successful use         | Current cohort is small and coverage began recently                  | Enough external usage accumulates for a meaningful comparison |
-| `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                                        | Repeated user/customer need or contractual requirement        |
+| ID              | Item                                                                         | Reason to wait                                      | Resume condition                                              |
+| --------------- | ---------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| `VERIFY-001`    | Print representative labels and verify them with a physical scanner/verifier | Required hardware is unavailable                    | Printer and suitable scanner/verifier available               |
+| `ANALYTICS-001` | Compare update viewers, feature-link users, and later successful use         | Current cohort is small and coverage began recently | Enough external usage accumulates for a meaningful comparison |
+| `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                       | Repeated user/customer need or contractual requirement        |
 
 ## Accomplished
+
+### `EXPORT-001` — Download all user data as Excel
+
+- Outcome: a user can download their account details, company settings (including the GS1 company prefix), and every label they created as a single `.xlsx` file with "Account & Settings" and "Labels" sheets.
+- Acceptance evidence: the export endpoint returns 401 without a session and 503 without a database, and scopes every query to the current user id; the response uses the `.xlsx` MIME type with a dated attachment filename and `private, no-store`; a successful export records a `data_export_succeeded` operational event with `documentFormat: 'xlsx'`. `npm run quality` passes (22 files, 151 unit tests, and Vercel build). No browser download of a generated workbook was performed, so the produced file contents are verified by code review only.
+- Release evidence: merged into `master` in pull request #39 (commit `f1219f8`); the `data_export_excel` What's New entry is published from 2026-10-20 and reaches the home page, `/updates`, and the What's New panel.
+- Dependencies: none; the exporter reads the existing user, label-settings, and label tables.
+
+### `PRINT-001` — Send saved labels through the local print bridge
+
+- Outcome: bridge setup guidance, per-user printer settings, connection check, and Print via bridge for saved labels; PDF/ZPL downloads and existing SSCCs are preserved.
+- Acceptance evidence: prior `npm run quality` passed (151 unit tests and Vercel build); three focused mocked browser checks passed; migration snapshots contained only the five intended settings columns.
+- Release evidence: on 2026-10-16 the developer reported production deployment and successful recovery through the guarded production migration workflow. The AI did not independently inspect production or execute the migration.
+- Remaining hardware validation belongs to `VERIFY-001`; successful database recovery does not establish physical printer/scanner compatibility.
+- Reference: [LAN printing](./labels/LAN_PRINTING.md).
+
+### `DOC-002` — Document feature deployment from staging to production
+
+- Outcome: a root-level deployment guide covering the current GitHub/Vercel/Neon flow, commands, documentation, verification, and recovery.
+- Acceptance evidence: workflow/runbook cross-check complete; 56 local document links and 15 shell examples validated; Markdown formatting and `npm run quality` pass (151 unit tests and Vercel build). No E2E needed for documentation-only work.
+- Release evidence: merged into `master` in commit `f521af6`; the guide is [HOW_TO_DEPLOY_A_NEW_FEATURE.md](../HOW_TO_DEPLOY_A_NEW_FEATURE.md).
 
 | Area                | Delivered outcome                                                                                                                                                     | Evidence                                                                                                                               |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -71,22 +145,23 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 Use this map to avoid loading every Markdown file into an AI session.
 
-| Document                                                                     | Role                                                                    |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`../AGENTS.md`](../AGENTS.md)                                               | Stable AI collaboration rules and read order                            |
-| [`KANBAN.md`](./KANBAN.md)                                                   | Current priority and status; authoritative board                        |
-| [`WORK_LOG.md`](./WORK_LOG.md)                                               | Concise dated handoffs and decision evidence                            |
-| [`WORK_PLAN.md`](./WORK_PLAN.md)                                             | Detailed product analysis and candidate requirements                    |
-| [`PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md)           | Detailed delivery, security, operations, and recovery backlog           |
-| [`../README.md`](../README.md)                                               | Setup, stack, environment contract, and repository entry point          |
-| [`../CONTRIBUTING.md`](../CONTRIBUTING.md)                                   | Branch, quality, PR, dependency, and release workflow                   |
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md)                                       | Current system structure and durable technical constraints              |
-| [`GS1_REQUIREMENTS.md`](./GS1_REQUIREMENTS.md)                               | SSCC allocation and aggregation rules                                   |
-| [`GS1_LOGISTIC_LABEL_GUIDE.md`](./GS1_LOGISTIC_LABEL_GUIDE.md)               | App-specific analysis of the source GS1 guideline                       |
-| [`labels/GUIDED_LABEL_WORKFLOWS.md`](./labels/GUIDED_LABEL_WORKFLOWS.md)     | Current workflow inputs, AIs, layouts, and compatibility                |
-| [`PRIVACY.md`](./PRIVACY.md)                                                 | Canonical repository privacy statement                                  |
-| `analytics/*.md`, `auth/*.md`, `professional-delivery/*.md`                  | Focused measurement, authentication, environment, and baseline runbooks |
-| [`PACKAGE_ANALYSIS_SEP_24.md`](./PACKAGE_ANALYSIS_SEP_24.md)                 | Historical package snapshot; not a current status source                |
-| [`../.github/pull_request_template.md`](../.github/pull_request_template.md) | Pull-request review checklist                                           |
+| Document                                                                     | Role                                                                                 |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [`../AGENTS.md`](../AGENTS.md)                                               | Stable AI collaboration rules and read order                                         |
+| [`KANBAN.md`](./KANBAN.md)                                                   | Current priority and status; authoritative board                                     |
+| [`WORK_LOG.md`](./WORK_LOG.md)                                               | Concise dated handoffs and decision evidence                                         |
+| [`WORK_PLAN.md`](./WORK_PLAN.md)                                             | Detailed product analysis and candidate requirements                                 |
+| [`PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md)           | Detailed delivery, security, operations, and recovery backlog                        |
+| [`../README.md`](../README.md)                                               | Setup, stack, environment contract, and repository entry point                       |
+| [`../CONTRIBUTING.md`](../CONTRIBUTING.md)                                   | Branch, quality, PR, dependency, and release workflow                                |
+| [`../HOW_TO_DEPLOY_A_NEW_FEATURE.md`](../HOW_TO_DEPLOY_A_NEW_FEATURE.md)     | Staging-to-production release steps, migration commands, and documentation checklist |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md)                                       | Current system structure and durable technical constraints                           |
+| [`GS1_REQUIREMENTS.md`](./GS1_REQUIREMENTS.md)                               | SSCC allocation and aggregation rules                                                |
+| [`GS1_LOGISTIC_LABEL_GUIDE.md`](./GS1_LOGISTIC_LABEL_GUIDE.md)               | App-specific analysis of the source GS1 guideline                                    |
+| [`labels/GUIDED_LABEL_WORKFLOWS.md`](./labels/GUIDED_LABEL_WORKFLOWS.md)     | Current workflow inputs, AIs, layouts, and compatibility                             |
+| [`PRIVACY.md`](./PRIVACY.md)                                                 | Canonical repository privacy statement                                               |
+| `analytics/*.md`, `auth/*.md`, `professional-delivery/*.md`                  | Focused measurement, authentication, environment, and baseline runbooks              |
+| [`PACKAGE_ANALYSIS_SEP_24.md`](./PACKAGE_ANALYSIS_SEP_24.md)                 | Historical package snapshot; not a current status source                             |
+| [`../.github/pull_request_template.md`](../.github/pull_request_template.md) | Pull-request review checklist                                                        |
 
 Ignored `.aider*` files are generated local AI-tool history and are not project documentation.

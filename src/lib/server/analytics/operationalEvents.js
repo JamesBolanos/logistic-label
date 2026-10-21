@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { operationalEvent } from '$lib/server/db/schema.js';
-import { isProductEventName } from '$lib/analytics/events.js';
-import { getAnalyticsOwnerUserIds } from '$lib/server/analytics/access.js';
+import { db } from '#lib/server/db/index.js';
+import { operationalEvent } from '#lib/server/db/schema.js';
+import { isProductEventName } from '#lib/analytics/events.ts';
+import { getAnalyticsOwnerUserIds } from '#lib/server/analytics/access.js';
 
 const OPERATION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:_-]{0,127}$/;
 

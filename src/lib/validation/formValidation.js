@@ -4,7 +4,7 @@ import {
   validateGTIN,
   validateISODate,
   validateLotNumber
-} from '$lib/utils/gs1Utils';
+} from '#lib/utils/gs1Utils.js';
 import {
   DEFAULT_PRINT_LAYOUT,
   getTemplateVersionForLabelType,
@@ -16,7 +16,7 @@ import {
   isTransportWeightUnit,
   LABEL_TYPES,
   PRINT_LAYOUTS
-} from '$lib/labels/workflows.js';
+} from '#lib/labels/workflows.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_COMPLEXITY_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;

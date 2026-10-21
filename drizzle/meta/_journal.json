@@ -57,6 +57,13 @@
       "when": 1790702562839,
       "tag": "0007_chief_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792119090945,
+      "tag": "0008_print_bridge_settings",
+      "breakpoints": true
     }
   ]
 }

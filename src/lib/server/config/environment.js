@@ -1,21 +1,35 @@
-import { dev } from '$app/environment';
-import { env as privateEnv } from '$env/dynamic/private';
-import { env as publicEnv } from '$env/dynamic/public';
+import { dev } from '$app/env';
+import {
+  APP_ENV,
+  AUTH_EMAIL_FROM,
+  BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL,
+  DATABASE_ENVIRONMENT,
+  EXPECTED_NEON_PROJECT_ID,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  LOGISTIC_LABEL_DATABASE_URL,
+  LOGISTIC_LABEL_NEON_PROJECT_ID,
+  RECAPTCHA_SECRET_KEY,
+  RESEND_API_KEY,
+  VERCEL_ENV
+} from '$app/env/private';
+import { PUBLIC_RECAPTCHA_SITE_KEY } from '$app/env/public';
 
 /** @type {Array<[string, () => string | undefined]>} */
 const REQUIRED_PRODUCTION_VARIABLES = [
-  ['LOGISTIC_LABEL_DATABASE_URL', () => privateEnv.LOGISTIC_LABEL_DATABASE_URL],
-  ['DATABASE_ENVIRONMENT', () => privateEnv.DATABASE_ENVIRONMENT],
-  ['LOGISTIC_LABEL_NEON_PROJECT_ID', () => privateEnv.LOGISTIC_LABEL_NEON_PROJECT_ID],
-  ['EXPECTED_NEON_PROJECT_ID', () => privateEnv.EXPECTED_NEON_PROJECT_ID],
-  ['BETTER_AUTH_SECRET', () => privateEnv.BETTER_AUTH_SECRET],
-  ['BETTER_AUTH_URL', () => privateEnv.BETTER_AUTH_URL],
-  ['GOOGLE_CLIENT_ID', () => privateEnv.GOOGLE_CLIENT_ID],
-  ['GOOGLE_CLIENT_SECRET', () => privateEnv.GOOGLE_CLIENT_SECRET],
-  ['PUBLIC_RECAPTCHA_SITE_KEY', () => publicEnv.PUBLIC_RECAPTCHA_SITE_KEY],
-  ['RECAPTCHA_SECRET_KEY', () => privateEnv.RECAPTCHA_SECRET_KEY],
-  ['RESEND_API_KEY', () => privateEnv.RESEND_API_KEY],
-  ['AUTH_EMAIL_FROM', () => privateEnv.AUTH_EMAIL_FROM]
+  ['LOGISTIC_LABEL_DATABASE_URL', () => LOGISTIC_LABEL_DATABASE_URL],
+  ['DATABASE_ENVIRONMENT', () => DATABASE_ENVIRONMENT],
+  ['LOGISTIC_LABEL_NEON_PROJECT_ID', () => LOGISTIC_LABEL_NEON_PROJECT_ID],
+  ['EXPECTED_NEON_PROJECT_ID', () => EXPECTED_NEON_PROJECT_ID],
+  ['BETTER_AUTH_SECRET', () => BETTER_AUTH_SECRET],
+  ['BETTER_AUTH_URL', () => BETTER_AUTH_URL],
+  ['GOOGLE_CLIENT_ID', () => GOOGLE_CLIENT_ID],
+  ['GOOGLE_CLIENT_SECRET', () => GOOGLE_CLIENT_SECRET],
+  ['PUBLIC_RECAPTCHA_SITE_KEY', () => PUBLIC_RECAPTCHA_SITE_KEY],
+  ['RECAPTCHA_SECRET_KEY', () => RECAPTCHA_SECRET_KEY],
+  ['RESEND_API_KEY', () => RESEND_API_KEY],
+  ['AUTH_EMAIL_FROM', () => AUTH_EMAIL_FROM]
 ];
 
 export function validateServerEnvironment() {
@@ -31,7 +45,7 @@ export function validateServerEnvironment() {
     throw new Error(`Production configuration is incomplete. Missing: ${missing.join(', ')}`);
   }
 
-  const betterAuthUrl = privateEnv.BETTER_AUTH_URL;
+  const betterAuthUrl = BETTER_AUTH_URL;
 
   if (!betterAuthUrl) {
     throw new Error('Production configuration is incomplete. Missing: BETTER_AUTH_URL');
@@ -52,9 +66,9 @@ export function validateServerEnvironment() {
 }
 
 function deploymentEnvironment() {
-  if (privateEnv.VERCEL_ENV === 'production') {
+  if (VERCEL_ENV === 'production') {
     return 'production';
   }
 
-  return privateEnv.APP_ENV || privateEnv.VERCEL_ENV;
+  return APP_ENV || VERCEL_ENV;
 }

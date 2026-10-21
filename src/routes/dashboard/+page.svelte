@@ -1,10 +1,10 @@
 <!-- src/routes/dashboard/+page.svelte -->
 <script>
     import { onMount } from 'svelte';
-    import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
-    import OnboardingChecklist from '$lib/components/Dashboard/OnboardingChecklist.svelte';
-    import { trackProductEvent } from '$lib/analytics/client.js';
-    import { getLabelTypeName, getPackagingLevelName, LABEL_TYPES } from '$lib/labels/workflows.js';
+    import ProtectedRoute from '#lib/components/Layout/ProtectedRoute.svelte';
+    import OnboardingChecklist from '#lib/components/Dashboard/OnboardingChecklist.svelte';
+    import { trackProductEvent } from '#lib/analytics/client.ts';
+    import { getLabelTypeName, getPackagingLevelName, LABEL_TYPES } from '#lib/labels/workflows.js';
     
     // Stats
     let stats = $state({

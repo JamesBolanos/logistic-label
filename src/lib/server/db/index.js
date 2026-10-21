@@ -1,13 +1,20 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
-import { env } from '$env/dynamic/private';
+import {
+  APP_ENV,
+  DATABASE_ENVIRONMENT,
+  EXPECTED_NEON_PROJECT_ID,
+  LOGISTIC_LABEL_DATABASE_URL,
+  LOGISTIC_LABEL_NEON_PROJECT_ID,
+  VERCEL_ENV
+} from '$app/env/private';
 import * as schema from './schema.js';
 import {
   assertDatabaseEnvironment,
   resolveExpectedDatabaseEnvironment
 } from './databaseEnvironment.js';
 
-const rawConnectionString = env.LOGISTIC_LABEL_DATABASE_URL;
+const rawConnectionString = LOGISTIC_LABEL_DATABASE_URL;
 
 if (!rawConnectionString) {
   console.warn(
@@ -19,12 +26,12 @@ const connectionString = rawConnectionString
   ? assertDatabaseEnvironment(
       {
         databaseUrl: rawConnectionString,
-        databaseEnvironment: env.DATABASE_ENVIRONMENT,
-        neonProjectId: env.LOGISTIC_LABEL_NEON_PROJECT_ID,
-        expectedNeonProjectId: env.EXPECTED_NEON_PROJECT_ID
+        databaseEnvironment: DATABASE_ENVIRONMENT,
+        neonProjectId: LOGISTIC_LABEL_NEON_PROJECT_ID,
+        expectedNeonProjectId: EXPECTED_NEON_PROJECT_ID
       },
       {
-        expectedEnvironment: resolveExpectedDatabaseEnvironment(env.VERCEL_ENV, env.APP_ENV),
+        expectedEnvironment: resolveExpectedDatabaseEnvironment(VERCEL_ENV, APP_ENV),
         operation: 'Application database initialization'
       }
     )

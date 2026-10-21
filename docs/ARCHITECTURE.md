@@ -24,6 +24,7 @@
   - `dashboard/`: aggregated dashboard data
   - `labels/`: create, list
   - `pdf/`: generate, preview, download
+  - `zpl/`: download saved labels at the selected printer resolution
 
 ## Auth flow
 
@@ -48,9 +49,12 @@
 - Requires an authenticated session; computes totals, today count, last label, unique GTINs, recent labels, and first-label onboarding progress from Postgres.
 - Onboarding is derived from existing settings, successful preview events, and saved-label totals. It adds no user-profile state or database table, and existing label creators are treated as complete.
 
-## Labels and PDF
+## Labels and exports
 
+- `src/lib/server/labels/layout.js` supplies versioned physical layouts to the PDF and ZPL adapters.
 - `src/lib/server/pdf/labelGenerator.js` produces 4×6, 4×3, and 6×8 PDF labels, including a two-copy transport-label sheet.
+- `src/lib/server/zpl/labelGenerator.ts` produces ZPL using the shared GS1-128 bar patterns at whole-dot printer resolutions. The owner-scoped endpoint downloads existing labels without allocating another SSCC; see [ZPL export](./labels/ZPL_EXPORT.md).
+- `src/lib/printing/print-bridge-client.ts` sends existing ZPL from the browser to the user's local bridge, which forwards it to a LAN printer. Per-user parameters live in `label_settings`; a separate printer-settings save preserves the SSCC sequence. See [LAN printing](./labels/LAN_PRINTING.md).
 - `src/lib/server/pdf/gs1Barcode.js` encodes supported GS1 application identifiers as Code 128 / GS1-128 bar patterns.
 - `src/lib/labels/scenarios.js` defines the business-facing shipping situations and maps available choices to stable stored label types.
 - `src/lib/labels/workflows.js` defines the technical label types, transport vocabularies, packaging-level vocabulary, homogeneous date AIs, print layouts, and template versions.
@@ -71,7 +75,7 @@
 
 ## CSP and security headers
 
-- CSP meta in `src/app.html` allows Google reCAPTCHA domains.
+- CSP meta in `src/app.html` allows Google reCAPTCHA domains and HTTP connections to `127.0.0.1`/`localhost` bridge ports. Bridge settings restrict hosts to those loopback names; printer LAN addresses are sent in the bridge request body.
 - Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy) are set in `src/hooks.server.js` (server-side).
 - `src/lib/server/config/environment.js` validates required Production configuration at server startup. Vercel supplies `VERCEL_ENV`; other deployments can set `APP_ENV=production`.
 

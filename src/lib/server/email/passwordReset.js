@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { AUTH_EMAIL_FROM, RESEND_API_KEY } from '$app/env/private';
 
 const RESEND_EMAILS_URL = 'https://api.resend.com/emails';
 const SUBJECT = 'Reset your SSCC Labels password';
@@ -35,8 +35,8 @@ export function createPasswordResetEmail(resetUrl) {
 
 /** @param {{ to: string, resetUrl: string }} message */
 export async function sendPasswordResetEmail({ to, resetUrl }) {
-  const apiKey = env.RESEND_API_KEY?.trim();
-  const from = env.AUTH_EMAIL_FROM?.trim();
+  const apiKey = RESEND_API_KEY?.trim();
+  const from = AUTH_EMAIL_FROM?.trim();
 
   if (!apiKey || !from) {
     throw new Error('Password reset email delivery is not configured.');

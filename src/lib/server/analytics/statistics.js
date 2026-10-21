@@ -1,8 +1,8 @@
 import { and, count, countDistinct, eq, gte, inArray, lt, min, notInArray } from 'drizzle-orm';
-import { createRollingWindow, percentage } from '$lib/analytics/statistics.js';
-import { getAnalyticsOwnerUserIds } from '$lib/server/analytics/access.js';
-import { db } from '$lib/server/db';
-import { labelSettings, logisticLabel, operationalEvent, user } from '$lib/server/db/schema.js';
+import { createRollingWindow, percentage } from '#lib/analytics/statistics.ts';
+import { getAnalyticsOwnerUserIds } from '#lib/server/analytics/access.js';
+import { db } from '#lib/server/db/index.js';
+import { labelSettings, logisticLabel, operationalEvent, user } from '#lib/server/db/schema.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -22,7 +22,8 @@ export async function getOwnerStatistics(days, now = new Date()) {
     [weeklyCreators],
     [failedAttempts],
     failureRows,
-    [eventCoverage]
+    [eventCoverage],
+    [dataExports]
   ] = await Promise.all([
     db
       .select({ value: countDistinct(user.id) })
@@ -81,7 +82,22 @@ export async function getOwnerStatistics(days, now = new Date()) {
     db
       .select({ firstEventAt: min(operationalEvent.createdAt) })
       .from(operationalEvent)
-      .where(and(eq(operationalEvent.isInternal, false), eventExclusion))
+      .where(and(eq(operationalEvent.isInternal, false), eventExclusion)),
+    db
+      .select({
+        attempts: count(),
+        affectedUsers: countDistinct(operationalEvent.userId)
+      })
+      .from(operationalEvent)
+      .where(
+        and(
+          eq(operationalEvent.eventName, 'data_export_succeeded'),
+          eq(operationalEvent.isInternal, false),
+          gte(operationalEvent.createdAt, start),
+          lt(operationalEvent.createdAt, end),
+          eventExclusion
+        )
+      )
   ]);
 
   const firstLabelUsers = firstLabelRows.filter(({ firstLabelAt }) =>
@@ -105,6 +121,8 @@ export async function getOwnerStatistics(days, now = new Date()) {
       weeklyCreators: Number(weeklyCreators?.value || 0),
       failedAttempts: Number(failedAttempts?.attempts || 0),
       affectedUsers: Number(failedAttempts?.affectedUsers || 0),
+      dataExports: Number(dataExports?.attempts || 0),
+      dataExportUsers: Number(dataExports?.affectedUsers || 0),
       customInquiries: null,
       acceptedProjects: null
     },

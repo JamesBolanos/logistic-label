@@ -8,12 +8,16 @@
     "npm": "11.x"
   },
   "type": "module",
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "prettier --write .prettierrc.json eslint.config.js jsconfig.json tsconfig.check.json package.json playwright.config.js vite.config.js vercel.json drizzle.config.js src/hooks.server.js src/lib/analytics src/lib/content src/lib/components/Analytics src/lib/components/Updates src/lib/server/analytics src/lib/server/auth src/lib/server/config src/lib/server/db/databaseEnvironment.ts src/lib/server/db/migrationTarget.ts src/lib/server/db/schema.js src/lib/server/email src/lib/validation src/routes/admin src/routes/reset-password src/routes/updates src/routes/privacy tests/helpers tests/unit tests/*.spec.js docs/analytics docs/auth docs/professional-delivery docs/ARCHITECTURE.md docs/PRIVACY.md AGENTS.md docs/KANBAN.md docs/WORK_LOG.md CONTRIBUTING.md .github/pull_request_template.md .github/workflows",
-    "format:check": "prettier --check .prettierrc.json eslint.config.js jsconfig.json tsconfig.check.json package.json playwright.config.js vite.config.js vercel.json drizzle.config.js src/hooks.server.js src/lib/analytics src/lib/content src/lib/components/Analytics src/lib/components/Updates src/lib/server/analytics src/lib/server/auth src/lib/server/config src/lib/server/db/databaseEnvironment.ts src/lib/server/db/migrationTarget.ts src/lib/server/db/schema.js src/lib/server/email src/lib/validation src/routes/admin src/routes/reset-password src/routes/updates src/routes/privacy tests/helpers tests/unit tests/*.spec.js docs/analytics docs/auth docs/professional-delivery docs/ARCHITECTURE.md docs/PRIVACY.md AGENTS.md docs/KANBAN.md docs/WORK_LOG.md CONTRIBUTING.md .github/pull_request_template.md .github/workflows",
+    "format": "prettier --write .prettierrc.json eslint.config.js jsconfig.json tsconfig.check.json package.json playwright.config.js vite.config.js vercel.json drizzle.config.js src/hooks.server.js src/env.js src/lib/analytics src/lib/content src/lib/components/Analytics src/lib/components/Auth/Captcha.svelte src/lib/components/Updates src/lib/server/analytics src/lib/server/auth src/lib/server/config src/lib/server/db/databaseEnvironment.ts src/lib/server/db/migrationTarget.ts src/lib/server/db/schema.js src/lib/server/email src/lib/validation src/routes/admin src/routes/reset-password src/routes/updates src/routes/privacy tests/helpers tests/unit tests/*.spec.js docs/analytics docs/auth docs/professional-delivery docs/ARCHITECTURE.md docs/PRIVACY.md AGENTS.md docs/KANBAN.md docs/WORK_LOG.md CONTRIBUTING.md .github/pull_request_template.md .github/workflows src/lib/printing src/lib/components/Labels/PrintBridgeSettings.svelte src/lib/components/Labels/LabelHistory.svelte src/lib/server/db/settings.js src/lib/server/db/settings.d.ts src/routes/settings src/routes/api/settings src/routes/guide docs/labels/LAN_PRINTING.md",
+    "format:check": "prettier --check .prettierrc.json eslint.config.js jsconfig.json tsconfig.check.json package.json playwright.config.js vite.config.js vercel.json drizzle.config.js src/hooks.server.js src/env.js src/lib/analytics src/lib/content src/lib/components/Analytics src/lib/components/Auth/Captcha.svelte src/lib/components/Updates src/lib/server/analytics src/lib/server/auth src/lib/server/config src/lib/server/db/databaseEnvironment.ts src/lib/server/db/migrationTarget.ts src/lib/server/db/schema.js src/lib/server/email src/lib/validation src/routes/admin src/routes/reset-password src/routes/updates src/routes/privacy tests/helpers tests/unit tests/*.spec.js docs/analytics docs/auth docs/professional-delivery docs/ARCHITECTURE.md docs/PRIVACY.md AGENTS.md docs/KANBAN.md docs/WORK_LOG.md CONTRIBUTING.md .github/pull_request_template.md .github/workflows src/lib/printing src/lib/components/Labels/PrintBridgeSettings.svelte src/lib/components/Labels/LabelHistory.svelte src/lib/server/db/settings.js src/lib/server/db/settings.d.ts src/routes/settings src/routes/api/settings src/routes/guide docs/labels/LAN_PRINTING.md",
     "lint": "eslint .",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json && npm run check:js",
     "check:js": "tsc --project ./tsconfig.check.json",
@@ -30,34 +34,32 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.60.0",
-    "@sveltejs/adapter-vercel": "^6.3.4",
-    "@sveltejs/kit": "^2.70.3",
-    "@sveltejs/vite-plugin-svelte": "^5.1.1",
-    "@tailwindcss/vite": "^4.0.0",
+    "@playwright/test": "^1.64.1",
+    "@sveltejs/adapter-vercel": "^7.0.0",
+    "@sveltejs/kit": "^3.0.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tailwindcss/vite": "^4.3.3",
     "drizzle-kit": "^0.31.11",
-    "eslint": "^10.11.0",
-    "eslint-plugin-svelte": "^3.23.0",
-    "globals": "^17.12.0",
-    "prettier": "^3.9.9",
+    "eslint": "^10.13.0",
+    "eslint-plugin-svelte": "^3.23.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
     "prettier-plugin-svelte": "^4.1.1",
-    "svelte": "^5.57.1",
-    "svelte-check": "^4.7.6",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
     "tailwindcss": "^4.0.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.70.1",
-    "vite": "^6.4.3",
-    "vitest": "^5.0.2"
-  },
-  "overrides": {
-    "cookie": "1.1.1"
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5",
+    "xlsx": "^0.18.5"
   },
   "dependencies": {
-    "@better-auth/drizzle-adapter": "^1.7.6",
-    "@neondatabase/serverless": "^1.1.0",
+    "@better-auth/drizzle-adapter": "^1.7.10",
+    "@neondatabase/serverless": "^1.2.0",
     "@opentelemetry/api": "^1.9.1",
-    "@vercel/functions": "^3.9.9",
-    "better-auth": "^1.7.6",
-    "drizzle-orm": "^0.45.3"
+    "@vercel/functions": "^3.10.1",
+    "better-auth": "^1.7.10",
+    "drizzle-orm": "^0.45.4"
   }
 }

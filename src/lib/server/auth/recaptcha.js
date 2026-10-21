@@ -1,5 +1,5 @@
-import { dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
+import { dev } from '$app/env';
+import { RECAPTCHA_SECRET_KEY } from '$app/env/private';
 
 const VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify';
 
@@ -8,7 +8,7 @@ export async function verifyRecaptchaToken(token, remoteIp) {
     return { success: true };
   }
 
-  if (!env.RECAPTCHA_SECRET_KEY) {
+  if (!RECAPTCHA_SECRET_KEY) {
     return { success: false, message: 'Captcha secret is not configured.' };
   }
 
@@ -17,7 +17,7 @@ export async function verifyRecaptchaToken(token, remoteIp) {
   }
 
   const body = new URLSearchParams({
-    secret: env.RECAPTCHA_SECRET_KEY,
+    secret: RECAPTCHA_SECRET_KEY,
     response: token
   });
 

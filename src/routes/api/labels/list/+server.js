@@ -1,6 +1,6 @@
 // src/routes/api/labels/list/+server.js
 import { json } from '@sveltejs/kit';
-import { getLabelsByUser, searchLabels } from '$lib/server/db/labels';
+import { getLabelsByUser, searchLabels } from '#lib/server/db/labels.js';
 
 export async function GET({ url, locals }) {
   const user = locals.user;

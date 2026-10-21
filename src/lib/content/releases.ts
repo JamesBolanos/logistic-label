@@ -15,6 +15,42 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-20-data-export-excel',
+    publishedAt: '2026-10-20',
+    category: 'new feature',
+    status: 'published',
+    title: 'Download all of your data as Excel',
+    benefit:
+      'Export your account details, company settings (including GS1 company prefix), and every label you created in a single .xlsx file. Available in Settings under Data Export.',
+    featureKey: 'data_export_excel',
+    href: '/settings',
+    linkLabel: 'Export your data'
+  },
+  {
+    id: '2026-10-15-lan-printing',
+    publishedAt: '2026-10-15',
+    category: 'new feature',
+    status: 'published',
+    title: 'Send saved labels to a LAN printer',
+    benefit:
+      'Follow the linked Print Bridge setup guide, configure your network printer in Settings, then use Print via bridge in Saved labels. Existing labels and SSCCs are reused, with PDF and ZPL downloads still available.',
+    featureKey: 'lan_printing',
+    href: '/settings',
+    linkLabel: 'Configure your printer'
+  },
+  {
+    id: '2026-10-08-zpl-download',
+    publishedAt: '2026-10-08',
+    category: 'new feature',
+    status: 'published',
+    title: 'Download saved labels as ZPL',
+    benefit:
+      'Download saved labels as .zpl files for compatible thermal printers. In Saved labels, choose 203, 300, or 600 dpi to match your printer and download using the existing SSCC.',
+    featureKey: 'zpl_download',
+    href: '/labels/history',
+    linkLabel: 'Download a saved label'
+  },
+  {
     id: '2026-10-04-supported-label-guide',
     publishedAt: '2026-10-04',
     category: 'improvement',

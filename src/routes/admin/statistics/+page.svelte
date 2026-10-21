@@ -24,6 +24,11 @@
       note: `${statistics.summary.affectedUsers} affected users`
     },
     {
+      label: 'Data exports',
+      value: statistics.summary.dataExports,
+      note: `${statistics.summary.dataExportUsers ?? 0} affected users`
+    },
+    {
       label: 'Custom inquiries',
       value: statistics.summary.customInquiries,
       note: 'Inquiry submissions are not tracked yet'

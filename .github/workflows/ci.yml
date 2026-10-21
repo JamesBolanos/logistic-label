@@ -14,6 +14,7 @@ on:
         type: choice
         options:
           - none
+          - dev
           - staging
           - production
       confirm_production_migration:
@@ -259,7 +260,7 @@ jobs:
           rm -f "$response_file"
 
   migrate-database:
-    name: Migrate ${{ inputs.database_migration_target }} database
+    name: Database migration
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.database_migration_target != 'none' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -276,6 +277,17 @@ jobs:
           TARGET: ${{ inputs.database_migration_target }}
         run: |
           case "$TARGET" in
+            dev)
+              if [[ "$REF_NAME" != "master" && "$REF_NAME" != "staging" ]]; then
+                echo 'Development database migrations must run from the reviewed master or staging Git branch.'
+                exit 1
+              fi
+
+              project_id="$NONPRODUCTION_PROJECT_ID"
+              branch_name='main'
+              database_environment='nonproduction'
+              migration_target='nonproduction'
+              ;;
             staging)
               if [[ "$REF_NAME" != "staging" ]]; then
                 echo 'Staging migrations must run from the staging Git branch.'
@@ -319,6 +331,18 @@ jobs:
           echo "database_environment=$database_environment" >> "$GITHUB_OUTPUT"
           echo "migration_target=$migration_target" >> "$GITHUB_OUTPUT"
 
+      - name: Report migration target
+        shell: bash
+        env:
+          BRANCH_NAME: ${{ steps.target.outputs.branch_name }}
+          DATABASE_ENVIRONMENT: ${{ steps.target.outputs.database_environment }}
+          PROJECT_ID: ${{ steps.target.outputs.project_id }}
+          TARGET: ${{ inputs.database_migration_target }}
+        run: |
+          summary="Applying committed migrations to the $TARGET database: Neon branch '$BRANCH_NAME' in project $PROJECT_ID ($DATABASE_ENVIRONMENT)."
+          echo "$summary"
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Verify existing Neon branch
         shell: bash
         env:
@@ -338,7 +362,7 @@ jobs:
             --write-out '%{http_code}' \
             --header 'accept: application/json' \
             --header "authorization: Bearer $NEON_API_KEY" \
-            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches?search=$BRANCH_NAME&limit=100")"
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches?limit=100")"
 
           if [[ "$status" != "200" ]]; then
             message="$(jq -r '.message // "No message returned"' "$response_file" | tr '\r\n' '  ')"
@@ -349,6 +373,8 @@ jobs:
           branch_id="$(jq -r --arg name "$BRANCH_NAME" '[.branches[] | select(.name == $name)][0].id // empty' "$response_file")"
           if [[ -z "$branch_id" ]]; then
             echo "The existing Neon branch named $BRANCH_NAME was not found. No branch was created."
+            echo "Available branches in Neon project $NEON_PROJECT_ID:"
+            jq -r '.branches[] | "  - \(.name)"' "$response_file"
             exit 1
           fi
 

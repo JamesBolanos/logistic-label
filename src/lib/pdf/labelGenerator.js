@@ -1,7 +1,7 @@
 // src/lib/server/pdf/labelGenerator.js
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { generateGS1Barcode } from './barcodeGenerator';
-import { formatGS1Date } from '$lib/utils/gs1Utils';
+import { formatGS1Date } from '#lib/utils/gs1Utils.js';
 
 /**
  * Generate a 4x6 inch logistic label PDF

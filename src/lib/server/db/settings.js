@@ -1,7 +1,38 @@
 import { and, eq, isNotNull, sql } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { labelSettings } from '$lib/server/db/schema.js';
-import { generateSSCC, validateGS1CompanyPrefix } from '$lib/utils/gs1Utils';
+import { db } from '#lib/server/db/index.js';
+import { labelSettings } from '#lib/server/db/schema.js';
+import { generateSSCC, validateGS1CompanyPrefix } from '#lib/utils/gs1Utils.js';
+import {
+  defaultPrintSettings,
+  sanitizePrintSettings,
+  validatePrintSettings
+} from '#lib/printing/settings.ts';
+
+// Save only printer parameters; never overwrite the concurrently advancing SSCC sequence.
+export async function upsertPrintSettings(userId, data) {
+  ensureDatabase();
+  const sanitized = sanitizePrintSettings(data);
+  const errors = validatePrintSettings(sanitized);
+  if (Object.keys(errors).length) {
+    const error = new Error('Invalid printer settings');
+    error.validation = { errors };
+    throw error;
+  }
+  const values = {
+    printBridgeHost: sanitized.print_bridge_host,
+    printBridgePort: sanitized.print_bridge_port,
+    printerHostname: sanitized.printer_hostname,
+    printerPort: sanitized.printer_port,
+    printerDpi: sanitized.printer_dpi,
+    updatedAt: new Date()
+  };
+  const [settings] = await db
+    .insert(labelSettings)
+    .values({ userId, ...values })
+    .onConflictDoUpdate({ target: labelSettings.userId, set: values })
+    .returning();
+  return toApiSettings(settings);
+}
 
 export async function getLabelSettings(userId) {
   ensureDatabase();
@@ -151,6 +182,7 @@ async function getExistingSettings(userId) {
 
 function getDefaultSettings(userId) {
   return {
+    ...defaultPrintSettings,
     user_id: userId,
     company_name: 'Company Name',
     gs1_company_prefix: '',
@@ -162,6 +194,11 @@ function getDefaultSettings(userId) {
 
 function toApiSettings(settings) {
   return {
+    print_bridge_host: settings.printBridgeHost,
+    print_bridge_port: settings.printBridgePort,
+    printer_hostname: settings.printerHostname,
+    printer_port: settings.printerPort,
+    printer_dpi: settings.printerDpi,
     user_id: settings.userId,
     company_name: settings.companyName,
     gs1_company_prefix: settings.gs1CompanyPrefix || '',
