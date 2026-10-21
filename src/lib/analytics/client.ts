@@ -1,4 +1,4 @@
-import { sanitizeAnalyticsParameters, type ProductEventName } from '$lib/analytics/events.js';
+import { sanitizeAnalyticsParameters, type ProductEventName } from '#lib/analytics/events.ts';
 
 declare global {
   interface Window {

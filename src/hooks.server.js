@@ -1,10 +1,10 @@
-import { building } from '$app/environment';
+import { building } from '$app/env';
 import { redirect } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
-import { auth } from '$lib/server/auth/betterAuth';
-import { verifyRecaptchaToken } from '$lib/server/auth/recaptcha';
-import { validateServerEnvironment } from '$lib/server/config/environment';
-import { validatePasswordValue } from '$lib/validation/formValidation';
+import { auth } from '#lib/server/auth/betterAuth.js';
+import { verifyRecaptchaToken } from '#lib/server/auth/recaptcha.js';
+import { validateServerEnvironment } from '#lib/server/config/environment.js';
+import { validatePasswordValue } from '#lib/validation/formValidation.js';
 
 validateServerEnvironment();
 

@@ -1,8 +1,8 @@
 import { and, count, countDistinct, eq, gte, inArray, lt, min, notInArray } from 'drizzle-orm';
-import { createRollingWindow, percentage } from '$lib/analytics/statistics.js';
-import { getAnalyticsOwnerUserIds } from '$lib/server/analytics/access.js';
-import { db } from '$lib/server/db';
-import { labelSettings, logisticLabel, operationalEvent, user } from '$lib/server/db/schema.js';
+import { createRollingWindow, percentage } from '#lib/analytics/statistics.ts';
+import { getAnalyticsOwnerUserIds } from '#lib/server/analytics/access.js';
+import { db } from '#lib/server/db/index.js';
+import { labelSettings, logisticLabel, operationalEvent, user } from '#lib/server/db/schema.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

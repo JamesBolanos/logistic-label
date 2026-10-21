@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
-import { getLabelStats } from '$lib/server/db/labels';
-import { getLabelSettings } from '$lib/server/db/settings';
-import { hasOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
-import { buildOnboardingProgress } from '$lib/onboarding/progress.js';
+import { getLabelStats } from '#lib/server/db/labels.js';
+import { getLabelSettings } from '#lib/server/db/settings.js';
+import { hasOperationalEvent } from '#lib/server/analytics/operationalEvents.js';
+import { buildOnboardingProgress } from '#lib/onboarding/progress.js';
 
 export async function GET({ locals }) {
   const user = locals.user;

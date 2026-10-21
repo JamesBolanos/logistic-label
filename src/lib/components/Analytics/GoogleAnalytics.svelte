@@ -1,7 +1,7 @@
 <script>
   import { afterNavigate } from '$app/navigation';
-  import { browser } from '$app/environment';
-  import { initializeAnalytics, trackPageView } from '$lib/analytics/client.js';
+  import { browser } from '$app/env';
+  import { initializeAnalytics, trackPageView } from '#lib/analytics/client.ts';
 
   let { measurementId = null } = $props();
 

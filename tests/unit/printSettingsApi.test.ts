@@ -5,8 +5,8 @@ const mocks = vi.hoisted(() => ({
   upsertPrintSettings: vi.fn(),
   upsertLabelSettings: vi.fn()
 }));
-vi.mock('$lib/server/db/settings', () => mocks);
-vi.mock('$lib/server/analytics/operationalEvents.js', () => ({
+vi.mock('#lib/server/db/settings.js', () => mocks);
+vi.mock('#lib/server/analytics/operationalEvents.js', () => ({
   durationSince: vi.fn(),
   getOperationId: vi.fn(),
   recordOperationalEvent: vi.fn()

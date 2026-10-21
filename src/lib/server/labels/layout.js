@@ -7,7 +7,7 @@ import {
   LABEL_TYPES,
   PRINT_LAYOUTS,
   TEMPLATE_VERSIONS
-} from '$lib/labels/workflows.js';
+} from '#lib/labels/workflows.js';
 
 const PAGE_WIDTH = 288;
 const PAGE_HEIGHT = 432;

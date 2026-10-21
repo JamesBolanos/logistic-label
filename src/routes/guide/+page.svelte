@@ -1,8 +1,8 @@
 <script>
-  import LabelDiagram from '$lib/components/Guide/LabelDiagram.svelte';
-  import { trackProductEvent } from '$lib/analytics/client.js';
-  import { SUPPORTED_LABEL_GUIDES } from '$lib/labels/guide.js';
-  import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES } from '$lib/labels/scenarios.js';
+  import LabelDiagram from '#lib/components/Guide/LabelDiagram.svelte';
+  import { trackProductEvent } from '#lib/analytics/client.ts';
+  import { SUPPORTED_LABEL_GUIDES } from '#lib/labels/guide.js';
+  import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES } from '#lib/labels/scenarios.js';
 
   const laterScenarios = LABEL_SCENARIOS.filter(
     (scenario) => scenario.status !== LABEL_SCENARIO_STATUSES.AVAILABLE

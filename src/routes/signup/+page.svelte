@@ -1,8 +1,8 @@
 <!-- src/routes/signup/+page.svelte -->
 <script>
     import { page } from '$app/state';
-    import SignupForm from '$lib/components/Auth/SignupForm.svelte';
-    import { getGoogleAuthErrorMessage } from '$lib/auth/googleAuthErrors';
+    import SignupForm from '#lib/components/Auth/SignupForm.svelte';
+    import { getGoogleAuthErrorMessage } from '#lib/auth/googleAuthErrors.ts';
 
     let googleAuthError = $derived(
       getGoogleAuthErrorMessage(page.url.searchParams.get('error'))

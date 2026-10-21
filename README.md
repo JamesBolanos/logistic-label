@@ -67,6 +67,7 @@ Google requires redirect URIs to match exactly, including protocol, domain, `www
 - Validation: `src/lib/validation`
 - Styling: `src/app.css` (Tailwind import + tokens)
 - Database migrations: `drizzle/`
+- Internal imports: `#lib/...`, the subpath alias declared in `package.json`; include the file extension (`#lib/labels/workflows.js`)
 
 ## Environment
 
@@ -91,6 +92,8 @@ Google requires redirect URIs to match exactly, including protocol, domain, `www
 | `PREVIEW_STORAGE_PATH`           | Server only     | Optional legacy hash-preview directory; defaults to `storage/preview`                                                                             |
 
 For local development, pull Development variables into `.env.local` or copy `.env.example` there and replace its placeholders. Never reuse production database or authentication credentials in development, tests, or previews. Vercel variables must be scoped separately to Development, Preview, and Production.
+
+Every variable the application reads must also be declared in `src/env.js` with `defineEnvVars`. SvelteKit only exposes declared variables, so an undeclared name resolves to `undefined` instead of failing loudly. The declarations are optional at the framework level so that local development and preview builds can start with a partial configuration; the startup check described below remains the production gate. Server-only variables are imported from `$app/env/private` and browser-visible variables from `$app/env/public`.
 
 Before initializing a configured database connection, the application verifies that `DATABASE_ENVIRONMENT` matches the deployment and that the actual Neon project ID matches `EXPECTED_NEON_PROJECT_ID`. A mismatch stops database initialization. At server startup, a Production deployment also refuses to run when a required database, Better Auth, Google, or reCAPTCHA variable is missing. `BETTER_AUTH_URL` must be an absolute HTTPS URL. Configuration errors identify variable names but never print their values.
 

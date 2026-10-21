@@ -1,1 +1,1 @@
-export { sanitizeLabelForm, validateLabelForm } from '$lib/validation/formValidation.js';
+export { sanitizeLabelForm, validateLabelForm } from '#lib/validation/formValidation.js';

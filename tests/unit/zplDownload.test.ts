@@ -5,9 +5,9 @@ const mocks = vi.hoisted(() => ({
   getLabelSettings: vi.fn(),
   pdfRateLimiter: vi.fn()
 }));
-vi.mock('$lib/server/db/labels', () => ({ getLabelById: mocks.getLabelById }));
-vi.mock('$lib/server/db/settings', () => ({ getLabelSettings: mocks.getLabelSettings }));
-vi.mock('$lib/server/auth/ratelimit', () => ({ pdfRateLimiter: mocks.pdfRateLimiter }));
+vi.mock('#lib/server/db/labels.js', () => ({ getLabelById: mocks.getLabelById }));
+vi.mock('#lib/server/db/settings.js', () => ({ getLabelSettings: mocks.getLabelSettings }));
+vi.mock('#lib/server/auth/ratelimit.js', () => ({ pdfRateLimiter: mocks.pdfRateLimiter }));
 
 import { GET } from '../../src/routes/api/zpl/download/[id]/+server.js';
 

@@ -1,9 +1,9 @@
 import { error } from '@sveltejs/kit';
 import * as XLSX from 'xlsx';
 import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { labelSettings, logisticLabel, user } from '$lib/server/db/schema.js';
-import { getOperationId, recordOperationalEvent } from '$lib/server/analytics/operationalEvents.js';
+import { db } from '#lib/server/db/index.js';
+import { labelSettings, logisticLabel, user } from '#lib/server/db/schema.js';
+import { getOperationId, recordOperationalEvent } from '#lib/server/analytics/operationalEvents.js';
 
 function formatDate(value) {
 	if (!value) return '';

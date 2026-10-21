@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { env } from '$env/dynamic/private';
+import { PREVIEW_STORAGE_PATH } from '$app/env/private';
 
-const PREVIEW_DIR = env.PREVIEW_STORAGE_PATH || 'storage/preview';
+const PREVIEW_DIR = PREVIEW_STORAGE_PATH || 'storage/preview';
 
 export async function GET({ params, locals }) {
   if (!locals.user) {

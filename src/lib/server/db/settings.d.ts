@@ -1,4 +1,4 @@
-import type { PrintSettings } from '$lib/printing/settings';
+import type { PrintSettings } from '#lib/printing/settings.ts';
 
 type CompanySettings = {
   company_name: string;

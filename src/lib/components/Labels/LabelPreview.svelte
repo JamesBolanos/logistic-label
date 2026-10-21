@@ -1,16 +1,16 @@
 <!-- src/lib/components/Labels/LabelPreview.svelte -->
 <script>
   import { onDestroy } from 'svelte';
-  import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
-  import { classifyHttpFailure } from '$lib/analytics/events.js';
+  import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
+  import { classifyHttpFailure } from '#lib/analytics/events.ts';
   import {
     getLabelSizeForPrintLayout,
     getTemplateVersionForLabelType
-  } from '$lib/labels/workflows.js';
+  } from '#lib/labels/workflows.js';
   import {
     LABEL_VERIFICATION_HEADER,
     parseLabelVerificationReport
-  } from '$lib/labels/verification.js';
+  } from '#lib/labels/verification.js';
 
   // Props
   let { labelData = null, previewUrl = $bindable(null) } = $props();

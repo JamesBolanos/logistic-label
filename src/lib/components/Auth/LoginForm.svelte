@@ -1,14 +1,14 @@
 <!-- src/lib/components/Auth/LoginForm.svelte -->
 <script>
     import { goto } from '$app/navigation';
-    import { dev } from '$app/environment';
-    import { authClient } from '$lib/auth-client';
-    import { trackProductEvent } from '$lib/analytics/client.js';
+    import { dev } from '$app/env';
+    import { authClient } from '#lib/auth-client.js';
+    import { trackProductEvent } from '#lib/analytics/client.ts';
     import {
       getGoogleAuthErrorCallbackURL,
       GOOGLE_AUTH_START_ERROR_MESSAGE
-    } from '$lib/auth/googleAuthErrors';
-    import { validateLoginForm } from '$lib/validation/formValidation';
+    } from '#lib/auth/googleAuthErrors.ts';
+    import { validateLoginForm } from '#lib/validation/formValidation.js';
     import Captcha from './Captcha.svelte';
     
     // Allow redirect to a provided return URL (defaults to dashboard)
@@ -79,7 +79,7 @@
         trackProductEvent('login', { method: 'email' });
         // Refresh server layout data after the session cookie changes so the navbar
         // immediately reflects the authenticated user.
-        await goto(returnUrl, { invalidateAll: true });
+        await goto(returnUrl, { refreshAll: true });
       } catch (error) {
         console.error('LoginForm fetch error', error);
         formError = 'An unexpected error occurred. Please try again.';

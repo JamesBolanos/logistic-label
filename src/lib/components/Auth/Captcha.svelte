@@ -1,13 +1,13 @@
 <!-- src/lib/components/Auth/Captcha.svelte -->
 <script>
-  import { dev } from '$app/environment';
-  import { env } from '$env/dynamic/public';
+  import { dev } from '$app/env';
+  import { PUBLIC_RECAPTCHA_SITE_KEY } from '$app/env/public';
   import { onMount } from 'svelte';
 
   const RECAPTCHA_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 
   let {
-    siteKey = env.PUBLIC_RECAPTCHA_SITE_KEY || (dev ? RECAPTCHA_TEST_SITE_KEY : ''),
+    siteKey = PUBLIC_RECAPTCHA_SITE_KEY || (dev ? RECAPTCHA_TEST_SITE_KEY : ''),
     onverify = () => {}
   } = $props();
 
@@ -45,7 +45,12 @@
   }
 
   function renderCaptcha() {
-    if (!captchaLoaded || typeof window === 'undefined' || !window.grecaptcha || !captchaContainer) {
+    if (
+      !captchaLoaded ||
+      typeof window === 'undefined' ||
+      !window.grecaptcha ||
+      !captchaContainer
+    ) {
       return;
     }
 

@@ -1,5 +1,5 @@
-import { getLabelTypeName, getPrintLayoutName, LABEL_TYPES } from '$lib/labels/workflows.js';
-import { validateGTIN, validateSSCC } from '$lib/utils/gs1Utils.js';
+import { getLabelTypeName, getPrintLayoutName, LABEL_TYPES } from '#lib/labels/workflows.js';
+import { validateGTIN, validateSSCC } from '#lib/utils/gs1Utils.js';
 
 export const LABEL_VERIFICATION_HEADER = 'X-Label-Verification';
 

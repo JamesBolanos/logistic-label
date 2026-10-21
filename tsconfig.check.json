@@ -5,9 +5,7 @@
     "noEmit": true
   },
   "include": [
-    ".svelte-kit/ambient.d.ts",
-    ".svelte-kit/env.d.ts",
-    ".svelte-kit/non-ambient.d.ts",
+    "src/env.js",
     "src/lib/server/config/**/*.js",
     "src/lib/server/db/databaseEnvironment.ts",
     "src/lib/utils/gs1Utils.js",

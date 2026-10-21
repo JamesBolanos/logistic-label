@@ -1,8 +1,8 @@
 <!-- src/routes/+layout.svelte -->
 <script>
-  import GoogleAnalytics from '$lib/components/Analytics/GoogleAnalytics.svelte';
-  import Footer from '$lib/components/Layout/Footer.svelte';
-  import Navbar from '$lib/components/Layout/Navbar.svelte';
+  import GoogleAnalytics from '#lib/components/Analytics/GoogleAnalytics.svelte';
+  import Footer from '#lib/components/Layout/Footer.svelte';
+  import Navbar from '#lib/components/Layout/Navbar.svelte';
   import '../app.css';
 
   let { data, children } = $props();

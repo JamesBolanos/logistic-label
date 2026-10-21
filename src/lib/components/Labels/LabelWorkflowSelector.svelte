@@ -1,5 +1,5 @@
 <script>
-  import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES } from '$lib/labels/scenarios.js';
+  import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES } from '#lib/labels/scenarios.js';
 
   let { onselect } = $props();
 

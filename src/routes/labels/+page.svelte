@@ -1,18 +1,18 @@
 <script>
   import { onMount } from 'svelte';
   import { page } from '$app/state';
-  import ProtectedRoute from '$lib/components/Layout/ProtectedRoute.svelte';
-  import LabelWorkflowSelector from '$lib/components/Labels/LabelWorkflowSelector.svelte';
-  import LabelForm from '$lib/components/Labels/LabelForm.svelte';
-  import LabelPreview from '$lib/components/Labels/LabelPreview.svelte';
-  import LabelHistory from '$lib/components/Labels/LabelHistory.svelte';
-  import { createOperationId, trackProductEvent } from '$lib/analytics/client.js';
-  import { classifyHttpFailure } from '$lib/analytics/events.js';
+  import ProtectedRoute from '#lib/components/Layout/ProtectedRoute.svelte';
+  import LabelWorkflowSelector from '#lib/components/Labels/LabelWorkflowSelector.svelte';
+  import LabelForm from '#lib/components/Labels/LabelForm.svelte';
+  import LabelPreview from '#lib/components/Labels/LabelPreview.svelte';
+  import LabelHistory from '#lib/components/Labels/LabelHistory.svelte';
+  import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
+  import { classifyHttpFailure } from '#lib/analytics/events.ts';
   import {
     getLabelSizeForPrintLayout,
     getTemplateVersionForLabelType,
     isSupportedLabelType
-  } from '$lib/labels/workflows.js';
+  } from '#lib/labels/workflows.js';
 
   // A public guide can deep-link to a supported workflow. Unsupported values
   // still fall back to the selector instead of creating an ambiguous draft.

@@ -1,5 +1,5 @@
 <script>
-  import { LABEL_TYPES } from '$lib/labels/workflows.js';
+  import { LABEL_TYPES } from '#lib/labels/workflows.js';
 
   let { labelType } = $props();
   let isTransport = $derived(labelType === LABEL_TYPES.SSCC_ONLY);
