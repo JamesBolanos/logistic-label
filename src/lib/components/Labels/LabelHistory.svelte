@@ -82,12 +82,13 @@
     fetchLabels(page, searchTerm);
   }
 
-  function formatDate(dateString) {
-    if (!dateString) return '';
-    return new Intl.DateTimeFormat('en', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    }).format(new Date(dateString));
+  function formatDateParts(dateString) {
+    if (!dateString) return { date: '', time: '' };
+    const date = new Date(dateString);
+    return {
+      date: new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(date),
+      time: new Intl.DateTimeFormat('en', { timeStyle: 'short' }).format(date)
+    };
   }
 
   function formatTraceabilityDate(dateAi, dateValue) {
@@ -248,42 +249,43 @@
             <th
               class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              Type
+              SSCC / Type
             </th>
             <th
-              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
-            >
-              SSCC
-            </th>
-            <th
-              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
+              class="w-full px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
               Details
             </th>
             <th
-              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
+              class="whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
               Created
             </th>
             <th
-              class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-subtle-foreground"
+              class="whitespace-nowrap px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              Action
+              Actions
             </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-border-default bg-surface">
           {#each labels as label (label.id)}
+            {@const created = formatDateParts(label.created_at)}
             <tr>
-              <td class="whitespace-nowrap px-4 py-4 text-sm text-muted-foreground">
-                <span
-                  class="rounded-full bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 text-xs font-medium text-blue-800 dark:text-blue-300"
-                >
-                  {getLabelTypeName(label.label_type)}
-                </span>
-              </td>
-              <td class="whitespace-nowrap px-4 py-4 font-mono text-sm font-medium text-foreground">
-                {label.sscc}
+              <td class="whitespace-nowrap px-4 py-4">
+                <div class="flex flex-col gap-1.5">
+                  <span class="font-mono text-sm font-medium text-foreground">{label.sscc}</span>
+                  <span
+                    class="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium {label.label_type ===
+                    LABEL_TYPES.HOMOGENEOUS_UNIT
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                      : label.label_type === LABEL_TYPES.SSCC_ONLY
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                        : 'bg-surface-muted text-muted-foreground'}"
+                  >
+                    {getLabelTypeName(label.label_type)}
+                  </span>
+                </div>
               </td>
               <td class="px-4 py-4 text-sm text-muted-foreground">
                 {#if label.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT}
@@ -338,36 +340,41 @@
                 {/if}
               </td>
               <td class="whitespace-nowrap px-4 py-4 text-sm text-subtle-foreground">
-                {formatDate(label.created_at)}
+                <div class="flex flex-col leading-tight">
+                  <span>{created.date}</span>
+                  <span class="text-xs text-subtle-foreground">{created.time}</span>
+                </div>
               </td>
-              <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-medium">
-                <button
-                  type="button"
-                  onclick={() => downloadLabel(label.id)}
-                  disabled={downloadingId !== null || printingId !== null}
-                  class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:text-blue-200 disabled:opacity-50"
-                >
-                  Download PDF
-                </button>
-                <button
-                  type="button"
-                  onclick={() => downloadLabel(label.id, 'zpl')}
-                  disabled={downloadingId !== null || printingId !== null}
-                  class="ml-3 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:text-blue-200 disabled:opacity-50"
-                >
-                  Download ZPL
-                </button>
-                <button
-                  type="button"
-                  onclick={() => printLabel(label.id)}
-                  disabled={downloadingId !== null || printingId !== null}
-                  class="ml-3 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:text-blue-200 disabled:opacity-50"
-                >
-                  {printingId === label.id ? 'Sending...' : 'Print via bridge'}
-                </button>
-                {#if downloadingId === label.id}
-                  <span role="status" class="ml-2 text-subtle-foreground">Downloading...</span>
-                {/if}
+              <td class="whitespace-nowrap px-4 py-4 text-right text-sm">
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onclick={() => downloadLabel(label.id)}
+                    disabled={downloadingId !== null || printingId !== null}
+                    class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
+                  >
+                    Download PDF
+                  </button>
+                  <button
+                    type="button"
+                    onclick={() => downloadLabel(label.id, 'zpl')}
+                    disabled={downloadingId !== null || printingId !== null}
+                    class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
+                  >
+                    Download ZPL
+                  </button>
+                  <button
+                    type="button"
+                    onclick={() => printLabel(label.id)}
+                    disabled={downloadingId !== null || printingId !== null}
+                    class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
+                  >
+                    {printingId === label.id ? 'Sending...' : 'Print via bridge'}
+                  </button>
+                  {#if downloadingId === label.id}
+                    <span role="status" class="text-xs text-subtle-foreground">Downloading...</span>
+                  {/if}
+                </div>
               </td>
             </tr>
           {/each}
