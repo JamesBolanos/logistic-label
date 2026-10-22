@@ -15,6 +15,24 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `PRODUCT-001` — Staging database migration completed after products 500s
+
+- Result: migration `0009` is now applied to the persistent staging Neon branch, and staging products requests can succeed again.
+- Diagnosis: staging returned "Failed to load products" with runtime logs showing `NeonDbError: relation "product" does not exist` (Postgres `42P01`) for both `GET` and `POST /api/products`. The migration dispatch the developer had run (CI run 39705748244 at 01:27Z) predated the feature commits (first push 01:36Z, pull request #44 merge 01:49Z), so the staging database was at migration `0008` when the new code deployed. This matches the deployment guide's warning that a green build does not prove the schema migrated.
+- Decisions: fix the environment rather than the code — the endpoint error path behaved as designed (generic 500, no data exposure). The guarded dispatch ran from the `staging` Git branch with target `staging` after the merge, which is the documented sequence: migration dispatches must follow the merge that carries the migration.
+- Validation: CI run 39708947039 resolved target `staging`, the nonproduction project and `staging` database branch, and reported "migrations applied successfully". Anonymous requests still receive 401 from the authentication guard, so final confirmation is the developer reloading the staging Settings page behind sign-in.
+- Material files: none. No code, schema, or migration file changed.
+- Next: the developer reloads the staging Settings page to confirm the products list loads, then the browser check, developer database migration, and guarded production migration complete the item.
+
+## 2026-10-21 — `PRODUCT-001` — Staging promotion after an E2E locator fix
+
+- Result: the saved-products feature is on `staging.sscc-labels.com` through pull request #44 into `staging` (merge commit `3afd0cf`), with the CI Quality and end-to-end jobs passing and the staging database migrated by the developer beforehand.
+- Diagnosis: the first end-to-end run timed out because the row locator filtered by product name stopped matching once the row entered edit mode — the name then lives in an input value instead of the row text. Rows now carry a stable `data-product-id` attribute and the spec captures each product id from its creation response; the rerun finished in 79 seconds covering create, edit, confirm-delete, picker-filled label creation through history, and delete-without-touching-labels.
+- Decisions: the release note stays draft until the production release, so the staging `/updates` page does not announce the feature yet; the web app branch policy keeps feature-branch pushes deployment-free, and the staging deployment only followed the merge.
+- Material files: `src/lib/components/Labels/SavedProducts.svelte`, `tests/products.spec.js`.
+- Validation: `npm run quality` passes locally; CI run 39707668320 passes Quality and E2E with the committed migrations applied to a disposable branch; `staging.sscc-labels.com/guide` renders the saved-products section, `/` returns 200, and `/updates` hides the draft note.
+- Next: the developer confirms the staging picker in a browser behind authentication, applies migration `0009` to the developer database, and completes the guarded production migration before merging into `master`.
+
 ## 2026-10-21 — `PRODUCT-001` — Saved products implemented
 
 - Result: per-account saved products (product name, internal reference, GTIN) with a Settings manager, an owner-scoped `/api/products` API, and a label-form picker that fills the GTIN of an identical-contents label.
