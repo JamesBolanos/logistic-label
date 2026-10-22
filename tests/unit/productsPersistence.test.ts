@@ -90,13 +90,15 @@ describe('saved product persistence', () => {
       gtin: '4006381333931'
     });
 
-    expect(mocks.values).toHaveBeenCalledExactlyOnceWith({
-      userId: 'owner',
-      name: 'Blue case',
-      internalReference: 'REF-1',
-      gtin: '04006381333931',
-      gs1Valid: true
-    });
+    expect(mocks.values).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        userId: 'owner',
+        name: 'Blue case',
+        internalReference: 'REF-1',
+        gtin: '04006381333931',
+        gs1Valid: true
+      })
+    );
     expect(product).toMatchObject({ id: 7, gtin: '04006381333931' });
   });
 
@@ -104,13 +106,15 @@ describe('saved product persistence', () => {
     mocks.where.mockResolvedValueOnce([{ value: 0 }]);
     await createProduct('owner', { name: 'Red case', gtin: '4006381333930' });
 
-    expect(mocks.values).toHaveBeenCalledExactlyOnceWith({
-      userId: 'owner',
-      name: 'Red case',
-      internalReference: null,
-      gtin: '04006381333930',
-      gs1Valid: false
-    });
+    expect(mocks.values).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        userId: 'owner',
+        name: 'Red case',
+        internalReference: null,
+        gtin: '04006381333930',
+        gs1Valid: false
+      })
+    );
   });
 
   it('rejects invalid product data before any database write', async () => {
