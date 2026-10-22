@@ -27,10 +27,10 @@
 
   async function handleSubmit() {
     const startedAt = Date.now();
-    const validation = validateRegistrationForm({ 
-      email, 
-      password, 
-      password_confirm 
+    const validation = validateRegistrationForm({
+      email,
+      password,
+      password_confirm
     });
 
     if (!validation.isValid) {
@@ -134,17 +134,21 @@
   }
 </script>
 
-<div class="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+<div class="w-full max-w-md mx-auto p-6 bg-surface rounded-lg shadow-md">
   <h2 class="text-2xl font-bold mb-6 text-center">Create an Account</h2>
 
   {#if displayedError}
-    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+    <div
+      class="mb-6 p-4 bg-red-100 dark:bg-red-900/40 border border-red-400 text-red-700 dark:text-red-300 rounded-md"
+    >
       {displayedError}
     </div>
   {/if}
 
   {#if formSuccess}
-    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+    <div
+      class="mb-6 p-4 bg-green-100 dark:bg-green-900/40 border border-green-400 text-green-700 dark:text-green-300 rounded-md"
+    >
       {formSuccess}
     </div>
   {/if}
@@ -153,72 +157,78 @@
     type="button"
     onclick={signInWithGoogle}
     disabled={isSocialLoading || isLoading}
-    class="mb-6 w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+    class="mb-6 w-full flex justify-center py-2 px-4 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500 disabled:opacity-50"
   >
     {isSocialLoading ? 'Opening Google...' : 'Continue with Google'}
   </button>
 
   <div class="relative mb-6">
     <div class="absolute inset-0 flex items-center" aria-hidden="true">
-      <div class="w-full border-t border-gray-200"></div>
+      <div class="w-full border-t border-border-default"></div>
     </div>
     <div class="relative flex justify-center text-sm">
-      <span class="bg-white px-2 text-gray-500">or create with email</span>
+      <span class="bg-surface px-2 text-subtle-foreground">or create with email</span>
     </div>
   </div>
 
-  <form onsubmit={(event) => { event.preventDefault(); handleSubmit(); }} class="space-y-6">
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleSubmit();
+    }}
+    class="space-y-6"
+  >
     <div>
-      <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+      <label for="email" class="block text-sm font-medium text-muted-foreground mb-1">
         Email Address
       </label>
       <input
         type="email"
         id="email"
         bind:value={email}
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-border-strong rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         autocomplete="email"
         required
       />
       {#if errors.email}
-        <p class="mt-1 text-sm text-red-600">{errors.email}</p>
+        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
       {/if}
     </div>
 
     <div>
-      <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+      <label for="password" class="block text-sm font-medium text-muted-foreground mb-1">
         Password
       </label>
       <input
         type="password"
         id="password"
         bind:value={password}
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-border-strong rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         autocomplete="new-password"
         required
       />
       {#if errors.password}
-        <p class="mt-1 text-sm text-red-600">{errors.password}</p>
+        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>
       {/if}
-      <p class="mt-1 text-xs text-gray-500">
+      <p class="mt-1 text-xs text-subtle-foreground">
         Password must be at least 8 characters and include uppercase, lowercase, and numbers.
       </p>
     </div>
 
     <div>
-      <label for="password_confirm" class="block text-sm font-medium text-gray-700 mb-1">
+      <label for="password_confirm" class="block text-sm font-medium text-muted-foreground mb-1">
         Confirm Password
       </label>
       <input
         type="password"
         id="password_confirm"
         bind:value={password_confirm}
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full px-3 py-2 border border-border-strong rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         autocomplete="new-password"
         required
       />
       {#if errors.password_confirm}
-        <p class="mt-1 text-sm text-red-600">{errors.password_confirm}</p>
+        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password_confirm}</p>
       {/if}
     </div>
 
@@ -232,12 +242,22 @@
       <button
         type="submit"
         disabled={isLoading}
-        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500 disabled:opacity-50"
       >
         {#if isLoading}
-          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <svg
+            class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           Creating account...
         {:else}
@@ -248,9 +268,12 @@
   </form>
 
   <div class="mt-6 text-center">
-    <p class="text-sm text-gray-600">
+    <p class="text-sm text-muted-foreground">
       Already have an account?
-      <a href="/login" class="font-medium text-blue-600 hover:text-blue-500">
+      <a
+        href="/login"
+        class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
+      >
         Sign in
       </a>
     </p>

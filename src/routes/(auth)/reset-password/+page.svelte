@@ -142,10 +142,12 @@
   />
 </svelte:head>
 
-<div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow-md">
+<div class="mx-auto w-full max-w-md rounded-lg bg-surface p-6 shadow-md">
   {#if passwordChanged}
     <h1 class="mb-4 text-center text-2xl font-bold">Password updated</h1>
-    <div class="mb-6 rounded-md border border-green-400 bg-green-100 p-4 text-green-800">
+    <div
+      class="mb-6 rounded-md border border-green-400 bg-green-100 dark:bg-green-900/40 p-4 text-green-800 dark:text-green-300"
+    >
       Your password has been changed. For your security, existing sessions have been signed out.
     </div>
     <a
@@ -156,19 +158,22 @@
     </a>
   {:else if token}
     <h1 class="mb-2 text-center text-2xl font-bold">Choose a new password</h1>
-    <p class="mb-6 text-center text-sm text-gray-600">
+    <p class="mb-6 text-center text-sm text-muted-foreground">
       Use at least 8 characters with uppercase, lowercase, and numbers.
     </p>
 
     {#if formError}
-      <div class="mb-6 rounded-md border border-red-400 bg-red-100 p-4 text-red-700" role="alert">
+      <div
+        class="mb-6 rounded-md border border-red-400 bg-red-100 dark:bg-red-900/40 p-4 text-red-700 dark:text-red-300"
+        role="alert"
+      >
         {formError}
       </div>
     {/if}
 
     <form class="space-y-6" onsubmit={handlePasswordReset}>
       <div>
-        <label for="new-password" class="mb-1 block text-sm font-medium text-gray-700">
+        <label for="new-password" class="mb-1 block text-sm font-medium text-muted-foreground">
           New Password
         </label>
         <input
@@ -179,15 +184,15 @@
           minlength="8"
           maxlength="128"
           required
-          class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {#if errors.newPassword}
-          <p class="mt-1 text-sm text-red-600">{errors.newPassword}</p>
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.newPassword}</p>
         {/if}
       </div>
 
       <div>
-        <label for="confirm-password" class="mb-1 block text-sm font-medium text-gray-700">
+        <label for="confirm-password" class="mb-1 block text-sm font-medium text-muted-foreground">
           Confirm Password
         </label>
         <input
@@ -198,10 +203,10 @@
           minlength="8"
           maxlength="128"
           required
-          class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {#if errors.confirmPassword}
-          <p class="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>
         {/if}
       </div>
 
@@ -215,25 +220,27 @@
     </form>
   {:else if requestSent}
     <h1 class="mb-4 text-center text-2xl font-bold">Check your email</h1>
-    <div class="mb-6 rounded-md border border-green-400 bg-green-100 p-4 text-green-800">
+    <div
+      class="mb-6 rounded-md border border-green-400 bg-green-100 dark:bg-green-900/40 p-4 text-green-800 dark:text-green-300"
+    >
       If an account exists for that address, we sent a password reset link. The link expires in 60
       minutes.
     </div>
     <a
       href="/login"
-      class="block text-center text-sm font-medium text-blue-600 hover:text-blue-500"
+      class="block text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
     >
       Return to sign in
     </a>
   {:else}
     <h1 class="mb-2 text-center text-2xl font-bold">Reset your password</h1>
-    <p class="mb-6 text-center text-sm text-gray-600">
+    <p class="mb-6 text-center text-sm text-muted-foreground">
       Enter your email address and we will send a reset link if an account exists.
     </p>
 
     {#if invalidToken}
       <div
-        class="mb-6 rounded-md border border-yellow-400 bg-yellow-100 p-4 text-yellow-800"
+        class="mb-6 rounded-md border border-yellow-400 bg-yellow-100 dark:bg-yellow-900/40 p-4 text-yellow-800 dark:text-yellow-200"
         role="alert"
       >
         That password reset link is invalid or has expired. Request a new link below.
@@ -241,14 +248,17 @@
     {/if}
 
     {#if formError}
-      <div class="mb-6 rounded-md border border-red-400 bg-red-100 p-4 text-red-700" role="alert">
+      <div
+        class="mb-6 rounded-md border border-red-400 bg-red-100 dark:bg-red-900/40 p-4 text-red-700 dark:text-red-300"
+        role="alert"
+      >
         {formError}
       </div>
     {/if}
 
     <form class="space-y-6" onsubmit={handleResetRequest}>
       <div>
-        <label for="email" class="mb-1 block text-sm font-medium text-gray-700">
+        <label for="email" class="mb-1 block text-sm font-medium text-muted-foreground">
           Email Address
         </label>
         <input
@@ -257,10 +267,10 @@
           bind:value={email}
           autocomplete="email"
           required
-          class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {#if errors.email}
-          <p class="mt-1 text-sm text-red-600">{errors.email}</p>
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
         {/if}
       </div>
 
@@ -280,7 +290,10 @@
     </form>
 
     <div class="mt-6 text-center">
-      <a href="/login" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+      <a
+        href="/login"
+        class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
+      >
         Return to sign in
       </a>
     </div>

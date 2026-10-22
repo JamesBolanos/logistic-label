@@ -65,9 +65,11 @@
 <div class="space-y-8">
   <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
     <div>
-      <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Owner dashboard</p>
-      <h1 class="mt-1 text-3xl font-bold text-gray-900">Usage statistics</h1>
-      <p class="mt-2 max-w-3xl text-sm text-gray-600">
+      <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
+        Owner dashboard
+      </p>
+      <h1 class="mt-1 text-3xl font-bold text-foreground">Usage statistics</h1>
+      <p class="mt-2 max-w-3xl text-sm text-muted-foreground">
         Aggregate product signals for deciding where onboarding, reliability, and feature work need
         attention. No emails, company names, or label contents are shown.
       </p>
@@ -79,7 +81,7 @@
         aria-current={statistics.days === 7 ? 'page' : undefined}
         class="rounded-l-md border px-4 py-2 text-sm font-medium {statistics.days === 7
           ? 'border-blue-600 bg-blue-600 text-white'
-          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}"
+          : 'border-border-strong bg-surface text-muted-foreground hover:bg-surface-muted'}"
       >
         7 days
       </a>
@@ -88,7 +90,7 @@
         aria-current={statistics.days === 30 ? 'page' : undefined}
         class="-ml-px rounded-r-md border px-4 py-2 text-sm font-medium {statistics.days === 30
           ? 'border-blue-600 bg-blue-600 text-white'
-          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}"
+          : 'border-border-strong bg-surface text-muted-foreground hover:bg-surface-muted'}"
       >
         30 days
       </a>
@@ -98,8 +100,8 @@
   <section
     aria-label="Reporting context"
     class="rounded-lg border {statistics.configuration.excludedOwnerCount > 0
-      ? 'border-green-200 bg-green-50 text-green-800'
-      : 'border-amber-200 bg-amber-50 text-amber-800'} px-4 py-3 text-sm"
+      ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300'
+      : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300'} px-4 py-3 text-sm"
   >
     {#if statistics.configuration.excludedOwnerCount > 0}
       {statistics.configuration.excludedOwnerCount} configured owner
@@ -117,24 +119,24 @@
 
   <section aria-labelledby="summary-heading">
     <div class="mb-4">
-      <h2 id="summary-heading" class="text-xl font-semibold text-gray-900">Summary</h2>
-      <p class="mt-1 text-sm text-gray-500">
+      <h2 id="summary-heading" class="text-xl font-semibold text-foreground">Summary</h2>
+      <p class="mt-1 text-sm text-subtle-foreground">
         Rolling {statistics.days}-day window ending now; weekly creators always use seven days.
       </p>
     </div>
 
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {#each cards as card (card.label)}
-        <article class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-          <p class="text-sm font-medium text-gray-500">{card.label}</p>
+        <article class="rounded-lg border border-border-default bg-surface p-5 shadow-sm">
+          <p class="text-sm font-medium text-subtle-foreground">{card.label}</p>
           <p
             class="mt-2 {card.value === null
-              ? 'text-xl text-gray-500'
-              : 'text-3xl font-semibold text-gray-900'}"
+              ? 'text-xl text-subtle-foreground'
+              : 'text-3xl font-semibold text-foreground'}"
           >
             {displayValue(card.value)}
           </p>
-          <p class="mt-2 text-xs leading-5 text-gray-500">{card.note}</p>
+          <p class="mt-2 text-xs leading-5 text-subtle-foreground">{card.note}</p>
         </article>
       {/each}
     </div>
@@ -142,11 +144,11 @@
 
   <section
     aria-labelledby="funnel-heading"
-    class="rounded-lg border border-gray-200 bg-white shadow-sm"
+    class="rounded-lg border border-border-default bg-surface shadow-sm"
   >
-    <div class="border-b border-gray-200 px-5 py-4">
-      <h2 id="funnel-heading" class="text-xl font-semibold text-gray-900">First-label funnel</h2>
-      <p class="mt-1 text-sm text-gray-500">
+    <div class="border-b border-border-default px-5 py-4">
+      <h2 id="funnel-heading" class="text-xl font-semibold text-foreground">First-label funnel</h2>
+      <p class="mt-1 text-sm text-subtle-foreground">
         Users who signed up in this window and had at least 24 hours to complete the workflow.
       </p>
     </div>
@@ -155,12 +157,12 @@
       {#each statistics.funnel as step (step.label)}
         <div>
           <div class="mb-2 flex items-center justify-between gap-4 text-sm">
-            <span class="font-medium text-gray-700">{step.label}</span>
-            <span class="text-gray-500">
+            <span class="font-medium text-muted-foreground">{step.label}</span>
+            <span class="text-subtle-foreground">
               {step.value}{step.percentage === null ? '' : ` · ${step.percentage}%`}
             </span>
           </div>
-          <div class="h-2.5 overflow-hidden rounded-full bg-gray-100">
+          <div class="h-2.5 overflow-hidden rounded-full bg-surface-strong">
             <div
               class="h-full rounded-full bg-blue-600"
               style={`width: ${step.percentage ?? 0}%`}
@@ -173,39 +175,43 @@
 
   <section
     aria-labelledby="failures-heading"
-    class="rounded-lg border border-gray-200 bg-white shadow-sm"
+    class="rounded-lg border border-border-default bg-surface shadow-sm"
   >
-    <div class="border-b border-gray-200 px-5 py-4">
-      <h2 id="failures-heading" class="text-xl font-semibold text-gray-900">Workflow failures</h2>
-      <p class="mt-1 text-sm text-gray-500">
+    <div class="border-b border-border-default px-5 py-4">
+      <h2 id="failures-heading" class="text-xl font-semibold text-foreground">Workflow failures</h2>
+      <p class="mt-1 text-sm text-subtle-foreground">
         Controlled categories only; raw errors and user-entered values are excluded.
       </p>
     </div>
 
     {#if statistics.failures.length === 0}
-      <p class="px-5 py-8 text-center text-sm text-gray-500">
+      <p class="px-5 py-8 text-center text-sm text-subtle-foreground">
         No external workflow failures were recorded in this window.
       </p>
     {:else}
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 text-sm">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-border-default text-sm">
+          <thead class="bg-surface-muted">
             <tr>
-              <th scope="col" class="px-5 py-3 text-left font-medium text-gray-600">Category</th>
-              <th scope="col" class="px-5 py-3 text-right font-medium text-gray-600">Attempts</th>
-              <th scope="col" class="px-5 py-3 text-right font-medium text-gray-600">
+              <th scope="col" class="px-5 py-3 text-left font-medium text-muted-foreground"
+                >Category</th
+              >
+              <th scope="col" class="px-5 py-3 text-right font-medium text-muted-foreground"
+                >Attempts</th
+              >
+              <th scope="col" class="px-5 py-3 text-right font-medium text-muted-foreground">
                 Affected users
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100 bg-white">
+          <tbody class="divide-y divide-border-default bg-surface">
             {#each statistics.failures as failure (failure.category)}
               <tr>
-                <td class="px-5 py-3 font-medium capitalize text-gray-800">
+                <td class="px-5 py-3 font-medium capitalize text-foreground">
                   {failure.category.replaceAll('_', ' ')}
                 </td>
-                <td class="px-5 py-3 text-right text-gray-600">{failure.attempts}</td>
-                <td class="px-5 py-3 text-right text-gray-600">{failure.affectedUsers}</td>
+                <td class="px-5 py-3 text-right text-muted-foreground">{failure.attempts}</td>
+                <td class="px-5 py-3 text-right text-muted-foreground">{failure.affectedUsers}</td>
               </tr>
             {/each}
           </tbody>
@@ -214,7 +220,7 @@
     {/if}
   </section>
 
-  <p class="text-xs leading-5 text-gray-500">
+  <p class="text-xs leading-5 text-subtle-foreground">
     A saved label, PDF response, browser download, and physical print remain separate milestones.
     Inquiry and accepted-project cards stay unavailable until those outcomes have an authoritative
     recording source.

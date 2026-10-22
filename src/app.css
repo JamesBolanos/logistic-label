@@ -1,5 +1,35 @@
 /* src/app.css */
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* Class-based dark mode: the root <html> element receives `.dark`. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Semantic color tokens.
+ *
+ * Components use `bg-surface`, `text-foreground`, `border-border-default`, and
+ * related utilities instead of fixed palette values. The values below switch
+ * with the `.dark` class, so a single set of component classes supports both
+ * themes. `@theme inline` keeps the var() references live at runtime.
+ */
+@theme inline {
+  --color-background: var(--app-background);
+  --color-foreground: var(--app-foreground);
+  --color-surface: var(--app-surface);
+  --color-surface-raised: var(--app-surface-raised);
+  --color-surface-muted: var(--app-surface-muted);
+  --color-surface-strong: var(--app-surface-strong);
+  --color-border-default: var(--app-border-default);
+  --color-border-strong: var(--app-border-strong);
+  --color-muted-foreground: var(--app-muted-foreground);
+  --color-subtle-foreground: var(--app-subtle-foreground);
+  --color-accent: var(--app-accent);
+  --color-accent-hover: var(--app-accent-hover);
+  --color-accent-foreground: var(--app-accent-foreground);
+  --color-sidebar: var(--app-sidebar);
+  --color-sidebar-border: var(--app-sidebar-border);
+  --color-ring: var(--app-ring);
+}
 
 /* Tailwind v4 theme tokens for the colors we use */
 @theme {
@@ -57,57 +87,108 @@
   --color-yellow-700: #a16207;
   --color-yellow-800: #854d0e;
   --color-yellow-900: #713f12;
+
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+  --color-amber-800: #92400e;
+  --color-amber-950: #451a03;
+}
+
+:root {
+  color-scheme: light;
+
+  --app-background: #f9fafb;
+  --app-foreground: #111827;
+  --app-surface: #ffffff;
+  --app-surface-raised: #ffffff;
+  --app-surface-muted: #f3f4f6;
+  --app-surface-strong: #e5e7eb;
+  --app-border-default: #e5e7eb;
+  --app-border-strong: #d1d5db;
+  --app-muted-foreground: #4b5563;
+  --app-subtle-foreground: #6b7280;
+  --app-accent: #2563eb;
+  --app-accent-hover: #1d4ed8;
+  --app-accent-foreground: #ffffff;
+  --app-sidebar: #ffffff;
+  --app-sidebar-border: #e5e7eb;
+  --app-ring: #3b82f6;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --app-background: #0b1120;
+  --app-foreground: #e5e7eb;
+  --app-surface: #111827;
+  --app-surface-raised: #1f2937;
+  --app-surface-muted: #172033;
+  --app-surface-strong: #243147;
+  --app-border-default: #253044;
+  --app-border-strong: #374151;
+  --app-muted-foreground: #b6c0cf;
+  --app-subtle-foreground: #94a3b8;
+  --app-accent: #3b82f6;
+  --app-accent-hover: #60a5fa;
+  --app-accent-foreground: #ffffff;
+  --app-sidebar: #0f172a;
+  --app-sidebar-border: #1e293b;
+  --app-ring: #60a5fa;
 }
 
 /* Custom styles */
-html, body {
+html,
+body {
   @apply h-full;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  @apply bg-background text-foreground antialiased;
 }
 
 /* Form styles */
 .form-label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply mb-1 block text-sm font-medium text-muted-foreground;
 }
 
 .form-input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  @apply w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-foreground shadow-sm placeholder:text-subtle-foreground focus:border-accent focus:ring-2 focus:ring-ring focus:outline-none;
 }
 
 .form-error {
-  @apply mt-1 text-sm text-red-600;
+  @apply mt-1 text-sm text-red-600 dark:text-red-400;
 }
 
 .btn {
-  @apply inline-flex items-center justify-center px-4 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:outline-none;
 }
 
 .btn-primary {
-  @apply border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500;
+  @apply border-transparent bg-accent text-accent-foreground hover:bg-accent-hover focus:ring-ring;
 }
 
 .btn-secondary {
-  @apply border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-500;
+  @apply border-border-strong bg-surface text-muted-foreground hover:bg-surface-muted focus:ring-ring;
 }
 
 .btn-danger {
-  @apply border-transparent text-white bg-red-600 hover:bg-red-700 focus:ring-red-500;
+  @apply border-transparent bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
 }
 
 /* Card styles */
 .card {
-  @apply bg-white shadow rounded-lg overflow-hidden;
+  @apply overflow-hidden rounded-lg bg-surface shadow;
 }
 
 .card-header {
-  @apply px-4 py-5 border-b border-gray-200 sm:px-6;
+  @apply border-b border-border-default px-4 py-5 sm:px-6;
 }
 
 .card-title {
-  @apply text-lg font-medium text-gray-900;
+  @apply text-lg font-medium text-foreground;
 }
 
 .card-body {
@@ -115,7 +196,7 @@ body {
 }
 
 .card-footer {
-  @apply px-4 py-3 bg-gray-50 text-right sm:px-6;
+  @apply bg-surface-muted px-4 py-3 text-right sm:px-6;
 }
 
 /* Table styles */
@@ -124,57 +205,57 @@ body {
 }
 
 .table {
-  @apply min-w-full divide-y divide-gray-200;
+  @apply min-w-full divide-y divide-border-default;
 }
 
 .table-header {
-  @apply bg-gray-50;
+  @apply bg-surface-muted;
 }
 
 .table-header-cell {
-  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+  @apply px-6 py-3 text-left text-xs font-medium tracking-wider text-subtle-foreground uppercase;
 }
 
 .table-body {
-  @apply bg-white divide-y divide-gray-200;
+  @apply divide-y divide-border-default bg-surface;
 }
 
 .table-row {
-  @apply hover:bg-gray-50;
+  @apply hover:bg-surface-muted;
 }
 
 .table-cell {
-  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+  @apply px-6 py-4 text-sm whitespace-nowrap text-muted-foreground;
 }
 
 /* Alert styles */
 .alert {
-  @apply p-4 mb-4 rounded-md;
+  @apply mb-4 rounded-md p-4;
 }
 
 .alert-success {
-  @apply bg-green-100 border border-green-400 text-green-700;
+  @apply border border-green-400 bg-green-100 text-green-700 dark:border-green-800 dark:bg-green-950/40 dark:text-green-200;
 }
 
 .alert-error {
-  @apply bg-red-100 border border-red-400 text-red-700;
+  @apply border border-red-400 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200;
 }
 
 .alert-warning {
-  @apply bg-yellow-100 border border-yellow-400 text-yellow-700;
+  @apply border border-yellow-400 bg-yellow-100 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200;
 }
 
 .alert-info {
-  @apply bg-blue-100 border border-blue-400 text-blue-700;
+  @apply border border-blue-400 bg-blue-100 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200;
 }
 
 /* Pagination */
 .pagination {
-  @apply flex items-center justify-between py-3 px-2 mt-4 border-t border-gray-200;
+  @apply mt-4 flex items-center justify-between border-t border-border-default px-2 py-3;
 }
 
 .pagination-info {
-  @apply text-sm text-gray-700;
+  @apply text-sm text-muted-foreground;
 }
 
 .pagination-controls {
@@ -182,5 +263,5 @@ body {
 }
 
 .pagination-button {
-  @apply px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply rounded-md border border-border-strong px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-50;
 }

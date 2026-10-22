@@ -1,21 +1,17 @@
 <!-- src/routes/+layout.svelte -->
 <script>
+  import { onMount } from 'svelte';
   import GoogleAnalytics from '#lib/components/Analytics/GoogleAnalytics.svelte';
-  import Footer from '#lib/components/Layout/Footer.svelte';
-  import Navbar from '#lib/components/Layout/Navbar.svelte';
+  import { initTheme } from '#lib/theme/theme.svelte.js';
   import '../app.css';
 
   let { data, children } = $props();
+
+  // app.html applies the pre-paint theme class; this restores reactive state
+  // and keeps following the system preference until the user chooses a theme.
+  onMount(initTheme);
 </script>
 
 <GoogleAnalytics measurementId={data.analyticsMeasurementId} />
 
-<div class="flex min-h-screen flex-col">
-  <Navbar />
-
-  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-    {@render children()}
-  </main>
-
-  <Footer />
-</div>
+{@render children()}

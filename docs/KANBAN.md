@@ -20,6 +20,16 @@ None.
 
 ## Review
 
+### `UX-002` — Public and application route groups with a dark-mode shell
+
+- Need: marketing and educational pages shared one top navigation bar with the authenticated workspace, so features were mixed and the generator had no application shell.
+- Outcome: `(public)`, `(auth)`, and `(app)` SvelteKit route groups; the public group keeps a top marketing header and footer, and the application group uses a fixed left sidebar (Dashboard, Label Generator, Saved Labels, Statistics for owners, Settings) with an account header for profile and logout.
+- Acceptance: every existing URL keeps working without a redirect; the application group redirects unauthenticated visitors; dark mode covers the public, authentication, and application shells with the choice applied before first paint and a visible toggle; the generator uses a split-pane layout with form controls and the live thermal preview side by side on large screens.
+- Evidence: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); a focused browser check confirmed both shells in both themes, the class-based `dark` state and pre-paint restore, the sidebar drawer at a 390 px viewport, the generator split pane, and the post-sign-up client-side redirect with the account shown in the new header and sidebar.
+- Release: the `2026-10-22-app-shell-and-dark-mode` What's New entry is published from 2026-10-22 and reaches the home page, `/updates`, and the What's New panel.
+- Status: committed on `staging` for developer review; CI end-to-end evidence is outstanding.
+- Dependencies: none. The Zod and Superforms validation work is a separate follow-up item and is not implemented here.
+
 ### `PRODUCT-001` — Saved products for repeat label creation
 
 - Need: the proven repeat creator re-enters product data on every label despite a small set of known products; nothing in the product persists reference data. Private evidence: the dated usage reports in the git-ignored `usage_log/` directory.

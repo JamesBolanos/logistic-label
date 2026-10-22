@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import { page } from '$app/state';
-  import ProtectedRoute from '#lib/components/Layout/ProtectedRoute.svelte';
   import LabelWorkflowSelector from '#lib/components/Labels/LabelWorkflowSelector.svelte';
   import LabelForm from '#lib/components/Labels/LabelForm.svelte';
   import LabelPreview from '#lib/components/Labels/LabelPreview.svelte';
@@ -185,77 +184,92 @@
   />
 </svelte:head>
 
-<ProtectedRoute>
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">Choose the label that fits your shipment</h1>
-      <p class="mt-2 text-sm text-gray-600">
-        Start with the business situation. We will show what the label identifies, what information
-        you need, and what its barcodes communicate.
-      </p>
-    </div>
-
-    {#if settingsError}
-      <div class="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
-        {settingsError}
-      </div>
-    {:else if settings && !settings.is_configured}
-      <div class="rounded-md border border-yellow-200 bg-yellow-50 p-4 text-yellow-800">
-        Configure your GS1 Company Prefix in
-        <a href="/settings" class="font-medium text-blue-600 hover:text-blue-500">Settings</a>
-        before previewing or generating labels.
-      </div>
-    {/if}
-
-    {#if error}
-      <div class="rounded-md border border-red-400 bg-red-100 p-4 text-red-700">{error}</div>
-    {/if}
-
-    {#if success}
-      <div class="rounded-md border border-green-400 bg-green-100 p-4 text-green-700">
-        {success}
-      </div>
-    {/if}
-
-    {#if !selectedLabelType}
-      <LabelWorkflowSelector onselect={selectWorkflow} />
-    {:else}
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div>
-          {#key selectedLabelType}
-            <LabelForm
-              labelType={selectedLabelType}
-              companyName={settings?.company_name || ''}
-              {products}
-              onsubmit={handleSubmit}
-              onback={changeWorkflow}
-            />
-          {/key}
-        </div>
-
-        <div>
-          <LabelPreview {labelData} bind:previewUrl />
-
-          {#if labelData && previewUrl}
-            <div class="mt-4">
-              <button
-                onclick={generatePDF}
-                disabled={isGenerating}
-                class="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-              >
-                {isGenerating ? 'Generating PDF...' : 'Generate and save label'}
-              </button>
-            </div>
-          {/if}
-        </div>
-      </div>
-    {/if}
-
-    <div class="mt-12">
-      <h2 class="mb-4 text-xl font-bold text-gray-900">Label History</h2>
-      {#key historyVersion}
-        <LabelHistory />
-      {/key}
-    </div>
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Choose the label that fits your shipment</h1>
+    <p class="mt-2 text-sm text-muted-foreground">
+      Start with the business situation. We will show what the label identifies, what information
+      you need, and what its barcodes communicate.
+    </p>
   </div>
-</ProtectedRoute>
+
+  {#if settingsError}
+    <div
+      class="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-4 text-red-700 dark:text-red-300"
+    >
+      {settingsError}
+    </div>
+  {:else if settings && !settings.is_configured}
+    <div
+      class="rounded-md border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/40 p-4 text-yellow-800 dark:text-yellow-200"
+    >
+      Configure your GS1 Company Prefix in
+      <a
+        href="/settings"
+        class="font-medium text-blue-600 hover:text-blue-500 dark:hover:text-blue-400">Settings</a
+      >
+      before previewing or generating labels.
+    </div>
+  {/if}
+
+  {#if error}
+    <div
+      class="rounded-md border border-red-400 bg-red-100 dark:bg-red-900/40 p-4 text-red-700 dark:text-red-300"
+    >
+      {error}
+    </div>
+  {/if}
+
+  {#if success}
+    <div
+      class="rounded-md border border-green-400 bg-green-100 dark:bg-green-900/40 p-4 text-green-700 dark:text-green-300"
+    >
+      {success}
+    </div>
+  {/if}
+
+  {#if !selectedLabelType}
+    <LabelWorkflowSelector onselect={selectWorkflow} />
+  {:else}
+    <!--
+      Split-pane generator: controls on the left, live thermal preview on the
+      right. The panes stack on small screens so the preview stays reachable.
+    -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
+      <div class="lg:sticky lg:top-24">
+        {#key selectedLabelType}
+          <LabelForm
+            labelType={selectedLabelType}
+            companyName={settings?.company_name || ''}
+            {products}
+            onsubmit={handleSubmit}
+            onback={changeWorkflow}
+          />
+        {/key}
+      </div>
+
+      <div class="lg:sticky lg:top-24">
+        <LabelPreview {labelData} bind:previewUrl />
+
+        {#if labelData && previewUrl}
+          <div class="mt-4">
+            <button
+              onclick={generatePDF}
+              disabled={isGenerating}
+              class="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
+            >
+              {isGenerating ? 'Generating PDF...' : 'Generate and save label'}
+            </button>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
+
+  <div class="mt-12">
+    <h2 class="mb-4 text-xl font-bold text-foreground">Label History</h2>
+    {#key historyVersion}
+      <LabelHistory />
+    {/key}
+  </div>
+</div>

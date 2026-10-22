@@ -11,14 +11,13 @@
 
 ## Routing
 
-- Pages under `src/routes/`
-  - `/` landing
-  - `/login`, `/signup`
-  - `/reset-password`
-  - `/guide`, `/updates`, `/privacy` (public)
-  - `/dashboard` (protected)
-  - `/labels` (listing/creation pages)
-  - `/admin/statistics` (owner-only)
+- Pages under `src/routes/` are grouped by audience; route groups do not appear in the URL.
+  - `(public)/`: unauthenticated marketing and information pages that share a top marketing header and footer — `/` (home landing), `/guide`, `/updates`, `/privacy`.
+  - `(auth)/`: `/login`, `/signup`, `/reset-password`, framed by a minimal centered card shell.
+  - `(app)/`: authenticated workspace with a fixed left sidebar and an account header — `/dashboard`, `/labels` (generator), `/labels/create`, `/labels/history`, `/settings`, `/admin/statistics`.
+- `src/routes/+layout.svelte` keeps only global concerns: `app.css`, the Google Analytics component, and theme initialization.
+- `src/routes/(app)/+layout.server.js` guards the whole application group and redirects unauthenticated visitors to `/login`; `src/hooks.server.js` keeps its path guard as defense in depth.
+- Shared shell components live in `src/lib/components/Layout/` (`PublicHeader`, `Footer`, `AppSidebar`, `AppHeader`, `Logo`, `ThemeToggle`).
 - API endpoints under `src/routes/api/`
   - `auth/`: Better Auth mounted under `/api/auth/*`
   - `dashboard/`: aggregated dashboard data
@@ -34,7 +33,7 @@
 - Google OAuth is enabled through `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 - Apple OAuth is intentionally deferred.
 - Server guard:
-  - `src/hooks.server.js` resolves the Better Auth session, sets `event.locals.user` and `event.locals.session`, redirects protected pages, and blocks protected APIs.
+  - `src/hooks.server.js` resolves the Better Auth session, sets `event.locals.user` and `event.locals.session`, redirects protected pages, and blocks protected APIs. The `(app)` layout guard repeats the redirect for the whole application group.
   - Better Auth handles `/api/auth/*` requests.
 
 ## Data layer
@@ -73,7 +72,15 @@
 
 ## Styling
 
-- Tailwind v4; utility classes used across components. Theme tokens defined in `src/app.css`.
+- Tailwind v4 via `@import "tailwindcss";` in `src/app.css`.
+- Semantic color tokens (`--color-background`, `--color-foreground`, `--color-surface`, `--color-border-default`, `--color-muted-foreground`, `--color-accent`, and related names) reference `--app-*` variables declared for `:root` and `.dark`, so one set of component classes serves both themes. Prefer these utilities over fixed palette values; keep the raw palette tokens for the few fixed contexts (label preview, print preview).
+- Dark mode is class-based through `@custom-variant dark (&:where(.dark, .dark *))` in `src/app.css`.
+- `src/lib/theme/theme.svelte.js` owns the shared theme state: it applies the theme to `<html>`, persists the explicit choice in `localStorage` under `sscc-labels-theme`, and follows the operating-system preference until the user chooses. The pre-paint script in `src/app.html` applies the stored theme before first render to avoid a flash; keep the storage key in sync in both places. `ThemeToggle.svelte` reads that module, so every toggle on a page stays consistent.
+
+## Form architecture
+
+- The label generator is a split-pane view: form controls on the left and the live thermal preview on the right (`src/routes/(app)/labels/+page.svelte`).
+- `src/lib/validation/formValidation.js` holds shared field validation, and `src/lib/server/validation/formValidation.js` reuses it for API requests.
 
 ## CSP and security headers
 

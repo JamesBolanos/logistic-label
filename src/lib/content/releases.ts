@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-22-app-shell-and-dark-mode',
+    publishedAt: '2026-10-22',
+    category: 'improvement',
+    status: 'published',
+    title: 'A clearer workspace and dark mode',
+    benefit:
+      'Marketing pages and the signed-in workspace are now separate: the site keeps a simple top header, while the app uses a left sidebar for Dashboard, Label Generator, Saved Labels, Settings, and owner Statistics. Every page also has a light and dark theme you can switch from the header.',
+    featureKey: 'app_shell_dark_mode',
+    href: '/dashboard',
+    linkLabel: 'Open the workspace'
+  },
+  {
     id: '2026-10-21-saved-products',
     publishedAt: '2026-10-21',
     category: 'new feature',

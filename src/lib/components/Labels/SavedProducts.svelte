@@ -185,11 +185,13 @@
 
 <section
   aria-labelledby="saved-products-heading"
-  class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow"
+  class="space-y-4 rounded-lg border border-border-default bg-surface p-6 shadow"
 >
   <div>
-    <h2 id="saved-products-heading" class="text-xl font-semibold text-gray-900">Saved products</h2>
-    <p class="mt-2 text-sm text-gray-600">
+    <h2 id="saved-products-heading" class="text-xl font-semibold text-foreground">
+      Saved products
+    </h2>
+    <p class="mt-2 text-sm text-muted-foreground">
       Save the products you ship often. When creating a label, select one to fill its GTIN. Shipment
       details such as lot, date, count, and addresses stay on each label.
     </p>
@@ -201,21 +203,27 @@
     </div>
   {:else}
     {#if listError}
-      <div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+      <div
+        class="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-3 text-sm text-red-700 dark:text-red-300"
+        role="alert"
+      >
         {listError}
       </div>
     {/if}
 
     {#if formError}
-      <div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+      <div
+        class="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-3 text-sm text-red-700 dark:text-red-300"
+        role="alert"
+      >
         {formError}
       </div>
     {/if}
 
     {#if products.length === 0}
-      <p class="text-sm text-gray-500">No saved products yet. Add your first one below.</p>
+      <p class="text-sm text-subtle-foreground">No saved products yet. Add your first one below.</p>
     {:else}
-      <ul class="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul class="divide-y divide-border-default rounded-md border border-border-default">
         {#each products as product (product.id)}
           <li data-product-id={product.id} class="p-3">
             {#if editingId === product.id}
@@ -230,7 +238,7 @@
                   <div>
                     <label
                       for="edit_name_{product.id}"
-                      class="mb-1 block text-sm font-medium text-gray-700"
+                      class="mb-1 block text-sm font-medium text-muted-foreground"
                     >
                       Product Name
                     </label>
@@ -240,16 +248,16 @@
                       bind:value={editData.name}
                       maxlength="120"
                       required
-                      class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {#if editErrors.name}
-                      <p class="mt-1 text-sm text-red-600">{editErrors.name}</p>
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.name}</p>
                     {/if}
                   </div>
                   <div>
                     <label
                       for="edit_reference_{product.id}"
-                      class="mb-1 block text-sm font-medium text-gray-700"
+                      class="mb-1 block text-sm font-medium text-muted-foreground"
                     >
                       Internal Reference
                     </label>
@@ -259,16 +267,18 @@
                       bind:value={editData.internal_reference}
                       maxlength="50"
                       autocomplete="off"
-                      class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {#if editErrors.internal_reference}
-                      <p class="mt-1 text-sm text-red-600">{editErrors.internal_reference}</p>
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {editErrors.internal_reference}
+                      </p>
                     {/if}
                   </div>
                   <div>
                     <label
                       for="edit_gtin_{product.id}"
-                      class="mb-1 block text-sm font-medium text-gray-700"
+                      class="mb-1 block text-sm font-medium text-muted-foreground"
                     >
                       GTIN
                     </label>
@@ -279,13 +289,15 @@
                       bind:value={editData.gtin}
                       maxlength="14"
                       required
-                      class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {#if editErrors.gtin}
-                      <p class="mt-1 text-sm text-red-600">{editErrors.gtin}</p>
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.gtin}</p>
                     {/if}
                     {#if editGtinWarning}
-                      <p class="mt-1 text-sm text-amber-700">{editGtinWarning}</p>
+                      <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                        {editGtinWarning}
+                      </p>
                     {/if}
                   </div>
                 </div>
@@ -293,14 +305,14 @@
                   <button
                     type="submit"
                     disabled={editSaving}
-                    class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                    class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
                   >
                     {editSaving ? 'Saving...' : 'Save changes'}
                   </button>
                   <button
                     type="button"
                     onclick={cancelEdit}
-                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
                   >
                     Cancel
                   </button>
@@ -309,15 +321,15 @@
             {:else}
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p class="text-sm font-medium text-gray-900">{product.name}</p>
-                  <p class="text-sm text-gray-600">
+                  <p class="text-sm font-medium text-foreground">{product.name}</p>
+                  <p class="text-sm text-muted-foreground">
                     GTIN {product.gtin}
                     {#if product.internal_reference}
                       · Reference {product.internal_reference}
                     {/if}
                   </p>
                   {#if product.gs1_valid === false}
-                    <p class="mt-1 text-xs font-medium text-amber-700">
+                    <p class="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
                       Not a valid GS1 GTIN — correct it before encoding it on a label.
                     </p>
                   {/if}
@@ -326,24 +338,24 @@
                   <button
                     type="button"
                     onclick={() => startEdit(product)}
-                    class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
                   >
                     Edit
                   </button>
                   {#if confirmDeleteId === product.id}
-                    <span class="text-xs text-gray-500">Delete saved product?</span>
+                    <span class="text-xs text-subtle-foreground">Delete saved product?</span>
                     <button
                       type="button"
                       onclick={() => removeProduct(product)}
                       disabled={isDeleting}
-                      class="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+                      class="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
                     >
                       Confirm delete
                     </button>
                     <button
                       type="button"
                       onclick={() => (confirmDeleteId = null)}
-                      class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
                     >
                       Cancel
                     </button>
@@ -351,7 +363,7 @@
                     <button
                       type="button"
                       onclick={() => removeProduct(product)}
-                      class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
                     >
                       Delete
                     </button>
@@ -369,12 +381,12 @@
         event.preventDefault();
         createProduct();
       }}
-      class="space-y-3 border-t border-gray-200 pt-4"
+      class="space-y-3 border-t border-border-default pt-4"
     >
-      <h3 class="text-sm font-semibold text-gray-900">Add a product</h3>
+      <h3 class="text-sm font-semibold text-foreground">Add a product</h3>
       <div class="grid gap-3 sm:grid-cols-3">
         <div>
-          <label for="product_name" class="mb-1 block text-sm font-medium text-gray-700">
+          <label for="product_name" class="mb-1 block text-sm font-medium text-muted-foreground">
             Product Name
           </label>
           <input
@@ -383,15 +395,18 @@
             bind:value={formData.name}
             maxlength="120"
             required
-            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {#if errors.name}
-            <p class="mt-1 text-sm text-red-600">{errors.name}</p>
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
           {/if}
         </div>
         <div>
-          <label for="product_reference" class="mb-1 block text-sm font-medium text-gray-700">
-            Internal Reference <span class="font-normal text-gray-500">(optional)</span>
+          <label
+            for="product_reference"
+            class="mb-1 block text-sm font-medium text-muted-foreground"
+          >
+            Internal Reference <span class="font-normal text-subtle-foreground">(optional)</span>
           </label>
           <input
             id="product_reference"
@@ -399,14 +414,15 @@
             bind:value={formData.internal_reference}
             maxlength="50"
             autocomplete="off"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {#if errors.internal_reference}
-            <p class="mt-1 text-sm text-red-600">{errors.internal_reference}</p>
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.internal_reference}</p>
           {/if}
         </div>
         <div>
-          <label for="product_gtin" class="mb-1 block text-sm font-medium text-gray-700">GTIN</label
+          <label for="product_gtin" class="mb-1 block text-sm font-medium text-muted-foreground"
+            >GTIN</label
           >
           <input
             id="product_gtin"
@@ -416,13 +432,13 @@
             maxlength="14"
             placeholder="00123456789012"
             required
-            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {#if errors.gtin}
-            <p class="mt-1 text-sm text-red-600">{errors.gtin}</p>
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.gtin}</p>
           {/if}
           {#if gtinWarning}
-            <p class="mt-1 text-sm text-amber-700">{gtinWarning}</p>
+            <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">{gtinWarning}</p>
           {/if}
         </div>
       </div>
@@ -430,7 +446,7 @@
         <button
           type="submit"
           disabled={isSaving}
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
         >
           {isSaving ? 'Saving...' : 'Save product'}
         </button>

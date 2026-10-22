@@ -142,23 +142,31 @@
 
 <div class="mx-auto max-w-3xl space-y-6">
   <div>
-    <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
-    <p class="mt-2 text-sm text-gray-600">
+    <h1 class="text-2xl font-bold text-foreground">Settings</h1>
+    <p class="mt-2 text-sm text-muted-foreground">
       Configure the GS1 Company Prefix used to allocate SSCCs, save the products you ship often,
       manage your LAN printer, and export a copy of your data.
     </p>
   </div>
 
   {#if formError}
-    <div class="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+    <div
+      class="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-700 dark:text-red-300"
+      role="alert"
+    >
       {formError}
     </div>
   {/if}
 
   {#if statusMessage}
-    <div class="rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+    <div
+      class="rounded-md border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/40 p-4 text-sm text-green-700 dark:text-green-300"
+    >
       <p>{statusMessage}</p>
-      <a href="/labels" class="mt-2 inline-flex font-semibold text-blue-700 hover:text-blue-800">
+      <a
+        href="/labels"
+        class="mt-2 inline-flex font-semibold text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:text-blue-300"
+      >
         Continue to choose a shipping situation →
       </a>
     </div>
@@ -166,13 +174,13 @@
 
   <section
     aria-labelledby="label-settings-heading"
-    class="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow"
+    class="space-y-6 rounded-lg border border-border-default bg-surface p-6 shadow"
   >
     <div>
-      <h2 id="label-settings-heading" class="text-xl font-semibold text-gray-900">
+      <h2 id="label-settings-heading" class="text-xl font-semibold text-foreground">
         Label settings
       </h2>
-      <p class="mt-2 text-sm text-gray-600">
+      <p class="mt-2 text-sm text-muted-foreground">
         Configure the GS1 Company Prefix used to allocate SSCCs for your logistic labels.
       </p>
     </div>
@@ -192,25 +200,28 @@
         </div>
       {:else}
         <div>
-          <label for="company_name" class="mb-1 block text-sm font-medium text-gray-700">
+          <label for="company_name" class="mb-1 block text-sm font-medium text-muted-foreground">
             Company Name
           </label>
           <input
             id="company_name"
             type="text"
             bind:value={formData.company_name}
-            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             maxlength="120"
             required
           />
           {#if errors.company_name}
-            <p class="mt-1 text-sm text-red-600">{errors.company_name}</p>
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.company_name}</p>
           {/if}
         </div>
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div class="sm:col-span-2">
-            <label for="gs1_company_prefix" class="mb-1 block text-sm font-medium text-gray-700">
+            <label
+              for="gs1_company_prefix"
+              class="mb-1 block text-sm font-medium text-muted-foreground"
+            >
               GS1 Company Prefix
             </label>
             <input
@@ -218,22 +229,25 @@
               type="text"
               inputmode="numeric"
               bind:value={formData.gs1_company_prefix}
-              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="1234567"
               maxlength="12"
               required
             />
             {#if errors.gs1_company_prefix}
-              <p class="mt-1 text-sm text-red-600">{errors.gs1_company_prefix}</p>
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.gs1_company_prefix}</p>
             {/if}
-            <p class="mt-1 text-xs text-gray-500">
+            <p class="mt-1 text-xs text-subtle-foreground">
               Use the numeric prefix licensed to your organization by a GS1 Member Organisation. Do
               not invent a prefix.
             </p>
           </div>
 
           <div>
-            <label for="extension_digit" class="mb-1 block text-sm font-medium text-gray-700">
+            <label
+              for="extension_digit"
+              class="mb-1 block text-sm font-medium text-muted-foreground"
+            >
               Extension Digit
             </label>
             <input
@@ -241,36 +255,41 @@
               type="text"
               inputmode="numeric"
               bind:value={formData.extension_digit}
-              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               maxlength="1"
               required
             />
             {#if errors.extension_digit}
-              <p class="mt-1 text-sm text-red-600">{errors.extension_digit}</p>
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.extension_digit}</p>
             {/if}
-            <p class="mt-1 text-xs text-gray-500">
+            <p class="mt-1 text-xs text-subtle-foreground">
               This digit expands SSCC capacity. It does not identify a packaging level.
             </p>
           </div>
         </div>
 
         <div>
-          <label for="next_serial_reference" class="mb-1 block text-sm font-medium text-gray-700">
+          <label
+            for="next_serial_reference"
+            class="mb-1 block text-sm font-medium text-muted-foreground"
+          >
             Next Serial Reference
           </label>
           <input
             id="next_serial_reference"
             type="number"
             bind:value={formData.next_serial_reference}
-            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             min="1"
             step="1"
             required
           />
           {#if errors.next_serial_reference}
-            <p class="mt-1 text-sm text-red-600">{errors.next_serial_reference}</p>
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+              {errors.next_serial_reference}
+            </p>
           {/if}
-          <p class="mt-1 text-xs text-gray-500">
+          <p class="mt-1 text-xs text-subtle-foreground">
             The application tries this number next when saving a label, then advances the sequence.
             Change it only when coordinating an existing numbering sequence.
           </p>
@@ -280,7 +299,7 @@
           <button
             type="submit"
             disabled={isSaving}
-            class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
           >
             {isSaving ? 'Saving...' : 'Save Settings'}
           </button>
@@ -295,15 +314,15 @@
 
   <section
     aria-labelledby="data-export-heading"
-    class="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow"
+    class="space-y-4 rounded-lg border border-border-default bg-surface p-6 shadow"
   >
     <div>
-      <h2 id="data-export-heading" class="text-xl font-semibold text-gray-900">Data Export</h2>
-      <p class="mt-2 text-sm text-gray-600">
+      <h2 id="data-export-heading" class="text-xl font-semibold text-foreground">Data Export</h2>
+      <p class="mt-2 text-sm text-muted-foreground">
         Download all of your data as an Excel file for your records.
       </p>
     </div>
-    <p class="text-sm leading-6 text-gray-600">
+    <p class="text-sm leading-6 text-muted-foreground">
       This export includes your account information, company settings (including GS1 company
       prefix), and every label you've created in the system.
     </p>
@@ -312,12 +331,12 @@
         type="button"
         onclick={exportData}
         disabled={exporting}
-        class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
       >
         {exporting ? 'Exporting...' : 'Download all my data (.XLSX)'}
       </button>
       {#if exportMessage}
-        <p class="mt-2 text-sm text-gray-700" role="status">{exportMessage}</p>
+        <p class="mt-2 text-sm text-muted-foreground" role="status">{exportMessage}</p>
       {/if}
     </div>
   </section>

@@ -68,23 +68,25 @@
 </svelte:head>
 
 <div class="space-y-8">
-  <header class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+  <header class="bg-surface rounded-lg shadow border border-border-default overflow-hidden">
     <div class="px-6 py-8 sm:px-8">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div class="max-w-3xl">
-          <h1 class="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+          <h1 class="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
             How we protect your data
           </h1>
-          <p class="mt-4 text-base leading-7 text-gray-600">
+          <p class="mt-4 text-base leading-7 text-muted-foreground">
             This page outlines how the GS1-128 Logistic Label Generator collects, uses, and protects
             user and business data.
           </p>
-          <p class="mt-3 text-sm text-gray-500">Last updated: September 28, 2026</p>
+          <p class="mt-3 text-sm text-subtle-foreground">Last updated: September 28, 2026</p>
         </div>
 
-        <div class="rounded-lg bg-blue-50 border border-blue-100 px-5 py-4 lg:w-72">
-          <p class="text-sm font-medium text-blue-900">Privacy standard</p>
-          <p class="mt-2 text-sm leading-6 text-blue-800">
+        <div
+          class="rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 px-5 py-4 lg:w-72"
+        >
+          <p class="text-sm font-medium text-blue-900 dark:text-blue-200">Privacy standard</p>
+          <p class="mt-2 text-sm leading-6 text-blue-800 dark:text-blue-300">
             Account and label data are handled securely with attention to GDPR and other privacy
             requirements.
           </p>
@@ -95,14 +97,14 @@
 
   <section class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
     {#each policySections as section (section.title)}
-      <article class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-        <div class="px-6 py-5 border-b border-gray-200">
-          <h2 class="text-lg font-medium text-gray-900">{section.title}</h2>
+      <article class="bg-surface rounded-lg shadow border border-border-default overflow-hidden">
+        <div class="px-6 py-5 border-b border-border-default">
+          <h2 class="text-lg font-medium text-foreground">{section.title}</h2>
         </div>
         <div class="px-6 py-5">
           <ul class="space-y-4">
             {#each section.items as item (item)}
-              <li class="flex gap-3 text-sm leading-6 text-gray-600">
+              <li class="flex gap-3 text-sm leading-6 text-muted-foreground">
                 <span class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></span>
                 <span>{item}</span>
               </li>
@@ -113,12 +115,12 @@
     {/each}
   </section>
 
-  <section class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-    <div class="px-6 py-5 border-b border-gray-200 sm:px-8">
-      <h2 class="text-lg font-medium text-gray-900">Contact</h2>
-      <p class="mt-1 text-sm text-gray-500">
+  <section class="bg-surface rounded-lg shadow border border-border-default overflow-hidden">
+    <div class="px-6 py-5 border-b border-border-default sm:px-8">
+      <h2 class="text-lg font-medium text-foreground">Contact</h2>
+      <p class="mt-1 text-sm text-subtle-foreground">
         <a
-          class="font-medium text-blue-600 hover:text-blue-500"
+          class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
           href="mailto:jbolanosdiaz@gmail.com"
         >
           Contact privacy support

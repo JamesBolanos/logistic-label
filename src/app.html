@@ -20,6 +20,25 @@
     <meta property="og:url" content="https://yourdomain.com" />
     <meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
     
+    <!--
+      Apply the saved color theme before first paint. Keep the storage key in
+      sync with src/lib/theme/theme.svelte.js.
+    -->
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem('sscc-labels-theme');
+          const dark =
+            stored === 'dark' ||
+            (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        } catch {
+          /* Storage can be unavailable in private contexts; keep the default theme. */
+        }
+      })();
+    </script>
+
     <!-- Other head elements -->
     %sveltekit.head%
   </head>
