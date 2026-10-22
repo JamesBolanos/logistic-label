@@ -16,19 +16,19 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
+None.
+
+## Review
+
 ### `PRODUCT-001` — Saved products for repeat label creation
 
 - Need: the proven repeat creator re-enters product data on every label despite a small set of known products; nothing in the product persists reference data. Private evidence: the dated usage reports in the git-ignored `usage_log/` directory.
 - Outcome: a small per-account product list — product name, internal reference, and GTIN — that pre-fills product fields when creating a label. Shipment-specific values (lot, date, count, weight, addresses) remain per-label entries and are never stored in the product list.
 - Acceptance: authenticated, owner-scoped product create/list/update/delete; GTIN validated by the same shared rules as the label form; selecting a product fills only product fields; deleting a product never changes saved labels, SSCCs, or template versions; measurement-plan event additions are implemented so analytics failures cannot block the workflow; a What's New entry is published and the guide mentions the product list.
 - Evidence planned: `npm run quality` (unit tests for API scoping, validation, and product pre-fill), the CI end-to-end job against a disposable branch covering product creation through a saved label, and a focused browser check of the picker and empty state.
-- Status: implementation complete on 2026-10-21. `npm run quality` passes (24 files, 177 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); migration `0009_rich_cable.sql` adds the product table with cascade delete, a list index, and the per-account GTIN unique index. The CI end-to-end run and a focused browser check of the picker still need the developer database migration, so the item stays here until those pass.
+- Status: implementation complete and verified in CI on 2026-10-21 (run 39707668320): Quality passes, and the end-to-end job covers product create, edit, confirm-delete, picker-filled label creation through history, and delete-without-touching-labels against a disposable branch with migration `0009` applied. The developer migrated the staging database; the feature merged into `staging` in pull request #44 (merge commit `3afd0cf`) and `staging.sscc-labels.com` serves it — `/guide` renders the saved-products section and `/updates` still hides the draft release note. Outstanding: a developer browser check of the staging picker behind authentication, migration `0009` on the developer database, and the guarded production migration before any merge into `master`.
 - Dependencies: existing shared validation and label APIs; one new table and migration applied through the guarded procedure; measurement-plan event contract additions; no renderer, SSCC-allocation, or template-version change. Product deletion must never orphan label history.
 - Source: [Work Plan §4](./WORK_PLAN.md#4-improvements) and private usage reports (`usage_log/`, git-ignored).
-
-## Review
-
-None.
 
 ## Ready
 
