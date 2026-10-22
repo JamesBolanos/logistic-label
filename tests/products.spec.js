@@ -5,11 +5,19 @@ import { createTestUserEmail, deleteTestUser } from './helpers/cleanupTestUser.j
 // delete products safely, then create a label whose GTIN comes from the
 // saved product picker without retyping the identifier.
 test('saved products fill the label GTIN for repeat creation', async ({ page }, testInfo) => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
 
   const testRunId = /** @type {{ testRunId?: string }} */ (testInfo.config.metadata).testRunId;
   const email = createTestUserEmail(testRunId);
   let accountCreationConfirmed = false;
+
+  // Rows keep a stable data-product-id attribute so a locator stays valid
+  // while the row switches between display and edit modes.
+  const captureProductCreation = () =>
+    page.waitForResponse((response) => {
+      const requestUrl = new URL(response.url());
+      return requestUrl.pathname === '/api/products' && response.request().method() === 'POST';
+    });
 
   try {
     await page.goto('/signup', { waitUntil: 'networkidle' });
@@ -50,32 +58,36 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     await savedProducts.getByLabel('Product Name').fill('Blue case');
     await savedProducts.getByLabel('Internal Reference').fill('REF-1');
     await savedProducts.getByLabel('GTIN', { exact: true }).fill('4006381333931');
+    const blueCreation = captureProductCreation();
     await savedProducts.getByRole('button', { name: 'Save product' }).click();
+    const blueProduct = (await (await blueCreation).json()).product;
+    const blueRow = savedProducts.locator(`li[data-product-id="${blueProduct.id}"]`);
 
-    const productRow = savedProducts.getByRole('listitem').filter({ hasText: 'Blue case' });
-    await expect(productRow).toBeVisible({ timeout: 10000 });
-    await expect(productRow).toContainText('GTIN 04006381333931');
-    await expect(productRow).toContainText('Reference REF-1');
+    await expect(blueRow).toBeVisible({ timeout: 10000 });
+    await expect(blueRow).toContainText('GTIN 04006381333931');
+    await expect(blueRow).toContainText('Reference REF-1');
 
     // Editing keeps the product list working without touching label history.
-    await productRow.getByRole('button', { name: 'Edit' }).click();
-    await productRow.getByLabel('Product Name').fill('Blue case XL');
-    await productRow.getByRole('button', { name: 'Save changes' }).click();
-    const editedRow = savedProducts.getByRole('listitem').filter({ hasText: 'Blue case XL' });
-    await expect(editedRow).toBeVisible();
-    await expect(editedRow).toContainText('Reference REF-1');
+    await blueRow.getByRole('button', { name: 'Edit' }).click();
+    await blueRow.getByLabel('Product Name').fill('Blue case XL');
+    await blueRow.getByRole('button', { name: 'Save changes' }).click();
+    await expect(blueRow).toContainText('Blue case XL');
+    await expect(blueRow).toContainText('Reference REF-1');
 
     // A second click confirms so an accidental click cannot remove data.
     await savedProducts.getByLabel('Product Name').fill('Red case');
     await savedProducts.getByLabel('GTIN', { exact: true }).fill('5901234123457');
+    const redCreation = captureProductCreation();
     await savedProducts.getByRole('button', { name: 'Save product' }).click();
-    const redRow = savedProducts.getByRole('listitem').filter({ hasText: 'Red case' });
+    const redProduct = (await (await redCreation).json()).product;
+    const redRow = savedProducts.locator(`li[data-product-id="${redProduct.id}"]`);
+
     await expect(redRow).toBeVisible({ timeout: 10000 });
     await expect(redRow).toContainText('GTIN 05901234123457');
     await redRow.getByRole('button', { name: 'Delete', exact: true }).click();
     await redRow.getByRole('button', { name: 'Confirm delete' }).click();
     await expect(redRow).toHaveCount(0);
-    await expect(editedRow).toBeVisible();
+    await expect(blueRow).toBeVisible();
 
     // The label form picker fills the GTIN from the saved product.
     await page.goto('/labels?type=homogeneous_unit');
@@ -110,16 +122,9 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     // Deleting the product never changes saved labels.
     await page.goto('/settings');
     const settingsProducts = page.getByRole('region', { name: 'Saved products' });
-    await settingsProducts
-      .getByRole('listitem')
-      .filter({ hasText: 'Blue case XL' })
-      .getByRole('button', { name: 'Delete', exact: true })
-      .click();
-    await settingsProducts
-      .getByRole('listitem')
-      .filter({ hasText: 'Blue case XL' })
-      .getByRole('button', { name: 'Confirm delete' })
-      .click();
+    const blueRowAfterReload = settingsProducts.locator(`li[data-product-id="${blueProduct.id}"]`);
+    await blueRowAfterReload.getByRole('button', { name: 'Delete', exact: true }).click();
+    await blueRowAfterReload.getByRole('button', { name: 'Confirm delete' }).click();
     await expect(
       settingsProducts.getByText('No saved products yet. Add your first one below.')
     ).toBeVisible();

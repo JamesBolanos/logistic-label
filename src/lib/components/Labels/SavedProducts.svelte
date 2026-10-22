@@ -204,7 +204,7 @@
     {:else}
       <ul class="divide-y divide-gray-200 rounded-md border border-gray-200">
         {#each products as product (product.id)}
-          <li class="p-3">
+          <li data-product-id={product.id} class="p-3">
             {#if editingId === product.id}
               <form
                 onsubmit={(event) => {
