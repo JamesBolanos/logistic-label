@@ -67,6 +67,7 @@
 ## Validation
 
 - Shared form validation in `src/lib/validation/formValidation.js` for login/signup and label inputs.
+- Zod schemas live in `src/lib/validation/schemas.js` (`labelSettingsSchema`, `productSchema`) and are used with SvelteKit Superforms (`superValidate`/`superForm`) for server actions and reactive client validation.
 - The same label rules validate browser and API requests. The PDF renderer receives only validated, normalized guided-label data and rejects barcode content that cannot fit at the supported dimensions.
 - A successful preview response includes a controlled verification summary for the UI: label type, layout, AIs, check results, and fixed warnings. It never includes the SSCC, GTIN, addresses, lot, or other shipment contents.
 
