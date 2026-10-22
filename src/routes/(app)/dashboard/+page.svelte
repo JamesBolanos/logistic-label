@@ -10,7 +10,7 @@
     totalLabels: 0,
     labelsToday: 0,
     lastLabelCreated: null,
-    uniqueGTINs: 0
+    savedProducts: 0
   });
 
   // Recent activity
@@ -151,8 +151,11 @@
         </div>
       </div>
 
-      <!-- Unique GTINs -->
-      <div class="bg-surface overflow-hidden shadow rounded-lg">
+      <!-- Products -->
+      <a
+        href="/products"
+        class="bg-surface overflow-hidden shadow rounded-lg transition-colors hover:bg-surface-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
         <div class="px-4 py-5 sm:p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
@@ -172,16 +175,16 @@
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
-              <dt class="text-sm font-medium text-subtle-foreground truncate">Unique GTINs</dt>
+              <dt class="text-sm font-medium text-subtle-foreground truncate">Products</dt>
               <dd class="flex items-baseline">
                 <div class="text-2xl font-semibold text-foreground">
-                  {stats.uniqueGTINs}
+                  {stats.savedProducts}
                 </div>
               </dd>
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
       <!-- Last Label Created -->
       <div class="bg-surface overflow-hidden shadow rounded-lg">
@@ -257,7 +260,41 @@
               clip-rule="evenodd"
             />
           </svg>
-          View Label History
+          View Saved Labels
+        </a>
+
+        <a
+          href="/products"
+          class="inline-flex items-center px-4 py-2 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500"
+        >
+          <svg
+            class="-ml-1 mr-2 h-5 w-5 text-subtle-foreground"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              d="M10 2 2 6.5 10 11l8-4.5L10 2Zm-6.5 8.2 6.5 3.7 6.5-3.7.9.5-7.4 4.2-7.4-4.2.9-.5Zm0 3.5 6.5 3.7 6.5-3.7.9.5L10 18.5l-7.4-4.2.9-.5Z"
+            />
+          </svg>
+          Manage Products
+        </a>
+
+        <a
+          href="/printer"
+          class="inline-flex items-center px-4 py-2 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500"
+        >
+          <svg
+            class="-ml-1 mr-2 h-5 w-5 text-subtle-foreground"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              d="M6 2h8v3H6V2Zm-2 4h12a2 2 0 0 1 2 2v5h-3v5H5v-5H2V8a2 2 0 0 1 2-2Zm3 9h6v3H7v-3Z"
+            />
+          </svg>
+          Printer Config
         </a>
       </div>
     </div>

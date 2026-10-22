@@ -4,7 +4,6 @@
   import LabelWorkflowSelector from '#lib/components/Labels/LabelWorkflowSelector.svelte';
   import LabelForm from '#lib/components/Labels/LabelForm.svelte';
   import LabelPreview from '#lib/components/Labels/LabelPreview.svelte';
-  import LabelHistory from '#lib/components/Labels/LabelHistory.svelte';
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
   import {
@@ -28,7 +27,6 @@
   let settings = $state(null);
   let settingsError = $state(null);
   let products = $state([]);
-  let historyVersion = $state(0);
 
   onMount(() => {
     loadSettings();
@@ -160,8 +158,8 @@
         source: 'new_label'
       });
 
-      historyVersion += 1;
-      success = 'Label generated successfully and saved to history.';
+      success =
+        'Label generated successfully and saved to history. See Saved Labels to download or reprint it.';
     } catch (err) {
       console.error('PDF generation error:', err);
       error = err.message || 'Error generating label';
@@ -266,10 +264,16 @@
     </div>
   {/if}
 
-  <div class="mt-12">
-    <h2 class="mb-4 text-xl font-bold text-foreground">Label History</h2>
-    {#key historyVersion}
-      <LabelHistory />
-    {/key}
+  <div class="mt-12 rounded-lg border border-border-default bg-surface p-6 text-center shadow">
+    <h2 class="text-xl font-bold text-foreground">Label saved</h2>
+    <p class="mt-2 text-sm text-muted-foreground">
+      Your saved labels, PDF/ZPL downloads, and printing live on the Saved Labels page.
+    </p>
+    <a
+      href="/labels/history"
+      class="mt-4 inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
+    >
+      Open Saved Labels
+    </a>
   </div>
 </div>

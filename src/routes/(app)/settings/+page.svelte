@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
-  import PrintBridgeSettings from '#lib/components/Labels/PrintBridgeSettings.svelte';
-  import SavedProducts from '#lib/components/Labels/SavedProducts.svelte';
+  import { page } from '$app/state';
+  import AccountPreferences from '#lib/components/Settings/AccountPreferences.svelte';
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
 
@@ -18,9 +18,6 @@
   let isSaving = $state(false);
   let statusMessage = $state('');
   let formError = $state('');
-
-  let exporting = $state(false);
-  let exportMessage = $state('');
 
   onMount(loadSettings);
 
@@ -94,49 +91,13 @@
       isSaving = false;
     }
   }
-
-  async function exportData() {
-    if (exporting) return;
-    exporting = true;
-    exportMessage = '';
-
-    try {
-      const response = await fetch('/api/export/excel');
-      if (!response.ok) {
-        throw new Error('Export failed');
-      }
-
-      const blob = await response.blob();
-      const contentDisposition = response.headers.get('content-disposition') || '';
-      let filename = 'logistic-label-data.xlsx';
-      const match = contentDisposition.match(/filename="([^"]+)"/);
-      if (match?.[1]) {
-        filename = match[1];
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      exportMessage = 'Data exported successfully.';
-    } catch (err) {
-      console.error(err);
-      exportMessage = 'Failed to export data. Please try again.';
-    } finally {
-      exporting = false;
-    }
-  }
 </script>
 
 <svelte:head>
   <title>Settings - GS1-128 Logistic Label Generator</title>
   <meta
     name="description"
-    content="Configure GS1 Company Prefix settings, save products, manage your LAN printer, and export your data."
+    content="Manage your account preferences and configure the GS1 Company Prefix and company profile used on your logistic labels."
   />
 </svelte:head>
 
@@ -144,8 +105,8 @@
   <div>
     <h1 class="text-2xl font-bold text-foreground">Settings</h1>
     <p class="mt-2 text-sm text-muted-foreground">
-      Configure the GS1 Company Prefix used to allocate SSCCs, save the products you ship often,
-      manage your LAN printer, and export a copy of your data.
+      Manage your account preferences and the company profile and GS1 license details used on your
+      logistic labels.
     </p>
   </div>
 
@@ -165,12 +126,14 @@
       <p>{statusMessage}</p>
       <a
         href="/labels"
-        class="mt-2 inline-flex font-semibold text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:text-blue-300"
+        class="mt-2 inline-flex font-semibold text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200"
       >
         Continue to choose a shipping situation →
       </a>
     </div>
   {/if}
+
+  <AccountPreferences user={page.data.user} />
 
   <section
     aria-labelledby="label-settings-heading"
@@ -178,7 +141,7 @@
   >
     <div>
       <h2 id="label-settings-heading" class="text-xl font-semibold text-foreground">
-        Label settings
+        Company profile and GS1 license
       </h2>
       <p class="mt-2 text-sm text-muted-foreground">
         Configure the GS1 Company Prefix used to allocate SSCCs for your logistic labels.
@@ -306,38 +269,5 @@
         </div>
       {/if}
     </form>
-  </section>
-
-  <SavedProducts />
-
-  <PrintBridgeSettings />
-
-  <section
-    aria-labelledby="data-export-heading"
-    class="space-y-4 rounded-lg border border-border-default bg-surface p-6 shadow"
-  >
-    <div>
-      <h2 id="data-export-heading" class="text-xl font-semibold text-foreground">Data Export</h2>
-      <p class="mt-2 text-sm text-muted-foreground">
-        Download all of your data as an Excel file for your records.
-      </p>
-    </div>
-    <p class="text-sm leading-6 text-muted-foreground">
-      This export includes your account information, company settings (including GS1 company
-      prefix), and every label you've created in the system.
-    </p>
-    <div>
-      <button
-        type="button"
-        onclick={exportData}
-        disabled={exporting}
-        class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
-      >
-        {exporting ? 'Exporting...' : 'Download all my data (.XLSX)'}
-      </button>
-      {#if exportMessage}
-        <p class="mt-2 text-sm text-muted-foreground" role="status">{exportMessage}</p>
-      {/if}
-    </div>
   </section>
 </div>

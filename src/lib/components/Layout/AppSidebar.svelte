@@ -8,6 +8,8 @@
     { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
     { href: '/labels', label: 'Label Generator', icon: 'generator' },
     { href: '/labels/history', label: 'Saved Labels', icon: 'saved' },
+    { href: '/products', label: 'Products', icon: 'products' },
+    { href: '/printer', label: 'Printer Config', icon: 'printer' },
     { href: '/settings', label: 'Settings', icon: 'settings' }
   ];
 
@@ -42,6 +44,8 @@
     if (href === '/dashboard') return path === '/dashboard';
     if (href === '/labels') return path === '/labels' || path.startsWith('/labels/create');
     if (href === '/labels/history') return path.startsWith('/labels/history');
+    if (href === '/products') return path === '/products' || path.startsWith('/products/');
+    if (href === '/printer') return path === '/printer' || path.startsWith('/printer/');
     if (href === '/settings') return path === '/settings' || path.startsWith('/settings/');
     if (href === '/admin/statistics') return path.startsWith('/admin/statistics');
     return path === href;
@@ -147,6 +151,36 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 d="M6 3.75h12a1.5 1.5 0 0 1 1.5 1.5V21l-7.5-4.5L4.5 21V5.25a1.5 1.5 0 0 1 1.5-1.5Z"
+              />
+            </svg>
+          {:else if item.icon === 'products'}
+            <svg
+              class="h-5 w-5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 8.25 12 3 3 8.25m18 0-9 5.25m9-5.25V15.75L12 21m0-12.75L3 8.25m9 5.25V21M3 8.25V15.75L12 21"
+              />
+            </svg>
+          {:else if item.icon === 'printer'}
+            <svg
+              class="h-5 w-5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6.75 9V3.75h10.5V9M6.75 18H5.25A2.25 2.25 0 0 1 3 15.75v-4.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v4.5A2.25 2.25 0 0 1 18.75 18h-1.5M6.75 14.25h10.5v6H6.75z"
               />
             </svg>
           {:else if item.icon === 'statistics'}

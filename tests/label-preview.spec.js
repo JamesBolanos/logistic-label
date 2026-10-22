@@ -267,17 +267,11 @@ test('signed-in user can generate both available shipping situations', async ({
     await expect(previewFrame).toHaveAttribute('src', /^blob:/);
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
-    await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
+    await expect(
+      page.getByText(/Label generated successfully and saved to history/)
+    ).toBeVisible({
       timeout: 10000
     });
-    const ssccHistoryRow = page
-      .getByRole('table')
-      .getByRole('row')
-      .filter({ hasText: 'Transport unit tracking' });
-    await expect(ssccHistoryRow).toBeVisible();
-    await expect(ssccHistoryRow).toContainText('Ship to: Customer DC 20 Destination Road');
-    await expect(ssccHistoryRow).toContainText('Count: 12 Cartons');
-    await expect(ssccHistoryRow).toContainText('4 × 6 — two copies');
 
     await page.getByRole('button', { name: 'Choose a different situation' }).click();
     await page
@@ -341,9 +335,23 @@ test('signed-in user can generate both available shipping situations', async ({
     );
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
-    await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
+    await expect(
+      page.getByText(/Label generated successfully and saved to history/)
+    ).toBeVisible({
       timeout: 10000
     });
+
+    const homogeneousSavedResponse = await page.request.get('/api/labels/list?limit=100');
+    expect(homogeneousSavedResponse.ok()).toBe(true);
+    const homogeneousSavedBody = await homogeneousSavedResponse.json();
+    const homogeneousSavedLabel = homogeneousSavedBody.labels.find(
+      (label) => label.label_type === 'homogeneous_unit' && label.lot_number === '123456'
+    );
+    expect(homogeneousSavedLabel).toBeTruthy();
+    expect(homogeneousSavedLabel.gtin).toBe('00012345600012');
+
+    // The Saved Labels page renders the same saved records in its table.
+    await page.goto('/labels/history');
     const homogeneousHistoryRow = page
       .getByRole('table')
       .getByRole('row')

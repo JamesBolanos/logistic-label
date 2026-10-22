@@ -48,6 +48,7 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     await page.getByRole('button', { name: 'Save Settings' }).click();
     await expect(page.getByText('Label settings saved.')).toBeVisible({ timeout: 15000 });
 
+    await page.goto('/products');
     const savedProducts = page.getByRole('region', { name: 'Saved products' });
     await expect(savedProducts).toBeVisible();
     await expect(
@@ -117,9 +118,14 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     });
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
-    await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
+    await expect(
+      page.getByText(/Label generated successfully and saved to history/)
+    ).toBeVisible({
       timeout: 10000
     });
+
+    // The saved label appears on the Saved Labels page.
+    await page.goto('/labels/history');
     const historyRow = page
       .getByRole('table')
       .getByRole('row')
@@ -127,13 +133,22 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     await expect(historyRow).toBeVisible();
 
     // Deleting the product never changes saved labels.
-    await page.goto('/settings');
+    await page.goto('/products');
     const settingsProducts = page.getByRole('region', { name: 'Saved products' });
     const blueRowAfterReload = settingsProducts.locator(`li[data-product-id="${blueProduct.id}"]`);
     await blueRowAfterReload.getByRole('button', { name: 'Delete', exact: true }).click();
     await blueRowAfterReload.getByRole('button', { name: 'Confirm delete' }).click();
     await expect(
       settingsProducts.getByText('No saved products yet. Add your first one below.')
+    ).toBeVisible();
+
+    // The label survives the product deletion.
+    await page.goto('/labels/history');
+    await expect(
+      page
+        .getByRole('table')
+        .getByRole('row')
+        .filter({ hasText: 'GTIN 04006381333931' })
     ).toBeVisible();
   } finally {
     if (accountCreationConfirmed) {

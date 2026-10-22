@@ -10,6 +10,8 @@
     '/dashboard': 'Dashboard',
     '/labels': 'Label Generator',
     '/labels/history': 'Saved Labels',
+    '/products': 'Products',
+    '/printer': 'Printer Config',
     '/settings': 'Settings',
     '/admin/statistics': 'Statistics'
   };

@@ -208,8 +208,8 @@
 
   <p class="mb-4 text-sm text-muted-foreground">
     Print via bridge uses the printer and resolution saved in <a
-      href="/settings"
-      class="font-medium text-blue-700 dark:text-blue-300 underline">Settings</a
+      href="/printer"
+      class="font-medium text-blue-700 dark:text-blue-300 underline">Printer Config</a
     >. Sending again prints another copy of the same label.
   </p>
   {#if printError}<p role="alert" class="mb-4 text-sm text-red-700 dark:text-red-300">
