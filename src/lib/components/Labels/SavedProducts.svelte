@@ -2,6 +2,11 @@
   import { onMount } from 'svelte';
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
+  import { validateGTIN } from '#lib/utils/gs1Utils.js';
+
+  const GTIN_PATTERN = /^(?:\d{8}|\d{12}|\d{13}|\d{14})$/;
+  const GTIN_WARNING =
+    'This number does not pass the GS1 check digit. You can still save it as reference data, but labels require a valid GTIN.';
 
   let products = $state([]);
   let isLoading = $state(true);
@@ -20,7 +25,15 @@
   let confirmDeleteId = $state(null);
   let isDeleting = $state(false);
 
+  let gtinWarning = $derived(gtinWarningFor(formData.gtin));
+  let editGtinWarning = $derived(editingId === null ? '' : gtinWarningFor(editData.gtin));
+
   onMount(loadProducts);
+
+  function gtinWarningFor(value) {
+    const gtin = String(value || '').trim();
+    return GTIN_PATTERN.test(gtin) && !validateGTIN(gtin) ? GTIN_WARNING : '';
+  }
 
   async function loadProducts() {
     isLoading = true;
@@ -271,6 +284,9 @@
                     {#if editErrors.gtin}
                       <p class="mt-1 text-sm text-red-600">{editErrors.gtin}</p>
                     {/if}
+                    {#if editGtinWarning}
+                      <p class="mt-1 text-sm text-amber-700">{editGtinWarning}</p>
+                    {/if}
                   </div>
                 </div>
                 <div class="flex gap-2">
@@ -300,6 +316,11 @@
                       · Reference {product.internal_reference}
                     {/if}
                   </p>
+                  {#if product.gs1_valid === false}
+                    <p class="mt-1 text-xs font-medium text-amber-700">
+                      Not a valid GS1 GTIN — correct it before encoding it on a label.
+                    </p>
+                  {/if}
                 </div>
                 <div class="flex gap-2">
                   <button
@@ -399,6 +420,9 @@
           />
           {#if errors.gtin}
             <p class="mt-1 text-sm text-red-600">{errors.gtin}</p>
+          {/if}
+          {#if gtinWarning}
+            <p class="mt-1 text-sm text-amber-700">{gtinWarning}</p>
           {/if}
         </div>
       </div>

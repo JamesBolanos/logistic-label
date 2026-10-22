@@ -74,16 +74,23 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     await expect(blueRow).toContainText('Blue case XL');
     await expect(blueRow).toContainText('Reference REF-1');
 
-    // A second click confirms so an accidental click cannot remove data.
+    // An uncorrected number keeps its warning but can still be saved; the
+    // stored product is flagged as not a valid GS1 GTIN.
     await savedProducts.getByLabel('Product Name').fill('Red case');
-    await savedProducts.getByLabel('GTIN', { exact: true }).fill('5901234123457');
+    await savedProducts.getByLabel('GTIN', { exact: true }).fill('4006381333930');
+    await expect(
+      savedProducts.getByText('This number does not pass the GS1 check digit')
+    ).toBeVisible();
     const redCreation = captureProductCreation();
     await savedProducts.getByRole('button', { name: 'Save product' }).click();
     const redProduct = (await (await redCreation).json()).product;
+    expect(redProduct.gs1_valid).toBe(false);
     const redRow = savedProducts.locator(`li[data-product-id="${redProduct.id}"]`);
 
     await expect(redRow).toBeVisible({ timeout: 10000 });
-    await expect(redRow).toContainText('GTIN 05901234123457');
+    await expect(redRow).toContainText('GTIN 04006381333930');
+    await expect(redRow).toContainText('Not a valid GS1 GTIN');
+    // A second click confirms so an accidental click cannot remove data.
     await redRow.getByRole('button', { name: 'Delete', exact: true }).click();
     await redRow.getByRole('button', { name: 'Confirm delete' }).click();
     await expect(redRow).toHaveCount(0);

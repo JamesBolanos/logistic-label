@@ -147,6 +147,9 @@ export const product = pgTable(
     name: varchar('name', { length: 120 }).notNull(),
     internalReference: varchar('internal_reference', { length: 50 }),
     gtin: varchar('gtin', { length: 14 }).notNull(),
+    // Records whether the stored number passes the GS1 check digit. Reference
+    // data may keep an uncorrected number; labels still reject invalid GTINs.
+    gs1Valid: boolean('gs1_valid').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
   },
