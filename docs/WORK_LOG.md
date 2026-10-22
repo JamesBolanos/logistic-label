@@ -15,6 +15,15 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `PRODUCT-001` — Staging database migration completed after products 500s
+
+- Result: migration `0009` is now applied to the persistent staging Neon branch, and staging products requests can succeed again.
+- Diagnosis: staging returned "Failed to load products" with runtime logs showing `NeonDbError: relation "product" does not exist` (Postgres `42P01`) for both `GET` and `POST /api/products`. The migration dispatch the developer had run (CI run 39705748244 at 01:27Z) predated the feature commits (first push 01:36Z, pull request #44 merge 01:49Z), so the staging database was at migration `0008` when the new code deployed. This matches the deployment guide's warning that a green build does not prove the schema migrated.
+- Decisions: fix the environment rather than the code — the endpoint error path behaved as designed (generic 500, no data exposure). The guarded dispatch ran from the `staging` Git branch with target `staging` after the merge, which is the documented sequence: migration dispatches must follow the merge that carries the migration.
+- Validation: CI run 39708947039 resolved target `staging`, the nonproduction project and `staging` database branch, and reported "migrations applied successfully". Anonymous requests still receive 401 from the authentication guard, so final confirmation is the developer reloading the staging Settings page behind sign-in.
+- Material files: none. No code, schema, or migration file changed.
+- Next: the developer reloads the staging Settings page to confirm the products list loads, then the browser check, developer database migration, and guarded production migration complete the item.
+
 ## 2026-10-21 — `PRODUCT-001` — Staging promotion after an E2E locator fix
 
 - Result: the saved-products feature is on `staging.sscc-labels.com` through pull request #44 into `staging` (merge commit `3afd0cf`), with the CI Quality and end-to-end jobs passing and the staging database migrated by the developer beforehand.
