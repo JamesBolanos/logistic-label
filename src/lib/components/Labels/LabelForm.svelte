@@ -442,7 +442,7 @@
             {#each products as product (product.id)}
               <option value={String(product.id)}>
                 {product.name}{product.internal_reference ? ` — ${product.internal_reference}` : ''}
-                ({product.gtin})
+                ({product.gtin}{product.gs1_valid === false ? ' — not a valid GS1 GTIN' : ''})
               </option>
             {/each}
           </select>

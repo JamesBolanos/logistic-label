@@ -59,7 +59,7 @@
 - `src/lib/server/pdf/gs1Barcode.js` encodes supported GS1 application identifiers as Code 128 / GS1-128 bar patterns.
 - `src/lib/labels/scenarios.js` defines the business-facing shipping situations and maps available choices to stable stored label types.
 - `src/lib/labels/workflows.js` defines the technical label types, transport vocabularies, packaging-level vocabulary, homogeneous date AIs, print layouts, and template versions.
-- Saved products are per-account reference data (name, internal reference, GTIN). Selecting one in the label form fills only the GTIN; shipment values remain on each label, and deleting a product never changes saved labels or SSCCs.
+- Saved products are per-account reference data (name, internal reference, GTIN) with a stored `gs1_valid` flag that records whether the number passes the GS1 check digit. An uncorrected number may be saved as reference data, while labels keep rejecting invalid GTINs. Selecting a product in the label form fills only the GTIN; shipment values remain on each label, and deleting a product never changes saved labels or SSCCs.
 - New records persist an explicit label type, template version, print layout, and the fields needed to reproduce the selected label. Existing `legacy_demo` / `v1` and guided `v2` records continue through their original renderers; transport labels use `v3` and structured homogeneous labels use `v4`.
 - The active preview and download endpoints generate PDF responses on demand. A legacy hash-preview reader can read short-lived files from `PREVIEW_STORAGE_PATH`; the current application does not write generated PDFs to `storage/pdf`.
 - GS1 SSCC allocation, reuse, responsibility, and nested logistic unit rules are tracked in `docs/GS1_REQUIREMENTS.md`.

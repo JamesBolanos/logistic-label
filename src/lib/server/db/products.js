@@ -1,11 +1,12 @@
 import { and, count, desc, eq, ne } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { product } from '#lib/server/db/schema.js';
-import { normalizeGTIN, validateGTIN } from '#lib/utils/gs1Utils.js';
+import { validateGTIN } from '#lib/utils/gs1Utils.js';
 
 const MAX_PRODUCTS_PER_USER = 100;
 const MAX_NAME_LENGTH = 120;
 const MAX_REFERENCE_LENGTH = 50;
+const PRODUCT_NUMBER_PATTERN = /^(?:\d{8}|\d{12}|\d{13}|\d{14})$/;
 
 /**
  * List the signed-in user's saved products, newest first. The list feeds the
@@ -140,12 +141,14 @@ export function validateProductData(data, { partial = false } = {}) {
     const gtin = String(data?.gtin || '').trim();
     if (!gtin) {
       errors.gtin = 'GTIN is required';
-    } else if (!validateGTIN(gtin)) {
-      errors.gtin = 'Enter a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14';
+    } else if (!PRODUCT_NUMBER_PATTERN.test(gtin)) {
+      errors.gtin = 'GTIN must contain 8, 12, 13, or 14 digits';
     } else {
-      // Store the padded 14-digit form so the label form receives the same
-      // value the renderer encodes.
-      values.gtin = normalizeGTIN(gtin);
+      // A failed check digit is recorded in the flag instead of blocking the
+      // save: the number is kept as reference data and labels still validate
+      // their own GTIN. Pad to the 14-digit form the renderer encodes.
+      values.gtin = gtin.padStart(14, '0');
+      values.gs1Valid = validateGTIN(gtin);
     }
   }
 
@@ -206,6 +209,7 @@ function toApiProduct(row) {
     name: row.name,
     internal_reference: row.internalReference,
     gtin: row.gtin,
+    gs1_valid: row.gs1Valid,
     created_at: row.createdAt?.toISOString?.() || row.createdAt,
     updated_at: row.updatedAt?.toISOString?.() || row.updatedAt
   };

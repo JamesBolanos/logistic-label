@@ -82,7 +82,7 @@ describe('saved product persistence', () => {
     expect(mocks.where).toHaveBeenCalledExactlyOnceWith(expect.anything());
   });
 
-  it('creates a product with a normalized 14-digit GTIN', async () => {
+  it('creates a product with a normalized 14-digit GTIN and a valid flag', async () => {
     mocks.where.mockResolvedValueOnce([{ value: 0 }]);
     const product = await createProduct('owner', {
       name: '  Blue   case ',
@@ -94,9 +94,23 @@ describe('saved product persistence', () => {
       userId: 'owner',
       name: 'Blue case',
       internalReference: 'REF-1',
-      gtin: '04006381333931'
+      gtin: '04006381333931',
+      gs1Valid: true
     });
     expect(product).toMatchObject({ id: 7, gtin: '04006381333931' });
+  });
+
+  it('stores an uncorrected check digit with the GS1 flag cleared', async () => {
+    mocks.where.mockResolvedValueOnce([{ value: 0 }]);
+    await createProduct('owner', { name: 'Red case', gtin: '4006381333930' });
+
+    expect(mocks.values).toHaveBeenCalledExactlyOnceWith({
+      userId: 'owner',
+      name: 'Red case',
+      internalReference: null,
+      gtin: '04006381333930',
+      gs1Valid: false
+    });
   });
 
   it('rejects invalid product data before any database write', async () => {
@@ -109,7 +123,7 @@ describe('saved product persistence', () => {
       validation: {
         errors: {
           name: 'Product name is required',
-          gtin: 'Enter a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14'
+          gtin: 'GTIN must contain 8, 12, 13, or 14 digits'
         }
       }
     });
@@ -176,6 +190,14 @@ describe('saved product persistence', () => {
   it('updates the optional reference back to empty', async () => {
     await updateProduct('owner', '7', { internal_reference: '' });
     expect(mocks.set).toHaveBeenCalledExactlyOnceWith({ internalReference: null });
+  });
+
+  it('recomputes the GS1 flag when the number is updated', async () => {
+    await updateProduct('owner', '7', { gtin: '4006381333930' });
+    expect(mocks.set).toHaveBeenCalledExactlyOnceWith({
+      gtin: '04006381333930',
+      gs1Valid: false
+    });
   });
 
   it('returns null for missing, non-numeric, or foreign product updates', async () => {

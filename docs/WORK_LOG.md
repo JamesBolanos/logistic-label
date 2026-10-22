@@ -15,6 +15,14 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `PRODUCT-001` — GS1 validity flag for saved products
+
+- Result: a product number that fails the GS1 check digit now saves with a visible warning, and a new `gs1_valid` column records whether the stored number is a valid GS1 code. Labels still reject invalid GTINs.
+- Decisions: the owner asked to keep the warning without blocking the save (2026-10-21). The 8/12/13/14-digit format remains a hard validation error; the check digit becomes a soft warning; the stored value stays in the padded 14-digit form; the flag is recomputed whenever the number changes; migration `0010` backfills existing rows with the same mod-10 formula the application uses; per-account GTIN uniqueness and label-side GTIN validation are unchanged, and the label picker annotates saved numbers that are not valid GS1 GTINs.
+- Material files: `src/lib/server/db/schema.js`, `src/lib/server/db/products.js` (+ `.d.ts`), `src/lib/components/Labels/SavedProducts.svelte`, `src/lib/components/Labels/LabelForm.svelte`, `drizzle/0010_superb_dreadnoughts.sql` plus snapshot and journal, the unit and end-to-end tests, `docs/ARCHITECTURE.md`, and `docs/KANBAN.md`.
+- Validation: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); the backfill formula was checked against the application's validator on valid and invalid GTIN examples; the end-to-end spec covers the warning, the save, the stored flag, and the flagged row on the disposable branch.
+- Next: merge into `staging`, dispatch the guarded staging migration for `0010` after the merge, then the staging browser check; the developer database and production remain pending.
+
 ## 2026-10-21 — `PRODUCT-001` — Staging database migration completed after products 500s
 
 - Result: migration `0009` is now applied to the persistent staging Neon branch, and staging products requests can succeed again.
