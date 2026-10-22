@@ -118,9 +118,7 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     });
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
-    await expect(
-      page.getByText(/Label generated successfully and saved to history/)
-    ).toBeVisible({
+    await expect(page.getByText(/Label generated successfully and saved to history/)).toBeVisible({
       timeout: 10000
     });
 
@@ -145,10 +143,7 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     // The label survives the product deletion.
     await page.goto('/labels/history');
     await expect(
-      page
-        .getByRole('table')
-        .getByRole('row')
-        .filter({ hasText: 'GTIN 04006381333931' })
+      page.getByRole('table').getByRole('row').filter({ hasText: 'GTIN 04006381333931' })
     ).toBeVisible();
   } finally {
     if (accountCreationConfirmed) {

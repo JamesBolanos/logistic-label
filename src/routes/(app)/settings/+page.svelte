@@ -127,10 +127,7 @@
         </div>
 
         <div>
-          <label
-            for="extension_digit"
-            class="mb-1 block text-sm font-medium text-muted-foreground"
-          >
+          <label for="extension_digit" class="mb-1 block text-sm font-medium text-muted-foreground">
             Extension Digit
           </label>
           <input

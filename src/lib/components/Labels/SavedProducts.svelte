@@ -59,7 +59,8 @@
     if (product.gtin) parts.push(`GTIN: ${product.gtin}`);
     const netContent = formatNetContent(product);
     if (netContent) parts.push(netContent);
-    if (!parts.length && product.internal_reference) parts.push(`Reference: ${product.internal_reference}`);
+    if (!parts.length && product.internal_reference)
+      parts.push(`Reference: ${product.internal_reference}`);
     if (!parts.length) return '';
     let line = parts.join(' · ');
     if (product.internal_reference && !(product.brand || netContent)) {
@@ -67,7 +68,7 @@
     } else if (product.internal_reference && (product.brand || netContent)) {
       line = `${line} · Reference: ${product.internal_reference}`;
     }
-    // Keep reference visible if it's the only extra info beyond what's already shown? 
+    // Keep reference visible if it's the only extra info beyond what's already shown?
     // We'll show reference separately if present and not duplicating in a weird way
     return line;
   }
@@ -124,7 +125,14 @@
       }
 
       products = [data.product, ...products];
-      formData = { name: '', brand: '', internal_reference: '', gtin: '', net_content_value: '', net_content_unit: '' };
+      formData = {
+        name: '',
+        brand: '',
+        internal_reference: '',
+        gtin: '',
+        net_content_value: '',
+        net_content_unit: ''
+      };
       trackProductEvent('product_saved', { setup_type: data.setupType });
     } catch (error) {
       formError = error.message || 'Failed to save product';
@@ -314,7 +322,8 @@
                         for="edit_brand_{product.id}"
                         class="mb-1 block text-sm font-medium text-muted-foreground"
                       >
-                        Brand Name <span class="font-normal text-subtle-foreground">(optional)</span>
+                        Brand Name <span class="font-normal text-subtle-foreground">(optional)</span
+                        >
                       </label>
                       <input
                         id="edit_brand_{product.id}"
@@ -325,7 +334,9 @@
                         class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       {#if editErrors.brand}
-                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.brand}</p>
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                          {editErrors.brand}
+                        </p>
                       {/if}
                     </div>
                   </div>
@@ -360,7 +371,9 @@
                         for="edit_reference_{product.id}"
                         class="mb-1 block text-sm font-medium text-muted-foreground"
                       >
-                        Internal Reference/SKU <span class="font-normal text-subtle-foreground">(optional)</span>
+                        Internal Reference/SKU <span class="font-normal text-subtle-foreground"
+                          >(optional)</span
+                        >
                       </label>
                       <input
                         id="edit_reference_{product.id}"
@@ -402,10 +415,14 @@
                       </select>
                     </div>
                     {#if editErrors.net_content_value}
-                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.net_content_value}</p>
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {editErrors.net_content_value}
+                      </p>
                     {/if}
                     {#if editErrors.net_content_unit}
-                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.net_content_unit}</p>
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {editErrors.net_content_unit}
+                      </p>
                     {/if}
                   </div>
                 </div>
@@ -571,7 +588,9 @@
               for="product_reference"
               class="mb-1 block text-sm font-medium text-muted-foreground"
             >
-              Internal Reference/SKU <span class="font-normal text-subtle-foreground">(optional)</span>
+              Internal Reference/SKU <span class="font-normal text-subtle-foreground"
+                >(optional)</span
+              >
             </label>
             <input
               id="product_reference"

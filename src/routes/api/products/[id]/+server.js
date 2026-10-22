@@ -8,7 +8,14 @@ import {
 
 // Fields a PATCH may change; at least one must be present so an empty
 // payload cannot produce an empty UPDATE statement.
-const UPDATABLE_FIELDS = ['name', 'brand', 'internal_reference', 'gtin', 'net_content_value', 'net_content_unit'];
+const UPDATABLE_FIELDS = [
+  'name',
+  'brand',
+  'internal_reference',
+  'gtin',
+  'net_content_value',
+  'net_content_unit'
+];
 
 export async function PATCH({ request, params, locals }) {
   const startedAt = Date.now();
