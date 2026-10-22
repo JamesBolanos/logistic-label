@@ -2,8 +2,7 @@
   import { page } from '$app/state';
   import { superForm } from 'sveltekit-superforms';
   import AccountPreferences from '#lib/components/Settings/AccountPreferences.svelte';
-  import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
-  import { classifyHttpFailure } from '#lib/analytics/events.ts';
+  import { trackProductEvent } from '#lib/analytics/client.ts';
 
   let { data } = $props();
 

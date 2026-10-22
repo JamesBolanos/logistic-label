@@ -53,26 +53,6 @@
     return '';
   }
 
-  function formatProductMetaLine(product) {
-    const parts = [];
-    if (product.brand) parts.push(`Brand: ${product.brand}`);
-    if (product.gtin) parts.push(`GTIN: ${product.gtin}`);
-    const netContent = formatNetContent(product);
-    if (netContent) parts.push(netContent);
-    if (!parts.length && product.internal_reference)
-      parts.push(`Reference: ${product.internal_reference}`);
-    if (!parts.length) return '';
-    let line = parts.join(' · ');
-    if (product.internal_reference && !(product.brand || netContent)) {
-      line = `${line} · Reference: ${product.internal_reference}`;
-    } else if (product.internal_reference && (product.brand || netContent)) {
-      line = `${line} · Reference: ${product.internal_reference}`;
-    }
-    // Keep reference visible if it's the only extra info beyond what's already shown?
-    // We'll show reference separately if present and not duplicating in a weird way
-    return line;
-  }
-
   onMount(loadProducts);
 
   function gtinWarningFor(value) {
