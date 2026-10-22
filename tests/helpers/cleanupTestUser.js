@@ -60,6 +60,7 @@ export async function deleteTestUser(email, { requireExisting = false } = {}) {
       (SELECT count(*) FROM "session" WHERE "user_id" = ${userId}) AS sessions,
       (SELECT count(*) FROM "label_settings" WHERE "user_id" = ${userId}) AS label_settings,
       (SELECT count(*) FROM "logistic_label" WHERE "user_id" = ${userId}) AS logistic_labels,
+      (SELECT count(*) FROM "product" WHERE "user_id" = ${userId}) AS products,
       (SELECT count(*) FROM "operational_event" WHERE "user_id" = ${userId}) AS operational_events
   `;
 

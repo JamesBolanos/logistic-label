@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import PrintBridgeSettings from '#lib/components/Labels/PrintBridgeSettings.svelte';
+  import SavedProducts from '#lib/components/Labels/SavedProducts.svelte';
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
 
@@ -135,7 +136,7 @@
   <title>Settings - GS1-128 Logistic Label Generator</title>
   <meta
     name="description"
-    content="Configure GS1 Company Prefix settings, LAN printer settings, and export your data."
+    content="Configure GS1 Company Prefix settings, save products, manage your LAN printer, and export your data."
   />
 </svelte:head>
 
@@ -143,8 +144,8 @@
   <div>
     <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
     <p class="mt-2 text-sm text-gray-600">
-      Configure the GS1 Company Prefix used to allocate SSCCs, manage your LAN printer, and export a
-      copy of your data.
+      Configure the GS1 Company Prefix used to allocate SSCCs, save the products you ship often,
+      manage your LAN printer, and export a copy of your data.
     </p>
   </div>
 
@@ -287,6 +288,8 @@
       {/if}
     </form>
   </section>
+
+  <SavedProducts />
 
   <PrintBridgeSettings />
 

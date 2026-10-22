@@ -28,9 +28,13 @@
   let success = $state(null);
   let settings = $state(null);
   let settingsError = $state(null);
+  let products = $state([]);
   let historyVersion = $state(0);
 
-  onMount(loadSettings);
+  onMount(() => {
+    loadSettings();
+    loadProducts();
+  });
 
   async function loadSettings() {
     try {
@@ -44,6 +48,19 @@
       settings = data.settings;
     } catch (err) {
       settingsError = err.message || 'Failed to load label settings';
+    }
+  }
+
+  // Saved products are optional convenience data. A failure must never block
+  // label creation, so it stays silent and the form keeps manual GTIN entry.
+  async function loadProducts() {
+    try {
+      const response = await fetch('/api/products');
+      if (!response.ok) return;
+      const data = await response.json();
+      products = data.products || [];
+    } catch {
+      products = [];
     }
   }
 
@@ -209,6 +226,7 @@
             <LabelForm
               labelType={selectedLabelType}
               companyName={settings?.company_name || ''}
+              {products}
               onsubmit={handleSubmit}
               onback={changeWorkflow}
             />

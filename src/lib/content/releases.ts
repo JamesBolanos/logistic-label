@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-21-saved-products',
+    publishedAt: '2026-10-21',
+    category: 'new feature',
+    status: 'draft',
+    title: 'Save your products for faster labels',
+    benefit:
+      'Keep the products you ship often with their GTINs in Settings, then select one when creating a label to fill its GTIN. Shipment details stay on each label.',
+    featureKey: 'saved_products',
+    href: '/settings',
+    linkLabel: 'Manage saved products'
+  },
+  {
     id: '2026-10-20-data-export-excel',
     publishedAt: '2026-10-20',
     category: 'new feature',

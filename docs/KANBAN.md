@@ -16,7 +16,15 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
-None.
+### `PRODUCT-001` — Saved products for repeat label creation
+
+- Need: the proven repeat creator re-enters product data on every label despite a small set of known products; nothing in the product persists reference data. Private evidence: the dated usage reports in the git-ignored `usage_log/` directory.
+- Outcome: a small per-account product list — product name, internal reference, and GTIN — that pre-fills product fields when creating a label. Shipment-specific values (lot, date, count, weight, addresses) remain per-label entries and are never stored in the product list.
+- Acceptance: authenticated, owner-scoped product create/list/update/delete; GTIN validated by the same shared rules as the label form; selecting a product fills only product fields; deleting a product never changes saved labels, SSCCs, or template versions; measurement-plan event additions are implemented so analytics failures cannot block the workflow; a What's New entry is published and the guide mentions the product list.
+- Evidence planned: `npm run quality` (unit tests for API scoping, validation, and product pre-fill), the CI end-to-end job against a disposable branch covering product creation through a saved label, and a focused browser check of the picker and empty state.
+- Status: implementation complete on 2026-10-21. `npm run quality` passes (24 files, 177 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); migration `0009_rich_cable.sql` adds the product table with cascade delete, a list index, and the per-account GTIN unique index. The CI end-to-end run and a focused browser check of the picker still need the developer database migration, so the item stays here until those pass.
+- Dependencies: existing shared validation and label APIs; one new table and migration applied through the guarded procedure; measurement-plan event contract additions; no renderer, SSCC-allocation, or template-version change. Product deletion must never orphan label history.
+- Source: [Work Plan §4](./WORK_PLAN.md#4-improvements) and private usage reports (`usage_log/`, git-ignored).
 
 ## Review
 
@@ -32,7 +40,7 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 - Outcome: download a saved label as PDF or ZPL, selecting 203, 300, or 600 dpi for ZPL without allocating another SSCC.
 - Acceptance: authenticated, owner-scoped downloads; original template/layout and GS1 data preserved; supported printer resolutions use whole-dot barcode modules and checked quiet zones; user text cannot inject printer commands; visible download/retry controls; existing PDFs remain compatible; public guide explains PDF/ZPL downloads and the announcement appears in What's New and `/updates`.
 - Evidence: `npm run quality` passes (19 files, 112 unit tests, Vercel build); focused browser ZPL/PDF download and retry check passes; 11 representative PDFs match the original renderer byte-for-byte; built public pages `/`, `/updates`, and `/guide` render the ZPL announcement and guidance.
-- Status: prior review evidence retained; awaits developer closeout after the `PRINT-001` production release.
+- Status: prior review evidence retained; no AI implementation work remains; awaits developer closeout after the `PRINT-001` production release.
 - Release: release note enabled and public guidance complete in app content; ready for developer review, merge, and deployment.
 - Dependencies: existing saved-label/settings APIs and GS1 encoder; no migration, print bridge, or external rendering service. Physical printer verification remains `VERIFY-001`.
 - Architecture: includes the `ARCH-001` shared-layout extraction needed by this concrete export.
@@ -50,8 +58,8 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 | Order | ID             | Outcome                                                                                               | Why now                                                              | Detailed source                                                                      |
 | ----: | -------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-|     2 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
-|     3 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
+|     3 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
+|     4 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
 
 ## Backlog
 
@@ -60,7 +68,6 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `SEARCH-001`   | Existing labels      | Filter SSCC, GTIN, and lot search by creation date                                                             | Small user-facing improvement                                                                         |
 | `INSIGHT-001`  | Product evidence     | Review Search Console and accumulated product events, then adjust priorities                                   | Requires enough usage data; do not infer adoption from clicks alone                                   |
 | `FEEDBACK-002` | User research        | Interview or survey repeat creators, one-time creators, configured non-creators, and signup-only users         | Record task, printer, output, and obstacle without placing identities in Git                          |
-| `PRODUCT-001`  | Saved products       | Validate the need and smallest useful product list before building it                                          | Define product fields separately from shipment values                                                 |
 | `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                  | Depends on lifecycle rules from `DATA-001`                                                            |
 | `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                 | Existing `v1`–`v4` compatibility is the baseline                                                      |
 | `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                       | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides            |

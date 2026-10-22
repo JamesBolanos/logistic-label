@@ -131,6 +131,27 @@
   {/each}
 
   <section
+    id="saved-products"
+    class="scroll-mt-24 rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8"
+    aria-labelledby="saved-products-heading"
+  >
+    <h2 id="saved-products-heading" class="text-2xl font-bold text-gray-900">
+      Ship the same products often?
+    </h2>
+    <p class="mt-3 max-w-3xl text-gray-700">
+      Save your products with their GTINs in Settings, then select one when creating an
+      identical-contents label to fill its GTIN. Shipment details such as lot, date, count, and
+      addresses stay on each label.
+    </p>
+    <a
+      href="/settings"
+      class="mt-6 inline-flex rounded-md bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+    >
+      Manage saved products
+    </a>
+  </section>
+
+  <section
     id="download-formats"
     class="scroll-mt-24 rounded-2xl border border-blue-200 bg-blue-50 p-6 sm:p-8"
     aria-labelledby="download-formats-heading"

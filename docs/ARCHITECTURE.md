@@ -23,6 +23,7 @@
   - `auth/`: Better Auth mounted under `/api/auth/*`
   - `dashboard/`: aggregated dashboard data
   - `labels/`: create, list
+  - `products/`: manage the per-account saved product list that pre-fills the label form
   - `pdf/`: generate, preview, download
   - `zpl/`: download saved labels at the selected printer resolution
 
@@ -39,7 +40,7 @@
 ## Data layer
 
 - `src/lib/server/db/index.js` creates the Neon HTTP client and Drizzle database instance.
-- `src/lib/server/db/schema.js` defines Better Auth tables, user settings, logistic labels, and operational events.
+- `src/lib/server/db/schema.js` defines Better Auth tables, user settings, saved products, logistic labels, and operational events.
 - `drizzle/` contains SQL migrations.
 - Label rows are scoped by Better Auth user id.
 
@@ -58,6 +59,7 @@
 - `src/lib/server/pdf/gs1Barcode.js` encodes supported GS1 application identifiers as Code 128 / GS1-128 bar patterns.
 - `src/lib/labels/scenarios.js` defines the business-facing shipping situations and maps available choices to stable stored label types.
 - `src/lib/labels/workflows.js` defines the technical label types, transport vocabularies, packaging-level vocabulary, homogeneous date AIs, print layouts, and template versions.
+- Saved products are per-account reference data (name, internal reference, GTIN). Selecting one in the label form fills only the GTIN; shipment values remain on each label, and deleting a product never changes saved labels or SSCCs.
 - New records persist an explicit label type, template version, print layout, and the fields needed to reproduce the selected label. Existing `legacy_demo` / `v1` and guided `v2` records continue through their original renderers; transport labels use `v3` and structured homogeneous labels use `v4`.
 - The active preview and download endpoints generate PDF responses on demand. A legacy hash-preview reader can read short-lived files from `PREVIEW_STORAGE_PATH`; the current application does not write generated PDFs to `storage/pdf`.
 - GS1 SSCC allocation, reuse, responsibility, and nested logistic unit rules are tracked in `docs/GS1_REQUIREMENTS.md`.
