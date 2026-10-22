@@ -1,5 +1,6 @@
 <script>
   import { validateLabelForm } from '#lib/validation/formValidation.js';
+  import { trackProductEvent } from '#lib/analytics/client.ts';
   import { getAvailableScenarioForLabelType } from '#lib/labels/scenarios.js';
   import {
     DEFAULT_PRINT_LAYOUT,
@@ -13,7 +14,7 @@
     TRANSPORT_WEIGHT_UNITS
   } from '#lib/labels/workflows.js';
 
-  let { labelType, companyName = '', onsubmit, onback } = $props();
+  let { labelType, companyName = '', products = [], onsubmit, onback } = $props();
 
   let formData = $state({
     label_type: '',
@@ -37,6 +38,7 @@
   let errors = $state({});
   let formError = $state('');
   let companyNameApplied = $state(false);
+  let selectedProductId = $state('');
   let selectedScenario = $derived(getAvailableScenarioForLabelType(labelType));
 
   $effect(() => {
@@ -66,6 +68,20 @@
       formError = 'An unexpected error occurred. Please try again.';
     } finally {
       isLoading = false;
+    }
+  }
+
+  // A saved product pre-fills only the product field (GTIN). Shipment values
+  // stay per label, so changing the selection replaces the previous fill.
+  function applySelectedProduct(event) {
+    selectedProductId = event.currentTarget.value;
+    const selected = products.find((item) => String(item.id) === selectedProductId);
+
+    if (selected) {
+      formData.gtin = selected.gtin;
+      trackProductEvent('product_selected');
+    } else {
+      formData.gtin = '';
     }
   }
 </script>
@@ -410,6 +426,37 @@
           Ship From and Ship To are required. PO, carrier, and Gross Weight may be left empty.
         </p>
       </fieldset>
+
+      {#if products.length > 0}
+        <div>
+          <label for="saved_product" class="mb-1 block text-sm font-medium text-gray-700">
+            Use a saved product <span class="font-normal text-gray-500">(optional)</span>
+          </label>
+          <select
+            id="saved_product"
+            value={selectedProductId}
+            onchange={applySelectedProduct}
+            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Enter a GTIN manually</option>
+            {#each products as product (product.id)}
+              <option value={String(product.id)}>
+                {product.name}{product.internal_reference ? ` — ${product.internal_reference}` : ''}
+                ({product.gtin})
+              </option>
+            {/each}
+          </select>
+          <p class="mt-1 text-xs text-gray-500">
+            Selecting a product fills its GTIN below. Shipment details stay on each label.
+          </p>
+        </div>
+      {:else}
+        <p class="text-xs text-gray-500">
+          Save the products you ship often in
+          <a href="/settings" class="font-medium text-blue-600 hover:text-blue-500">Settings</a>
+          to fill their GTINs here.
+        </p>
+      {/if}
 
       <div>
         <label for="gtin" class="mb-1 block text-sm font-medium text-gray-700">

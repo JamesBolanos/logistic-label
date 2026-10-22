@@ -90,6 +90,18 @@ describe('analytics event contract', () => {
     );
   });
 
+  it('allows the saved-product events with controlled values only', () => {
+    expect(
+      sanitizeAnalyticsParameters('product_saved', {
+        setup_type: 'first_setup',
+        gtin: '04006381333931',
+        name: 'Blue case'
+      })
+    ).toEqual({ setup_type: 'first_setup' });
+    expect(sanitizeAnalyticsParameters('product_saved', { setup_type: 'later' })).toEqual({});
+    expect(sanitizeAnalyticsParameters('product_selected', { gtin: '04006381333931' })).toEqual({});
+  });
+
   it('classifies HTTP failures without exposing response contents', () => {
     expect(classifyHttpFailure(400)).toBe('validation');
     expect(classifyHttpFailure(401)).toBe('authentication');

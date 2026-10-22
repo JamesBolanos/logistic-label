@@ -16,42 +16,19 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
-None.
+### `PRODUCT-001` — Saved products for repeat label creation
+
+- Need: the proven repeat creator re-enters product data on every label despite a small set of known products; nothing in the product persists reference data. Private evidence: the dated usage reports in the git-ignored `usage_log/` directory.
+- Outcome: a small per-account product list — product name, internal reference, and GTIN — that pre-fills product fields when creating a label. Shipment-specific values (lot, date, count, weight, addresses) remain per-label entries and are never stored in the product list.
+- Acceptance: authenticated, owner-scoped product create/list/update/delete; GTIN validated by the same shared rules as the label form; selecting a product fills only product fields; deleting a product never changes saved labels, SSCCs, or template versions; measurement-plan event additions are implemented so analytics failures cannot block the workflow; a What's New entry is published and the guide mentions the product list.
+- Evidence planned: `npm run quality` (unit tests for API scoping, validation, and product pre-fill), the CI end-to-end job against a disposable branch covering product creation through a saved label, and a focused browser check of the picker and empty state.
+- Status: implementation complete on 2026-10-21. `npm run quality` passes (24 files, 177 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); migration `0009_rich_cable.sql` adds the product table with cascade delete, a list index, and the per-account GTIN unique index. The CI end-to-end run and a focused browser check of the picker still need the developer database migration, so the item stays here until those pass.
+- Dependencies: existing shared validation and label APIs; one new table and migration applied through the guarded procedure; measurement-plan event contract additions; no renderer, SSCC-allocation, or template-version change. Product deletion must never orphan label history.
+- Source: [Work Plan §4](./WORK_PLAN.md#4-improvements) and private usage reports (`usage_log/`, git-ignored).
 
 ## Review
 
-### `EXPORT-003` — Restore the label settings form removed by the Excel export
-
-- Need: pull request #39 replaced the Settings page with the Data Export card instead of adding to it, removing the company name, GS1 Company Prefix, extension digit, and next serial reference form and the LAN printer settings section. No UI remains that writes those values, so the onboarding step "Configure label settings" leads to a page without the form.
-- Outcome: the Settings page offers the label settings form, the LAN printer settings, and the Excel data export together.
-- Acceptance: the form loads the current values, validates and saves through `/api/settings`, reports "Label settings saved.", and offers the link to continue to a shipping situation; the Data Export download still works; the LAN printer settings section is rendered again.
-- Evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build). A local browser check against the development server confirms the form renders with all four fields plus the export button and the LAN printer section. The CI end-to-end job applies migrations to a fresh branch and all 8 tests pass, including the label-settings save and persistence path; the local check could not complete that path because the configured development database is three migrations behind.
-- Decisions: the export was meant to be added to the page, not to replace it, so the form is restored rather than the export removed. The Settings page is rebuilt with the Tailwind classes every other page uses, instead of the scoped stylesheet introduced with the export. The `/sign-in` redirect created by the same change now points to `/login`, which is the actual login route.
-- Root cause: pull request #39 merged with a failed Quality check and a skipped end-to-end job, so the removed form was never exercised. Pull request #40 is the first change where Quality passes, so the end-to-end suite ran and reported the missing fields.
-- Release: covered by the `data_export_excel` entry published with this change. No separate announcement is added for the restored form, because the removal was never announced and a notice about restoring it would confuse users who never saw it removed.
-- Dependencies: none; the settings API and persistence layer were never affected.
-- Delivery: reviewed and merged with `DEPS-001` in pull request #40, which also carries the SvelteKit 3 migration.
-
-### `DEPS-001` — SvelteKit 3 upgrade
-
-- Need: `@sveltejs/kit@3.0.0` was merged into `master`, but that release removed `svelte.config.js`, the `$lib` alias, and the `$env/dynamic/*` modules, so `npm run quality` and every build failed.
-- Outcome: the application builds, type-checks, and runs on SvelteKit 3 with configuration, internal imports, and environment variables expressed through the Kit 3 APIs.
-- Acceptance: the adapter is configured through the `sveltekit(...)` Vite plugin and `svelte.config.js` is deleted; internal imports use the `#lib` subpath alias with explicit file extensions; environment variables are declared in `src/env.js` and imported from `$app/env/private` and `$app/env/public`; `npm run quality` passes and the dev and preview servers serve the application.
-- Evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); dev and preview servers return HTTP 200 for `/`, `/login`, `/signup`, and `/privacy`; the public reCAPTCHA key reaches the browser payload in both modes and the private database variable resolves without warnings; every imported environment name is declared and no declaration is unused.
-- Decisions: `cookie` moves to 2.0.1, the version Kit 3 declares, after confirming the previous 1.1.1 pin was behaviorally identical for every function Kit uses; framework-level environment validators stay optional so `validateServerEnvironment()` remains the production gate; `json()` from `@sveltejs/kit` is retained because it also sets `content-length`.
-- Release: no user-visible behavior change, so no What's New entry is required.
-- Dependencies: none; the developer owns Git, pull-request, and merge actions.
-
-### `DELIVERY-002` — Developer database migration target in CI
-
-- Need: the CI migration job only offered the `staging` and `production` targets, so the database behind `.env.local` was never migrated by GitHub. It drifted three migrations behind the committed journal, and the migrations that add the label type and print bridge columns were missing.
-- Outcome: a manually dispatched `dev` target applies the committed migrations to the developer database in the non-production Neon project.
-- Acceptance: the dispatch offers `dev`; the job accepts only the reviewed `master` or `staging` Git branches, targets the existing non-production `main` branch, uses the non-production Neon credential, needs no confirmation, and refuses to create a missing branch; a wrong branch name fails with the list of available branches; the check list shows a plain job name instead of an unresolved expression, and the run reports the resolved target, project, branch, and database environment.
-- Evidence: the workflow file parses and passes the repository Prettier check; the `nonproduction` migration target and the `nonproduction` database environment pass the existing `resolveMigrationTarget` and `assertDatabaseEnvironment` guards; a read-only query confirmed the developer database is the non-production project `odd-recipe-33941658`. The dispatch itself can only run once `master` is healthy, so it is verified after the pull request merges.
-- Decisions: the target is named `dev` because it is the developer database rather than a deployed environment. It is restricted to the reviewed `master` and `staging` Git branches so unreviewed schema cannot reach the shared developer database. It requires no confirmation because the production project, credential, and confirmation field are never involved.
-- Release: no user-visible behavior change, so no What's New entry is required.
-- Dependencies: `DEPS-001`; the job checks out the dispatched ref and runs the migration tooling, so it needs a healthy `master`.
-- Delivery: reviewed with `DEPS-001` in pull request #40.
+None.
 
 ## Ready
 
@@ -63,7 +40,7 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 - Outcome: download a saved label as PDF or ZPL, selecting 203, 300, or 600 dpi for ZPL without allocating another SSCC.
 - Acceptance: authenticated, owner-scoped downloads; original template/layout and GS1 data preserved; supported printer resolutions use whole-dot barcode modules and checked quiet zones; user text cannot inject printer commands; visible download/retry controls; existing PDFs remain compatible; public guide explains PDF/ZPL downloads and the announcement appears in What's New and `/updates`.
 - Evidence: `npm run quality` passes (19 files, 112 unit tests, Vercel build); focused browser ZPL/PDF download and retry check passes; 11 representative PDFs match the original renderer byte-for-byte; built public pages `/`, `/updates`, and `/guide` render the ZPL announcement and guidance.
-- Status: prior review evidence retained; awaits developer closeout after the `PRINT-001` production release.
+- Status: prior review evidence retained; no AI implementation work remains; awaits developer closeout after the `PRINT-001` production release.
 - Release: release note enabled and public guidance complete in app content; ready for developer review, merge, and deployment.
 - Dependencies: existing saved-label/settings APIs and GS1 encoder; no migration, print bridge, or external rendering service. Physical printer verification remains `VERIFY-001`.
 - Architecture: includes the `ARCH-001` shared-layout extraction needed by this concrete export.
@@ -81,24 +58,24 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 | Order | ID             | Outcome                                                                                               | Why now                                                              | Detailed source                                                                      |
 | ----: | -------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-|     2 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
-|     3 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
+|     3 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
+|     4 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
 
 ## Backlog
 
-| ID             | Theme                | Desired outcome                                                                                                | Notes or dependency                                                                        |
-| -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `SEARCH-001`   | Existing labels      | Filter SSCC, GTIN, and lot search by creation date                                                             | Small user-facing improvement                                                              |
-| `INSIGHT-001`  | Product evidence     | Review Search Console and accumulated product events, then adjust priorities                                   | Requires enough usage data; do not infer adoption from clicks alone                        |
-| `FEEDBACK-002` | User research        | Interview or survey repeat creators, one-time creators, configured non-creators, and signup-only users         | Record task, printer, output, and obstacle without placing identities in Git               |
-| `PRODUCT-001`  | Saved products       | Validate the need and smallest useful product list before building it                                          | Define product fields separately from shipment values                                      |
-| `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                  | Depends on lifecycle rules from `DATA-001`                                                 |
-| `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                 | Existing `v1`–`v4` compatibility is the baseline                                           |
-| `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                       | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides |
-| `DELIVERY-001` | Migrations/releases  | Complete fresh and incremental migration verification, release gates, smoke checks, and recovery documentation | Detailed delivery backlog remains in the professional plan                                 |
-| `OPS-001`      | Operations           | Add privacy-safe error monitoring, structured logs, readiness/uptime checks, and alerts                        | Keep operational telemetry separate from product analytics                                 |
-| `SEC-001`      | Security             | Add `SECURITY.md`, scanning, secret rotation, access review, and auth/header/database review                   | Prioritize before commercial expansion                                                     |
-| `RECOVERY-001` | Continuity           | Document provider recovery limits and run a non-production restore drill; add incident and outage runbooks     | Do not copy production personal data into the drill                                        |
+| ID             | Theme                | Desired outcome                                                                                                | Notes or dependency                                                                                   |
+| -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `SEARCH-001`   | Existing labels      | Filter SSCC, GTIN, and lot search by creation date                                                             | Small user-facing improvement                                                                         |
+| `INSIGHT-001`  | Product evidence     | Review Search Console and accumulated product events, then adjust priorities                                   | Requires enough usage data; do not infer adoption from clicks alone                                   |
+| `FEEDBACK-002` | User research        | Interview or survey repeat creators, one-time creators, configured non-creators, and signup-only users         | Record task, printer, output, and obstacle without placing identities in Git                          |
+| `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                  | Depends on lifecycle rules from `DATA-001`                                                            |
+| `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                 | Existing `v1`–`v4` compatibility is the baseline                                                      |
+| `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                       | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides            |
+| `DELIVERY-001` | Migrations/releases  | Complete fresh and incremental migration verification, release gates, smoke checks, and recovery documentation | Detailed delivery backlog remains in the professional plan                                            |
+| `DELIVERY-003` | Migrations/releases  | Keep `staging` current with `master` and detect a stale staging deployment before it serves outdated code      | The `staging` branch fell sixteen commits behind in October 2026 and served a seventeen-day-old build |
+| `OPS-001`      | Operations           | Add privacy-safe error monitoring, structured logs, readiness/uptime checks, and alerts                        | Keep operational telemetry separate from product analytics                                            |
+| `SEC-001`      | Security             | Add `SECURITY.md`, scanning, secret rotation, access review, and auth/header/database review                   | Prioritize before commercial expansion                                                                |
+| `RECOVERY-001` | Continuity           | Document provider recovery limits and run a non-production restore drill; add incident and outage runbooks     | Do not copy production personal data into the drill                                                   |
 
 ## Blocked or Deferred
 
@@ -109,6 +86,26 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                       | Repeated user/customer need or contractual requirement        |
 
 ## Accomplished
+
+### `EXPORT-003` — Restore the label settings form removed by the Excel export
+
+- Outcome: the Settings page offers the label settings form, the LAN printer settings, and the Excel data export together.
+- Acceptance evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); the CI end-to-end job applies migrations to a fresh branch and all 8 tests pass, including the label-settings save and persistence path; a local browser check confirms the form renders with all four fields, the Data Export button, and the LAN printer section.
+- Release evidence: merged into `master` in pull request #40 on 2026-10-21 (commit `fa11edd`) and promoted to `staging` in pull request #41. The restored form is covered by the `data_export_excel` What's New entry; no separate announcement was published because the removal was never announced.
+- Root cause: pull request #39 merged with a failed Quality check and a skipped end-to-end job, so the removed form was never exercised.
+
+### `DEPS-001` — SvelteKit 3 upgrade
+
+- Outcome: the application builds, type-checks, and runs on `@sveltejs/kit@3.0.0`; the `config_file_unsupported` failure that broke every build is resolved.
+- Acceptance evidence: `npm run quality` passes (22 files, 151 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); dev and preview servers return HTTP 200 for `/`, `/login`, `/signup`, and `/privacy`; the public reCAPTCHA key reaches the browser payload in both modes and the private database variable resolves without warnings.
+- Release evidence: merged into `master` in pull request #40 on 2026-10-21 (commit `fa11edd`) and promoted to `staging` in pull request #41. No user-visible behavior change, so no What's New entry was required.
+
+### `DELIVERY-002` — Developer database migration target in CI
+
+- Outcome: a manually dispatched `dev` target applies the committed migrations to the developer database in the non-production Neon project.
+- Acceptance evidence: the dispatch offers `dev`; the job accepts only the reviewed `master` or `staging` Git branches, targets the existing non-production `main` branch, uses the non-production Neon credential, needs no confirmation, and refuses to create a missing branch; a wrong branch name fails with the list of available branches; the run reports the resolved target, project, branch, and database environment. The `nonproduction` migration target and database environment pass the existing `resolveMigrationTarget` and `assertDatabaseEnvironment` guards.
+- Release evidence: merged into `master` in pull request #40 on 2026-10-21 (commit `fa11edd`). On 2026-10-21 the developer dispatched the `dev` target from `master` and the migration applied successfully; the developer database then reported nine applied migrations and the `print_bridge_host`, `print_bridge_port`, `printer_hostname`, `printer_port`, and `printer_dpi` columns on `label_settings`. The same guarded job applied the pending staging migration after pull request #41.
+- Decisions: the target is named `dev` because the database is the developer one rather than a deployed environment. It is restricted to the reviewed `master` and `staging` Git branches so unreviewed schema cannot reach the shared developer database. It requires no confirmation because the production project, credential, and confirmation field are never involved.
 
 ### `EXPORT-001` — Download all user data as Excel
 

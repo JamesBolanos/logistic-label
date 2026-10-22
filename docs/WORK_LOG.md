@@ -15,6 +15,32 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-21 — `PRODUCT-001` — Saved products implemented
+
+- Result: per-account saved products (product name, internal reference, GTIN) with a Settings manager, an owner-scoped `/api/products` API, and a label-form picker that fills the GTIN of an identical-contents label.
+- Decisions: products store the padded 14-digit GTIN and are unique per account (`product_user_gtin_uidx`), so duplicate GTINs return a friendly validation error instead of a database failure. Selecting a product fills only the GTIN; shipment values stay per label, and deleting a product never touches saved labels or SSCCs. `product_saved` is recorded server-side as first product or update and mirrored in the browser, `product_selected` records picker adoption, and analytics failures never block the workflow. The What's New entry stays draft until release.
+- Material files: `src/lib/server/db/schema.js`, `src/lib/server/db/products.js` (+ `.d.ts`), `src/routes/api/products/`, `src/lib/components/Labels/SavedProducts.svelte`, `src/lib/components/Labels/LabelForm.svelte`, `src/routes/labels/+page.svelte`, `src/routes/settings/+page.svelte`, `src/routes/guide/+page.svelte`, `src/lib/analytics/events.ts`, `src/lib/server/analytics/operationalEvents.js`, `src/lib/content/releases.ts`, `drizzle/0009_rich_cable.sql` plus snapshot and journal, the new unit and end-to-end tests, the cleanup helper, `docs/analytics/MEASUREMENT_PLAN.md`, `docs/ARCHITECTURE.md`, and `docs/KANBAN.md`.
+- Validation: `npm run quality` passes (24 files, 177 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); dev-server smoke checks returned HTTP 200 for `/`, `/guide`, `/updates`, and `/privacy`, redirects for protected pages, the guide section renders, and the draft release note stays hidden. The new end-to-end spec awaits the CI disposable-branch run; no database migration was applied by this session.
+- Next: the developer applies migration `0009` to the developer database, opens the pull request so CI runs the end-to-end suite, and performs the focused browser check of the picker before the item moves to Review.
+
+## 2026-10-21 — `PRODUCT-001` — Saved products selected as the next feature
+
+- Result: the owner reviewed the board, work plan, work log, and the private September usage evidence, then chose saved products as the next implementable feature. `PRODUCT-001` moved from Backlog to the first Ready item with need, outcome, acceptance evidence, and dependencies defined; `EXPORT-002` stays in Ready as a developer closeout with no remaining AI implementation work, and `DATA-001`/`FEEDBACK-001` follow it.
+- Decisions: the product list stays minimal — product name, internal reference, GTIN — and is stored separately from label rows; selecting a product pre-fills only product fields, while shipment-specific values remain per-label entries; deleting a product never touches saved labels, SSCCs, or template versions. Measurement-plan event additions and a What's New entry are part of the item, not follow-ups.
+- Evidence: the decision used the dated private usage reports in the git-ignored `usage_log/` directory (one repeat creator re-entering a small set of products on most labels, most external users stopping before or at first label). Fresh production aggregates were not pulled for the decision because the production database credential is a Vercel sensitive variable the CLI cannot export; the owner can compare this decision against `/admin/statistics` and a dated usage report when one is next saved.
+- Material files: `docs/KANBAN.md` only. No code, schema, or migration change.
+- Validation: documentation-only change; Markdown links and formatting kept valid. No E2E needed.
+- Next: developer review of the item definition, then an implementation session moves `PRODUCT-001` into Work in progress.
+
+## 2026-10-21 — `DELIVERY-002` — Developer database migration and staging promotion
+
+- Result: the developer database and the staging database are both migrated to the committed journal, and `staging.sscc-labels.com` serves the current release again.
+- Diagnosis: the `staging` Git branch had been left at pull request #30 from 2026-10-05, so the Vercel Preview deployment behind `staging.sscc-labels.com` was seventeen days old and was missing the LAN print bridge feature, the Excel export, the SvelteKit 3 migration, and the restored label settings form. The staging database had also not been migrated since 2026-09-29, so migration `0008` and the five printer columns on `label_settings` were missing there. The `dev` dispatch updated the developer database only, because it targets a different Neon branch.
+- Decisions: promote `master` to `staging` with pull request #41 instead of merging the individual features, because `staging` was a strict ancestor of `master` and one promotion carried every pending change with no unrelated work to reconcile. The staging migration was dispatched immediately after the merge, so the interval in which the new code ran against the old schema was about one minute. Migration `0008` only adds columns with defaults, so it is backward-compatible with the code that was deployed on staging.
+- Material files: `docs/KANBAN.md` records the closed items. No application code, schema, or migration file changed.
+- Validation: pull request #41 passed GitHub Quality and the isolated end-to-end job; the staging migration run reported the resolved target and then "migrations applied successfully"; `staging.sscc-labels.com` now resolves to the `git-staging` preview deployment created from the promotion, with the Vercel deployment status Ready; the developer database reports nine applied migrations and the five printer columns on `label_settings`. The staging pages themselves sit behind Vercel deployment protection, so a browser smoke test by the developer is still outstanding.
+- Next: the developer confirms the staging pages in a browser, and the next feature is promoted to `staging` before it reaches `master`.
+
 ## 2026-10-21 — `DELIVERY-002` — Developer database migration target in CI
 
 - Result: the CI workflow now offers a `dev` migration target. A manually dispatched run applies the committed migrations to the developer database in the non-production Neon project, which until now no target could reach.

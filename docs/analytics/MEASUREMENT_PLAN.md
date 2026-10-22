@@ -37,6 +37,8 @@ Measure whether people reach a useful logistic-label outcome, where workflows fa
 | `sign_up`                 | Better Auth user creation hook                                              | Authentication method                        |
 | `login`                   | Better Auth session creation hook                                           | Authentication method                        |
 | `company_settings_saved`  | Successful settings persistence                                             | First setup or update                        |
+| `product_saved`           | Successful saved-product persistence                                        | First product or update                      |
+| `product_selected`        | A saved product fills the label form                                        | None                                         |
 | `label_preview_succeeded` | Successful preview PDF response                                             | Label type, size, template version, duration |
 | `label_saved`             | Successful label insert                                                     | Label type, size, template version, duration |
 | `pdf_response_succeeded`  | Successful saved-label PDF response                                         | PDF format, new/history source, duration     |

@@ -28,6 +28,7 @@ export async function recordOperationalEvent(input) {
           'sign_up',
           'login',
           'settings_save',
+          'product_save',
           'label_preview',
           'label_save',
           'pdf_response',
