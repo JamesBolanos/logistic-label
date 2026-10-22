@@ -12,13 +12,29 @@
   let isLoading = $state(true);
   let listError = $state('');
 
-  let formData = $state({ name: '', internal_reference: '', gtin: '' });
+  const NET_CONTENT_UNITS = ['g', 'kg', 'mg', 'lb', 'oz', 'ml', 'l', 'fl oz', 'units', 'm', 'cm'];
+
+  let formData = $state({
+    name: '',
+    brand: '',
+    internal_reference: '',
+    gtin: '',
+    net_content_value: '',
+    net_content_unit: ''
+  });
   let errors = $state({});
   let isSaving = $state(false);
   let formError = $state('');
 
   let editingId = $state(null);
-  let editData = $state({ name: '', internal_reference: '', gtin: '' });
+  let editData = $state({
+    name: '',
+    brand: '',
+    internal_reference: '',
+    gtin: '',
+    net_content_value: '',
+    net_content_unit: ''
+  });
   let editErrors = $state({});
   let editSaving = $state(false);
 
@@ -27,6 +43,34 @@
 
   let gtinWarning = $derived(gtinWarningFor(formData.gtin));
   let editGtinWarning = $derived(editingId === null ? '' : gtinWarningFor(editData.gtin));
+
+  function formatNetContent(product) {
+    const value = product.net_content_value;
+    const unit = product.net_content_unit;
+    if (value && unit) return `${value} ${unit}`;
+    if (value) return value;
+    if (unit) return unit;
+    return '';
+  }
+
+  function formatProductMetaLine(product) {
+    const parts = [];
+    if (product.brand) parts.push(`Brand: ${product.brand}`);
+    if (product.gtin) parts.push(`GTIN: ${product.gtin}`);
+    const netContent = formatNetContent(product);
+    if (netContent) parts.push(netContent);
+    if (!parts.length && product.internal_reference) parts.push(`Reference: ${product.internal_reference}`);
+    if (!parts.length) return '';
+    let line = parts.join(' · ');
+    if (product.internal_reference && !(product.brand || netContent)) {
+      line = `${line} · Reference: ${product.internal_reference}`;
+    } else if (product.internal_reference && (product.brand || netContent)) {
+      line = `${line} · Reference: ${product.internal_reference}`;
+    }
+    // Keep reference visible if it's the only extra info beyond what's already shown? 
+    // We'll show reference separately if present and not duplicating in a weird way
+    return line;
+  }
 
   onMount(loadProducts);
 
@@ -80,7 +124,7 @@
       }
 
       products = [data.product, ...products];
-      formData = { name: '', internal_reference: '', gtin: '' };
+      formData = { name: '', brand: '', internal_reference: '', gtin: '', net_content_value: '', net_content_unit: '' };
       trackProductEvent('product_saved', { setup_type: data.setupType });
     } catch (error) {
       formError = error.message || 'Failed to save product';
@@ -98,8 +142,11 @@
     editingId = product.id;
     editData = {
       name: product.name,
+      brand: product.brand || '',
       internal_reference: product.internal_reference || '',
-      gtin: product.gtin
+      gtin: product.gtin,
+      net_content_value: product.net_content_value || '',
+      net_content_unit: product.net_content_unit || ''
     };
     editErrors = {};
     confirmDeleteId = null;
@@ -107,7 +154,14 @@
 
   function cancelEdit() {
     editingId = null;
-    editData = { name: '', internal_reference: '', gtin: '' };
+    editData = {
+      name: '',
+      brand: '',
+      internal_reference: '',
+      gtin: '',
+      net_content_value: '',
+      net_content_unit: ''
+    };
     editErrors = {};
   }
 
@@ -234,70 +288,124 @@
                 }}
                 class="space-y-3"
               >
-                <div class="grid gap-3 sm:grid-cols-3">
-                  <div>
-                    <label
-                      for="edit_name_{product.id}"
-                      class="mb-1 block text-sm font-medium text-muted-foreground"
-                    >
-                      Product Name
-                    </label>
-                    <input
-                      id="edit_name_{product.id}"
-                      type="text"
-                      bind:value={editData.name}
-                      maxlength="120"
-                      required
-                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    {#if editErrors.name}
-                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.name}</p>
-                    {/if}
+                <div class="space-y-3">
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label
+                        for="edit_name_{product.id}"
+                        class="mb-1 block text-sm font-medium text-muted-foreground"
+                      >
+                        Product Name <span class="text-red-600 dark:text-red-400">*</span>
+                      </label>
+                      <input
+                        id="edit_name_{product.id}"
+                        type="text"
+                        bind:value={editData.name}
+                        maxlength="120"
+                        required
+                        class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {#if editErrors.name}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.name}</p>
+                      {/if}
+                    </div>
+                    <div>
+                      <label
+                        for="edit_brand_{product.id}"
+                        class="mb-1 block text-sm font-medium text-muted-foreground"
+                      >
+                        Brand Name <span class="font-normal text-subtle-foreground">(optional)</span>
+                      </label>
+                      <input
+                        id="edit_brand_{product.id}"
+                        type="text"
+                        bind:value={editData.brand}
+                        maxlength="120"
+                        autocomplete="off"
+                        class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {#if editErrors.brand}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.brand}</p>
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label
+                        for="edit_gtin_{product.id}"
+                        class="mb-1 block text-sm font-medium text-muted-foreground"
+                      >
+                        GTIN <span class="text-red-600 dark:text-red-400">*</span>
+                      </label>
+                      <input
+                        id="edit_gtin_{product.id}"
+                        type="text"
+                        inputmode="numeric"
+                        bind:value={editData.gtin}
+                        maxlength="14"
+                        required
+                        class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {#if editErrors.gtin}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.gtin}</p>
+                      {/if}
+                      {#if editGtinWarning}
+                        <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                          {editGtinWarning}
+                        </p>
+                      {/if}
+                    </div>
+                    <div>
+                      <label
+                        for="edit_reference_{product.id}"
+                        class="mb-1 block text-sm font-medium text-muted-foreground"
+                      >
+                        Internal Reference/SKU <span class="font-normal text-subtle-foreground">(optional)</span>
+                      </label>
+                      <input
+                        id="edit_reference_{product.id}"
+                        type="text"
+                        bind:value={editData.internal_reference}
+                        maxlength="50"
+                        autocomplete="off"
+                        class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {#if editErrors.internal_reference}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                          {editErrors.internal_reference}
+                        </p>
+                      {/if}
+                    </div>
                   </div>
                   <div>
-                    <label
-                      for="edit_reference_{product.id}"
-                      class="mb-1 block text-sm font-medium text-muted-foreground"
-                    >
-                      Internal Reference
-                    </label>
-                    <input
-                      id="edit_reference_{product.id}"
-                      type="text"
-                      bind:value={editData.internal_reference}
-                      maxlength="50"
-                      autocomplete="off"
-                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    {#if editErrors.internal_reference}
-                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {editErrors.internal_reference}
-                      </p>
+                    <span class="mb-1 block text-sm font-medium text-muted-foreground">
+                      Net Content <span class="font-normal text-subtle-foreground">(optional)</span>
+                    </span>
+                    <div class="grid grid-cols-[1fr_auto] gap-2 sm:max-w-md">
+                      <input
+                        type="text"
+                        inputmode="decimal"
+                        bind:value={editData.net_content_value}
+                        placeholder="500"
+                        aria-label="Net content value"
+                        class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <select
+                        bind:value={editData.net_content_unit}
+                        aria-label="Net content unit"
+                        class="rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-foreground"
+                      >
+                        <option value="">Unit</option>
+                        {#each NET_CONTENT_UNITS as unit (unit)}
+                          <option value={unit}>{unit}</option>
+                        {/each}
+                      </select>
+                    </div>
+                    {#if editErrors.net_content_value}
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.net_content_value}</p>
                     {/if}
-                  </div>
-                  <div>
-                    <label
-                      for="edit_gtin_{product.id}"
-                      class="mb-1 block text-sm font-medium text-muted-foreground"
-                    >
-                      GTIN
-                    </label>
-                    <input
-                      id="edit_gtin_{product.id}"
-                      type="text"
-                      inputmode="numeric"
-                      bind:value={editData.gtin}
-                      maxlength="14"
-                      required
-                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    {#if editErrors.gtin}
-                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.gtin}</p>
-                    {/if}
-                    {#if editGtinWarning}
-                      <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
-                        {editGtinWarning}
-                      </p>
+                    {#if editErrors.net_content_unit}
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.net_content_unit}</p>
                     {/if}
                   </div>
                 </div>
@@ -323,9 +431,26 @@
                 <div>
                   <p class="text-sm font-medium text-foreground">{product.name}</p>
                   <p class="text-sm text-muted-foreground">
-                    GTIN {product.gtin}
+                    {#if product.brand}
+                      Brand: {product.brand}
+                      {#if product.gtin || formatNetContent(product) || product.internal_reference}
+                        ·
+                      {/if}
+                    {/if}
+                    {#if product.gtin}
+                      GTIN: {product.gtin}
+                      {#if formatNetContent(product) || product.internal_reference}
+                        ·
+                      {/if}
+                    {/if}
+                    {#if formatNetContent(product)}
+                      {formatNetContent(product)}
+                      {#if product.internal_reference}
+                        ·
+                      {/if}
+                    {/if}
                     {#if product.internal_reference}
-                      · Reference {product.internal_reference}
+                      Reference: {product.internal_reference}
                     {/if}
                   </p>
                   {#if product.gs1_valid === false}
@@ -384,61 +509,112 @@
       class="space-y-3 border-t border-border-default pt-4"
     >
       <h3 class="text-sm font-semibold text-foreground">Add a product</h3>
-      <div class="grid gap-3 sm:grid-cols-3">
-        <div>
-          <label for="product_name" class="mb-1 block text-sm font-medium text-muted-foreground">
-            Product Name
-          </label>
-          <input
-            id="product_name"
-            type="text"
-            bind:value={formData.name}
-            maxlength="120"
-            required
-            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {#if errors.name}
-            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
-          {/if}
+      <div class="space-y-3">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label for="product_name" class="mb-1 block text-sm font-medium text-muted-foreground">
+              Product Name <span class="text-red-600 dark:text-red-400">*</span>
+            </label>
+            <input
+              id="product_name"
+              type="text"
+              bind:value={formData.name}
+              maxlength="120"
+              required
+              class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.name}
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+            {/if}
+          </div>
+          <div>
+            <label for="product_brand" class="mb-1 block text-sm font-medium text-muted-foreground">
+              Brand Name <span class="font-normal text-subtle-foreground">(optional)</span>
+            </label>
+            <input
+              id="product_brand"
+              type="text"
+              bind:value={formData.brand}
+              maxlength="120"
+              autocomplete="off"
+              class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.brand}
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.brand}</p>
+            {/if}
+          </div>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label for="product_gtin" class="mb-1 block text-sm font-medium text-muted-foreground">
+              GTIN <span class="text-red-600 dark:text-red-400">*</span>
+            </label>
+            <input
+              id="product_gtin"
+              type="text"
+              inputmode="numeric"
+              bind:value={formData.gtin}
+              maxlength="14"
+              placeholder="00123456789012"
+              required
+              class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.gtin}
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.gtin}</p>
+            {/if}
+            {#if gtinWarning}
+              <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">{gtinWarning}</p>
+            {/if}
+          </div>
+          <div>
+            <label
+              for="product_reference"
+              class="mb-1 block text-sm font-medium text-muted-foreground"
+            >
+              Internal Reference/SKU <span class="font-normal text-subtle-foreground">(optional)</span>
+            </label>
+            <input
+              id="product_reference"
+              type="text"
+              bind:value={formData.internal_reference}
+              maxlength="50"
+              autocomplete="off"
+              class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {#if errors.internal_reference}
+              <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.internal_reference}</p>
+            {/if}
+          </div>
         </div>
         <div>
-          <label
-            for="product_reference"
-            class="mb-1 block text-sm font-medium text-muted-foreground"
-          >
-            Internal Reference <span class="font-normal text-subtle-foreground">(optional)</span>
-          </label>
-          <input
-            id="product_reference"
-            type="text"
-            bind:value={formData.internal_reference}
-            maxlength="50"
-            autocomplete="off"
-            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {#if errors.internal_reference}
-            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.internal_reference}</p>
+          <span class="mb-1 block text-sm font-medium text-muted-foreground">
+            Net Content <span class="font-normal text-subtle-foreground">(optional)</span>
+          </span>
+          <div class="grid grid-cols-[1fr_auto] gap-2 sm:max-w-md">
+            <input
+              type="text"
+              inputmode="decimal"
+              bind:value={formData.net_content_value}
+              placeholder="500"
+              aria-label="Net content value"
+              class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <select
+              bind:value={formData.net_content_unit}
+              aria-label="Net content unit"
+              class="rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-foreground"
+            >
+              <option value="">Unit</option>
+              {#each NET_CONTENT_UNITS as unit (unit)}
+                <option value={unit}>{unit}</option>
+              {/each}
+            </select>
+          </div>
+          {#if errors.net_content_value}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.net_content_value}</p>
           {/if}
-        </div>
-        <div>
-          <label for="product_gtin" class="mb-1 block text-sm font-medium text-muted-foreground"
-            >GTIN</label
-          >
-          <input
-            id="product_gtin"
-            type="text"
-            inputmode="numeric"
-            bind:value={formData.gtin}
-            maxlength="14"
-            placeholder="00123456789012"
-            required
-            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {#if errors.gtin}
-            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.gtin}</p>
-          {/if}
-          {#if gtinWarning}
-            <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">{gtinWarning}</p>
+          {#if errors.net_content_unit}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.net_content_unit}</p>
           {/if}
         </div>
       </div>

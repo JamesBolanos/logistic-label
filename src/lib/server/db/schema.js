@@ -145,11 +145,14 @@ export const product = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 120 }).notNull(),
+    brand: varchar('brand', { length: 120 }),
     internalReference: varchar('internal_reference', { length: 50 }),
     gtin: varchar('gtin', { length: 14 }).notNull(),
     // Records whether the stored number passes the GS1 check digit. Reference
     // data may keep an uncorrected number; labels still reject invalid GTINs.
     gs1Valid: boolean('gs1_valid').notNull().default(false),
+    netContentValue: varchar('net_content_value', { length: 32 }),
+    netContentUnit: varchar('net_content_unit', { length: 12 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
   },

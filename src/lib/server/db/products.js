@@ -5,8 +5,25 @@ import { validateGTIN } from '#lib/utils/gs1Utils.js';
 
 const MAX_PRODUCTS_PER_USER = 100;
 const MAX_NAME_LENGTH = 120;
+const MAX_BRAND_LENGTH = 120;
 const MAX_REFERENCE_LENGTH = 50;
+const MAX_NET_CONTENT_VALUE_LENGTH = 32;
+const MAX_NET_CONTENT_UNIT_LENGTH = 12;
 const PRODUCT_NUMBER_PATTERN = /^(?:\d{8}|\d{12}|\d{13}|\d{14})$/;
+
+const NET_CONTENT_UNITS = new Set([
+  'g',
+  'kg',
+  'mg',
+  'lb',
+  'oz',
+  'ml',
+  'l',
+  'fl oz',
+  'units',
+  'm',
+  'cm'
+]);
 
 /**
  * List the signed-in user's saved products, newest first. The list feeds the
@@ -126,6 +143,16 @@ export function validateProductData(data, { partial = false } = {}) {
     }
   }
 
+  const hasBrand = data?.brand !== undefined;
+  if (hasBrand || !partial) {
+    const brand = normalizeSingleLine(data?.brand);
+    if (brand && brand.length > MAX_BRAND_LENGTH) {
+      errors.brand = `Brand must be ${MAX_BRAND_LENGTH} characters or fewer`;
+    } else {
+      values.brand = brand || null;
+    }
+  }
+
   const hasReference = data?.internal_reference !== undefined;
   if (hasReference || !partial) {
     const reference = normalizeSingleLine(data?.internal_reference);
@@ -149,6 +176,38 @@ export function validateProductData(data, { partial = false } = {}) {
       // their own GTIN. Pad to the 14-digit form the renderer encodes.
       values.gtin = gtin.padStart(14, '0');
       values.gs1Valid = validateGTIN(gtin);
+    }
+  }
+
+  const hasNetContentValue = data?.net_content_value !== undefined;
+  const hasNetContentUnit = data?.net_content_unit !== undefined;
+  if (hasNetContentValue || hasNetContentUnit || !partial) {
+    const netContentValueRaw = normalizeSingleLine(data?.net_content_value);
+    const netContentUnitRaw = normalizeSingleLine(data?.net_content_unit);
+
+    if (netContentValueRaw && !/^-?\d*\.?\d+$/.test(netContentValueRaw.replace(/,/g, '.'))) {
+      errors.net_content_value = 'Net content value must be a number';
+    } else if (netContentValueRaw && netContentValueRaw.length > MAX_NET_CONTENT_VALUE_LENGTH) {
+      errors.net_content_value = `Net content value must be ${MAX_NET_CONTENT_VALUE_LENGTH} characters or fewer`;
+    }
+
+    if (netContentUnitRaw && !NET_CONTENT_UNITS.has(netContentUnitRaw)) {
+      errors.net_content_unit = 'Select a valid unit of measure';
+    }
+
+    if (netContentValueRaw && !netContentUnitRaw) {
+      errors.net_content_unit = 'Select a unit of measure for the net content value';
+    }
+
+    if (netContentUnitRaw && !netContentValueRaw) {
+      errors.net_content_value = 'Enter a net content value';
+    }
+
+    if (!errors.net_content_value && !errors.net_content_unit) {
+      if (hasNetContentValue || hasNetContentUnit || !partial) {
+        values.netContentValue = netContentValueRaw || null;
+        values.netContentUnit = netContentUnitRaw || null;
+      }
     }
   }
 
@@ -207,9 +266,12 @@ function toApiProduct(row) {
   return {
     id: row.id,
     name: row.name,
+    brand: row.brand,
     internal_reference: row.internalReference,
     gtin: row.gtin,
     gs1_valid: row.gs1Valid,
+    net_content_value: row.netContentValue,
+    net_content_unit: row.netContentUnit,
     created_at: row.createdAt?.toISOString?.() || row.createdAt,
     updated_at: row.updatedAt?.toISOString?.() || row.updatedAt
   };
