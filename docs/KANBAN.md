@@ -16,19 +16,19 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
+None.
+
+## Review
+
 ### `PRODUCT-001` — Saved products for repeat label creation
 
 - Need: the proven repeat creator re-enters product data on every label despite a small set of known products; nothing in the product persists reference data. Private evidence: the dated usage reports in the git-ignored `usage_log/` directory.
 - Outcome: a small per-account product list — product name, internal reference, and GTIN — that pre-fills product fields when creating a label. Shipment-specific values (lot, date, count, weight, addresses) remain per-label entries and are never stored in the product list.
 - Acceptance: authenticated, owner-scoped product create/list/update/delete; the product number must contain 8, 12, 13, or 14 digits, and a failed GS1 check digit is a visible warning that does not block saving while a stored `gs1_valid` flag records whether the number is a valid GS1 code; labels keep rejecting invalid GTINs; selecting a product fills only product fields; deleting a product never changes saved labels, SSCCs, or template versions; measurement-plan event additions are implemented so analytics failures cannot block the workflow; a What's New entry is published and the guide mentions the product list.
 - Evidence planned: `npm run quality` (unit tests for API scoping, validation, and product pre-fill), the CI end-to-end job against a disposable branch covering product creation through a saved label, and a focused browser check of the picker and empty state.
-- Status: returned to Work in Progress for an owner-requested change on 2026-10-21. The first increment is verified in CI (run 39707668320) and deployed to staging through pull request #44 (merge commit `3afd0cf`), with migration `0009` applied by the guarded staging dispatch (run 39708947039) after the merge. The owner asked to keep the GS1 check-digit warning but allow saving the product with a stored flag that records GS1 validity. Outstanding after this increment: the staging browser check, migration `0009` on the developer database, and the guarded production migration before any merge into `master`.
+- Status: both increments are verified in CI and deployed to staging. The first is pull request #44 (merge commit `3afd0cf`), with migration `0009` applied by the guarded staging dispatch (run 39708947039). The owner-requested GS1 flag is pull request #46 (merge commit `1170df0`): the check-digit warning no longer blocks saving, and the `gs1_valid` column records GS1 validity, backfilled by migration `0010` (applied by guarded dispatch run 39710319104), verified by `npm run quality` (24 files, 179 unit tests) and CI run 39710106289. `staging.sscc-labels.com` serves the new deployment with no products errors recorded after the migration. Outstanding: the staging browser check of the uncorrected-number flow, migrations `0009`+`0010` on the developer database, and the guarded production migration before any merge into `master`.
 - Dependencies: existing shared validation and label APIs; one new table and migration applied through the guarded procedure; measurement-plan event contract additions; no renderer, SSCC-allocation, or template-version change. Product deletion must never orphan label history.
 - Source: [Work Plan §4](./WORK_PLAN.md#4-improvements) and private usage reports (`usage_log/`, git-ignored).
-
-## Review
-
-None.
 
 ## Ready
 
