@@ -15,13 +15,21 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-22 — `UX-002`/`UX-003`/`PRODUCT-001` — Production release
+
+- Result: the app shell, dedicated product and printer pages, saved products with brand and net content, and validated label settings are live on `www.sscc-labels.com`. Release notes for the app shell, saved products, and settings validation are published and visible on production `/updates`.
+- Release evidence: production migrations `0009`–`0011` were applied from the reviewed `staging` tip (`b8da923`) by guarded run 39882279880 before merge. Release PR #48 passed Quality and E2E (run 39882274786), was squash-merged as `56c1a7f`, and Vercel Production deployed it. The `master` push CI run also passed. Anonymous production checks return 200 for `/` and `/updates` and redirects for the application routes.
+- Decisions: the saved-products note was published with the release and its destination corrected from `/settings` to `/products`; a separate fix note was added for inline settings validation. Production ledger verification was indirect: the previous production migration run (38948947047) applied the `master` migration set ending at `0008`, and no later production migration ran before this release.
+- Remaining: developer-authenticated production smoke (settings save, product create/edit, label history downloads). The developer database migrations `0009`–`0011` were applied by guarded run 39882741690.
+- Material files: `src/lib/content/releases.ts`, `docs/KANBAN.md`.
+
 ## 2026-10-22 — `UX-003` — Settings form fix and local end-to-end verification
 
 - Result: `/settings` renders and saves again, and the full Playwright suite passes locally (9/9) against the developer Neon branch. The blocker was the Superforms adapter: `zod@4` was paired with the Zod v3 adapter, so `/settings` returned 500 and the label-preview and products specs timed out.
 - Decisions: `labelSettingsSchema` mirrors `validateLabelSettings` — 4–12 digit company prefix and the prefix-dependent serial ceiling — so invalid input is reported inline instead of as a save failure. The unused `productSchema` was deleted; product validation stays in `src/lib/server/db/products.js`. The settings form action records the same `company_settings_saved`/`workflow_failed` operational events as `POST /api/settings` and derives `setup_type` from `is_configured`. Decorative required asterisks in the product form are `aria-hidden`, and `tests/products.spec.js` now locates the field with `/^GTIN/` because the label text is `GTIN *`. `tests/label-preview.spec.js` derives a per-run GS1 company prefix so SSCCs from earlier runs on a persistent database cannot collide.
 - Material files: `src/lib/validation/schemas.js`, `src/routes/(app)/settings/+page.server.js`, `src/routes/(app)/settings/+page.svelte`, `src/lib/components/Labels/SavedProducts.svelte`, `tests/products.spec.js`, `tests/label-preview.spec.js`, `tests/unit/labelSettingsSchema.test.ts`.
 - Validation: `npm run quality` passes (25 files, 188 unit tests, TypeScript check, Vercel build; the two Svelte warnings predate this work); `npx playwright test` passes 9/9 locally. Stale end-to-end test accounts left on the developer database by interrupted runs were removed before the passing run.
-- Next: rerun the CI end-to-end gate on `staging`, then complete the staging smoke checks of the new pages and settings validation before the production release.
+- Next: released to production in PR #48; see the 2026-10-22 production release entry.
 
 ## 2026-10-22 — `UX-002` — Public and application route groups with a dark-mode shell
 
@@ -30,7 +38,7 @@ Never include secrets, personal data, production records, private usage statisti
 - Material files: `src/app.css`, `src/app.html`, `src/routes/+layout.svelte`, `src/routes/(public)/`, `src/routes/(auth)/`, `src/routes/(app)/`, `src/lib/components/Layout/`, `src/lib/theme/theme.svelte.js`, `tests/label-preview.spec.js`, `package.json` format scope, `docs/ARCHITECTURE.md`, `docs/KANBAN.md`.
 - Validation: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); a focused browser check confirmed the public and application shells in both themes, the class-based `dark` state and pre-paint restore, the sidebar drawer sliding from `x = -288` to `0` at a 390 px viewport, the generator split pane, and the post-sign-up client-side redirect with the account shown in the new header and sidebar.
 - Release: the `2026-10-22-app-shell-and-dark-mode` What's New entry is published from 2026-10-22 and reaches the home page, `/updates`, and the What's New panel.
-- Next: developer review of the `staging` branch; the CI end-to-end job must confirm the suite against a disposable branch before the item can be considered complete.
+- Next: released to production in PR #48; see the 2026-10-22 production release entry.
 
 ## 2026-10-21 — `PRODUCT-001` — GS1 validity flag for saved products
 
@@ -39,7 +47,7 @@ Never include secrets, personal data, production records, private usage statisti
 - Material files: `src/lib/server/db/schema.js`, `src/lib/server/db/products.js` (+ `.d.ts`), `src/lib/components/Labels/SavedProducts.svelte`, `src/lib/components/Labels/LabelForm.svelte`, `drizzle/0010_superb_dreadnoughts.sql` plus snapshot and journal, the unit and end-to-end tests, `docs/ARCHITECTURE.md`, and `docs/KANBAN.md`.
 - Validation: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); the backfill formula was checked against the application's validator on valid and invalid GTIN examples; the end-to-end spec covers the warning, the save, the stored flag, and the flagged row on the disposable branch.
 - Release: merged into `staging` in pull request #46 (merge commit `1170df0`), and the guarded staging dispatch (run 39710319104) applied migration `0010` immediately after the merge. `staging.sscc-labels.com` serves the new deployment with no products errors recorded after the migration.
-- Next: the staging browser check of the uncorrected-number flow, migrations `0009` and `0010` on the developer database, and the guarded production migration before any merge into `master`.
+- Next: released to production in PR #48; migrations `0009`–`0011` were applied to production before the merge. The developer database migration remains a separate dispatch.
 
 ## 2026-10-21 — `PRODUCT-001` — Staging database migration completed after products 500s
 
