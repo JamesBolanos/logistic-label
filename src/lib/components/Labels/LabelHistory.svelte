@@ -82,12 +82,13 @@
     fetchLabels(page, searchTerm);
   }
 
-  function formatDate(dateString) {
-    if (!dateString) return '';
-    return new Intl.DateTimeFormat('en', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    }).format(new Date(dateString));
+  function formatDateParts(dateString) {
+    if (!dateString) return { date: '', time: '' };
+    const date = new Date(dateString);
+    return {
+      date: new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(date),
+      time: new Intl.DateTimeFormat('en', { timeStyle: 'short' }).format(date)
+    };
   }
 
   function formatTraceabilityDate(dateAi, dateValue) {
@@ -154,24 +155,26 @@
   }
 </script>
 
-<div class="rounded-lg bg-white p-6 shadow-md">
+<div class="rounded-lg bg-surface p-6 shadow-md">
   <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h3 class="text-xl font-bold">Saved labels</h3>
-      <p class="mt-1 text-sm text-gray-500">Existing records keep their original label version.</p>
+      <p class="mt-1 text-sm text-subtle-foreground">
+        Existing records keep their original label version.
+      </p>
     </div>
     <div class="flex max-w-md flex-1">
       <input
         type="text"
         bind:value={searchTerm}
         placeholder="Search by SSCC, GTIN, or lot..."
-        class="min-w-0 flex-grow rounded-l-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="min-w-0 flex-grow rounded-l-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         onkeyup={(event) => event.key === 'Enter' && handleSearch()}
       />
       <button
         type="button"
         onclick={handleSearch}
-        class="rounded-r-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="rounded-r-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
       >
         Search
       </button>
@@ -179,98 +182,112 @@
   </div>
 
   <div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
-    <label for="zpl-resolution" class="font-medium text-gray-700">ZPL printer resolution</label>
+    <label for="zpl-resolution" class="font-medium text-muted-foreground"
+      >ZPL printer resolution</label
+    >
     <select
       id="zpl-resolution"
       bind:value={zplDpi}
       disabled={downloadingId !== null}
-      class="rounded-md border border-gray-300 px-3 py-2"
+      class="rounded-md border border-border-strong px-3 py-2"
     >
       <option value="203">203 dpi (8 dots/mm)</option>
       <option value="300">300 dpi (12 dots/mm)</option>
       <option value="600">600 dpi (24 dots/mm)</option>
     </select>
-    <p class="text-gray-500">Match your ZPL printer. Downloads reuse the saved SSCC.</p>
+    <p class="text-subtle-foreground">Match your ZPL printer. Downloads reuse the saved SSCC.</p>
   </div>
 
   {#if downloadError}
-    <p role="alert" class="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
+    <p
+      role="alert"
+      class="mb-4 rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-4 text-red-700 dark:text-red-300"
+    >
       {downloadError} Your label is still saved. Retry its download below.
     </p>
   {/if}
 
-  <p class="mb-4 text-sm text-gray-600">
+  <p class="mb-4 text-sm text-muted-foreground">
     Print via bridge uses the printer and resolution saved in <a
-      href="/settings"
-      class="font-medium text-blue-700 underline">Settings</a
+      href="/printer"
+      class="font-medium text-blue-700 dark:text-blue-300 underline">Printer Config</a
     >. Sending again prints another copy of the same label.
   </p>
-  {#if printError}<p role="alert" class="mb-4 text-sm text-red-700">{printError}</p>{/if}
-  {#if printMessage}<p role="status" class="mb-4 text-sm text-green-700">{printMessage}</p>{/if}
+  {#if printError}<p role="alert" class="mb-4 text-sm text-red-700 dark:text-red-300">
+      {printError}
+    </p>{/if}
+  {#if printMessage}<p role="status" class="mb-4 text-sm text-green-700 dark:text-green-300">
+      {printMessage}
+    </p>{/if}
 
   {#if isLoading}
     <div class="flex h-40 items-center justify-center">
       <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
     </div>
   {:else if error}
-    <div class="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
+    <div
+      class="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-4 text-red-700 dark:text-red-300"
+    >
       <p>{error}</p>
       <button
         type="button"
         onclick={() => fetchLabels(currentPage, searchTerm)}
-        class="mt-2 text-sm text-blue-600 hover:text-blue-500"
+        class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
         Try again
       </button>
     </div>
   {:else if labels.length === 0}
-    <div class="rounded-md bg-gray-50 p-8 text-center text-gray-500">
+    <div class="rounded-md bg-surface-muted p-8 text-center text-subtle-foreground">
       No labels found. Create a label to see it here.
     </div>
   {:else}
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table class="min-w-full divide-y divide-border-default">
+        <thead class="bg-surface-muted">
           <tr>
             <th
-              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              Type
+              SSCC / Type
             </th>
             <th
-              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-            >
-              SSCC
-            </th>
-            <th
-              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              class="w-full px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
               Details
             </th>
             <th
-              class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              class="whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
               Created
             </th>
             <th
-              class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500"
+              class="whitespace-nowrap px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              Action
+              Actions
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
+        <tbody class="divide-y divide-border-default bg-surface">
           {#each labels as label (label.id)}
+            {@const created = formatDateParts(label.created_at)}
             <tr>
-              <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
-                <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-800">
-                  {getLabelTypeName(label.label_type)}
-                </span>
+              <td class="whitespace-nowrap px-4 py-4">
+                <div class="flex flex-col gap-1.5">
+                  <span class="font-mono text-sm font-medium text-foreground">{label.sscc}</span>
+                  <span
+                    class="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-medium {label.label_type ===
+                    LABEL_TYPES.HOMOGENEOUS_UNIT
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                      : label.label_type === LABEL_TYPES.SSCC_ONLY
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                        : 'bg-surface-muted text-muted-foreground'}"
+                  >
+                    {getLabelTypeName(label.label_type)}
+                  </span>
+                </div>
               </td>
-              <td class="whitespace-nowrap px-4 py-4 font-mono text-sm font-medium text-gray-900">
-                {label.sscc}
-              </td>
-              <td class="px-4 py-4 text-sm text-gray-600">
+              <td class="px-4 py-4 text-sm text-muted-foreground">
                 {#if label.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT}
                   {#if label.ship_to}
                     <div>Ship to: {label.ship_to}</div>
@@ -322,37 +339,42 @@
                   {#if label.lot_number}<div class="mt-1 text-xs">Lot {label.lot_number}</div>{/if}
                 {/if}
               </td>
-              <td class="whitespace-nowrap px-4 py-4 text-sm text-gray-500">
-                {formatDate(label.created_at)}
+              <td class="whitespace-nowrap px-4 py-4 text-sm text-subtle-foreground">
+                <div class="flex flex-col leading-tight">
+                  <span>{created.date}</span>
+                  <span class="text-xs text-subtle-foreground">{created.time}</span>
+                </div>
               </td>
-              <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-medium">
-                <button
-                  type="button"
-                  onclick={() => downloadLabel(label.id)}
-                  disabled={downloadingId !== null || printingId !== null}
-                  class="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                >
-                  Download PDF
-                </button>
-                <button
-                  type="button"
-                  onclick={() => downloadLabel(label.id, 'zpl')}
-                  disabled={downloadingId !== null || printingId !== null}
-                  class="ml-3 text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                >
-                  Download ZPL
-                </button>
-                <button
-                  type="button"
-                  onclick={() => printLabel(label.id)}
-                  disabled={downloadingId !== null || printingId !== null}
-                  class="ml-3 text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                >
-                  {printingId === label.id ? 'Sending...' : 'Print via bridge'}
-                </button>
-                {#if downloadingId === label.id}
-                  <span role="status" class="ml-2 text-gray-500">Downloading...</span>
-                {/if}
+              <td class="whitespace-nowrap px-4 py-4 text-right text-sm">
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onclick={() => downloadLabel(label.id)}
+                    disabled={downloadingId !== null || printingId !== null}
+                    class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
+                  >
+                    Download PDF
+                  </button>
+                  <button
+                    type="button"
+                    onclick={() => downloadLabel(label.id, 'zpl')}
+                    disabled={downloadingId !== null || printingId !== null}
+                    class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
+                  >
+                    Download ZPL
+                  </button>
+                  <button
+                    type="button"
+                    onclick={() => printLabel(label.id)}
+                    disabled={downloadingId !== null || printingId !== null}
+                    class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
+                  >
+                    {printingId === label.id ? 'Sending...' : 'Print via bridge'}
+                  </button>
+                  {#if downloadingId === label.id}
+                    <span role="status" class="text-xs text-subtle-foreground">Downloading...</span>
+                  {/if}
+                </div>
               </td>
             </tr>
           {/each}
@@ -361,14 +383,14 @@
     </div>
 
     {#if totalPages > 1}
-      <div class="mt-4 flex items-center justify-between border-t border-gray-200 px-2 py-3">
-        <p class="text-sm text-gray-700">Page {currentPage} of {totalPages}</p>
+      <div class="mt-4 flex items-center justify-between border-t border-border-default px-2 py-3">
+        <p class="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</p>
         <div class="flex gap-2">
           <button
             type="button"
             onclick={() => changePage(currentPage - 1)}
             disabled={currentPage === 1}
-            class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            class="rounded-md border border-border-strong px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted disabled:opacity-50"
           >
             Previous
           </button>
@@ -376,7 +398,7 @@
             type="button"
             onclick={() => changePage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            class="rounded-md border border-border-strong px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted disabled:opacity-50"
           >
             Next
           </button>

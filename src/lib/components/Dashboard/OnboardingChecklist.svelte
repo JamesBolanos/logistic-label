@@ -36,30 +36,32 @@
 </script>
 
 <section
-  class="overflow-hidden rounded-lg border border-blue-200 bg-white shadow"
+  class="overflow-hidden rounded-lg border border-blue-200 dark:border-blue-900 bg-surface shadow"
   aria-labelledby="first-label-onboarding-heading"
 >
   <div
-    class="border-b border-blue-100 bg-blue-50 px-5 py-5 sm:flex sm:items-start sm:justify-between"
+    class="border-b border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 px-5 py-5 sm:flex sm:items-start sm:justify-between"
   >
     <div>
-      <p class="text-sm font-semibold uppercase tracking-wide text-blue-700">Getting started</p>
-      <h2 id="first-label-onboarding-heading" class="mt-1 text-xl font-bold text-gray-950">
+      <p class="text-sm font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
+        Getting started
+      </p>
+      <h2 id="first-label-onboarding-heading" class="mt-1 text-xl font-bold text-foreground">
         Create your first logistic label
       </h2>
-      <p class="mt-2 max-w-2xl text-sm text-gray-700">
+      <p class="mt-2 max-w-2xl text-sm text-muted-foreground">
         Complete these steps once. The generator will guide the label details for your shipping
         situation.
       </p>
     </div>
-    <p class="mt-3 text-sm font-medium text-blue-800 sm:mt-1">
+    <p class="mt-3 text-sm font-medium text-blue-800 dark:text-blue-300 sm:mt-1">
       {progress.completedCount} of {progress.totalSteps} complete
     </p>
   </div>
 
   <div class="px-5 py-5">
     <div
-      class="h-2 overflow-hidden rounded-full bg-gray-200"
+      class="h-2 overflow-hidden rounded-full bg-surface-strong"
       role="progressbar"
       aria-label="First label setup progress"
       aria-valuemin="0"
@@ -76,23 +78,23 @@
       {#each steps as step, index (step.id)}
         <li class="flex gap-3">
           <span
-            class={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${step.completed ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}
+            class={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${step.completed ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300' : 'bg-surface-strong text-muted-foreground'}`}
             aria-hidden="true"
           >
             {step.completed ? '✓' : index + 1}
           </span>
           <div>
             <div class="flex flex-wrap items-center gap-2">
-              <h3 class="text-sm font-semibold text-gray-950">{step.title}</h3>
+              <h3 class="text-sm font-semibold text-foreground">{step.title}</h3>
               {#if !step.completed && index === progress.completedCount}
                 <span
-                  class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                  class="rounded-full bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-300"
                 >
                   Next
                 </span>
               {/if}
             </div>
-            <p class="mt-1 text-sm text-gray-600">{step.description}</p>
+            <p class="mt-1 text-sm text-muted-foreground">{step.description}</p>
           </div>
         </li>
       {/each}
@@ -101,7 +103,7 @@
     <div class="mt-6">
       <a
         href={progress.nextAction.href}
-        class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
       >
         {progress.nextAction.label}
         <span class="ml-2" aria-hidden="true">→</span>

@@ -134,6 +134,35 @@ export const labelSettings = pgTable('label_settings', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
 
+// Saved products are per-account reference data. They pre-fill product fields
+// on new labels; shipment-specific values stay on the label rows, so deleting
+// a product must never change saved labels or their SSCCs.
+export const product = pgTable(
+  'product',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 120 }).notNull(),
+    brand: varchar('brand', { length: 120 }),
+    internalReference: varchar('internal_reference', { length: 50 }),
+    gtin: varchar('gtin', { length: 14 }).notNull(),
+    // Records whether the stored number passes the GS1 check digit. Reference
+    // data may keep an uncorrected number; labels still reject invalid GTINs.
+    gs1Valid: boolean('gs1_valid').notNull().default(false),
+    netContentValue: varchar('net_content_value', { length: 32 }),
+    netContentUnit: varchar('net_content_unit', { length: 12 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    index('product_user_created_idx').on(table.userId, table.createdAt),
+    // One saved product per GTIN per account keeps the picker unambiguous.
+    uniqueIndex('product_user_gtin_uidx').on(table.userId, table.gtin)
+  ]
+);
+
 export const operationalEvent = pgTable(
   'operational_event',
   {
@@ -168,9 +197,17 @@ export const userRelations = relations(user, ({ many, one }) => ({
   accounts: many(account),
   labels: many(logisticLabel),
   operationalEvents: many(operationalEvent),
+  products: many(product),
   labelSettings: one(labelSettings, {
     fields: [user.id],
     references: [labelSettings.userId]
+  })
+}));
+
+export const productRelations = relations(product, ({ one }) => ({
+  user: one(user, {
+    fields: [product.userId],
+    references: [user.id]
   })
 }));
 

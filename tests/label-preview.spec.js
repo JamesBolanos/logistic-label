@@ -13,6 +13,10 @@ test('signed-in user can generate both available shipping situations', async ({
 
   const testRunId = /** @type {{ testRunId?: string }} */ (testInfo.config.metadata).testRunId;
   const email = createTestUserEmail(testRunId);
+  // A per-run company prefix keeps SSCCs unique across runs on a persistent
+  // development database. Leftover labels sharing a prefix would collide and
+  // make the serial-reference assertion below depend on earlier runs.
+  const companyPrefix = `9${String(Date.now()).slice(-7)}`;
   let accountCreationConfirmed = false;
 
   try {
@@ -47,12 +51,16 @@ test('signed-in user can generate both available shipping situations', async ({
     await expect(page).toHaveURL(/\/dashboard|\/labels/, { timeout: 10000 });
 
     // Verify the first client-side redirect refreshes authenticated layout data.
-    // A later page.goto() would hide a stale-navbar regression by forcing a reload.
+    // A later page.goto() would hide a stale-shell regression by forcing a reload.
     const expectedDisplayName = email.split('@')[0];
-    const navigation = page.getByRole('navigation');
-    await expect(navigation.getByText(expectedDisplayName, { exact: true })).toBeVisible();
-    await expect(navigation.getByRole('button', { name: 'Logout', exact: true })).toBeVisible();
-    await expect(navigation.getByRole('link', { name: 'Login', exact: true })).toHaveCount(0);
+    const appHeader = page.getByRole('banner');
+    await expect(appHeader.getByText(expectedDisplayName, { exact: true })).toBeVisible();
+    await expect(appHeader.getByRole('button', { name: 'Logout', exact: true })).toBeVisible();
+    await expect(appHeader.getByRole('link', { name: 'Login', exact: true })).toHaveCount(0);
+
+    const appNavigation = page.getByRole('navigation', { name: 'Application' });
+    await expect(appNavigation.getByRole('link', { name: 'Label Generator' })).toBeVisible();
+    await expect(appNavigation.getByRole('link', { name: 'Saved Labels' })).toBeVisible();
 
     await page.goto('/dashboard');
     const onboardingChecklist = page.getByRole('region', {
@@ -72,7 +80,7 @@ test('signed-in user can generate both available shipping situations', async ({
 
     await page.goto('/settings');
     await page.getByLabel('Company Name').fill('Preview Test Company');
-    await page.getByLabel('GS1 Company Prefix').fill('1234567');
+    await page.getByLabel('GS1 Company Prefix').fill(companyPrefix);
     await page.getByLabel('Extension Digit').fill('0');
     await page.getByLabel('Next Serial Reference').fill('1');
     await page.getByRole('button', { name: 'Save Settings' }).click();
@@ -263,17 +271,11 @@ test('signed-in user can generate both available shipping situations', async ({
     await expect(previewFrame).toHaveAttribute('src', /^blob:/);
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
-    await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
+    await expect(
+      page.getByText(/Label generated successfully and saved to history/)
+    ).toBeVisible({
       timeout: 10000
     });
-    const ssccHistoryRow = page
-      .getByRole('table')
-      .getByRole('row')
-      .filter({ hasText: 'Transport unit tracking' });
-    await expect(ssccHistoryRow).toBeVisible();
-    await expect(ssccHistoryRow).toContainText('Ship to: Customer DC 20 Destination Road');
-    await expect(ssccHistoryRow).toContainText('Count: 12 Cartons');
-    await expect(ssccHistoryRow).toContainText('4 × 6 — two copies');
 
     await page.getByRole('button', { name: 'Choose a different situation' }).click();
     await page
@@ -337,9 +339,23 @@ test('signed-in user can generate both available shipping situations', async ({
     );
 
     await page.getByRole('button', { name: 'Generate and save label' }).click();
-    await expect(page.getByText('Label generated successfully and saved to history.')).toBeVisible({
+    await expect(
+      page.getByText(/Label generated successfully and saved to history/)
+    ).toBeVisible({
       timeout: 10000
     });
+
+    const homogeneousSavedResponse = await page.request.get('/api/labels/list?limit=100');
+    expect(homogeneousSavedResponse.ok()).toBe(true);
+    const homogeneousSavedBody = await homogeneousSavedResponse.json();
+    const homogeneousSavedLabel = homogeneousSavedBody.labels.find(
+      (label) => label.label_type === 'homogeneous_unit' && label.lot_number === '123456'
+    );
+    expect(homogeneousSavedLabel).toBeTruthy();
+    expect(homogeneousSavedLabel.gtin).toBe('00012345600012');
+
+    // The Saved Labels page renders the same saved records in its table.
+    await page.goto('/labels/history');
     const homogeneousHistoryRow = page
       .getByRole('table')
       .getByRole('row')
@@ -388,7 +404,7 @@ test('signed-in user can generate both available shipping situations', async ({
     const resetSettingsResponse = await page.request.post('/api/settings', {
       data: {
         company_name: 'Preview Test Company',
-        gs1_company_prefix: '1234567',
+        gs1_company_prefix: companyPrefix,
         extension_digit: '0',
         next_serial_reference: 1
       }

@@ -74,10 +74,10 @@
 
 <div class="space-y-2">
   <div class="flex items-center justify-between">
-    <span class="text-sm text-gray-700">Captcha verification</span>
+    <span class="text-sm text-muted-foreground">Captcha verification</span>
     <button
       type="button"
-      class="text-sm text-blue-600 hover:text-blue-500"
+      class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       onclick={refreshCaptcha}
       aria-label="Refresh captcha"
     >
@@ -85,14 +85,14 @@
     </button>
   </div>
 
-  <div class="rounded-md border border-gray-200 p-2">
+  <div class="rounded-md border border-border-default p-2">
     {#if siteKey}
       <div bind:this={captchaContainer} class="flex justify-center"></div>
     {:else}
-      <p class="text-sm text-red-600 text-center">Captcha is not configured.</p>
+      <p class="text-sm text-red-600 dark:text-red-400 text-center">Captcha is not configured.</p>
     {/if}
     {#if siteKey && !captchaLoaded}
-      <p class="mt-2 text-xs text-gray-500 text-center">Loading captcha...</p>
+      <p class="mt-2 text-xs text-subtle-foreground text-center">Loading captcha...</p>
     {/if}
   </div>
 </div>

@@ -64,6 +64,27 @@
       "when": 1792119090945,
       "tag": "0008_print_bridge_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792631755637,
+      "tag": "0009_rich_cable",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792635062487,
+      "tag": "0010_superb_dreadnoughts",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792693193591,
+      "tag": "0011_white_starbolt",
+      "breakpoints": true
     }
   ]
 }

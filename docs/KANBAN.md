@@ -20,7 +20,34 @@ None.
 
 ## Review
 
-None.
+### `UX-003` — Dedicated product and printer pages with validated settings
+
+- Need: product management and printer configuration sat inside Settings, making one long page mix account, GS1 license, device, and product setup; invalid settings input surfaced late as a generic save failure.
+- Outcome: `/products` and `/printer` are dedicated pages linked from the sidebar; saved products carry brand and net content for GS1 alignment; the saved-labels table groups SSCC and type with clearer column space and consistent download/print actions; the Settings form validates company name, GS1 Company Prefix, extension digit, and serial reference before saving.
+- Acceptance: existing URLs keep working and unauthenticated visitors still redirect; product create/edit/delete, brand, net content, and the label picker work; deleting a product leaves saved labels untouched; the settings form reports invalid prefix length, non-digits, and serial references beyond the prefix capacity inline and saves valid input.
+- Evidence: `npm run quality` passes (25 files, 188 unit tests, TypeScript check, Vercel build) and the full Playwright suite passes 9/9 locally against the developer Neon branch, including brand, net content, settings validation, and history rendering. CI end-to-end evidence and staging smoke checks are outstanding.
+- Status: committed on `staging` for developer review.
+- Dependencies: Zod 4 and Superforms; existing product and settings APIs. The Zod v4 adapter fix is part of this item.
+
+### `UX-002` — Public and application route groups with a dark-mode shell
+
+- Need: marketing and educational pages shared one top navigation bar with the authenticated workspace, so features were mixed and the generator had no application shell.
+- Outcome: `(public)`, `(auth)`, and `(app)` SvelteKit route groups; the public group keeps a top marketing header and footer, and the application group uses a fixed left sidebar (Dashboard, Label Generator, Saved Labels, Statistics for owners, Settings) with an account header for profile and logout.
+- Acceptance: every existing URL keeps working without a redirect; the application group redirects unauthenticated visitors; dark mode covers the public, authentication, and application shells with the choice applied before first paint and a visible toggle; the generator uses a split-pane layout with form controls and the live thermal preview side by side on large screens.
+- Evidence: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); a focused browser check confirmed both shells in both themes, the class-based `dark` state and pre-paint restore, the sidebar drawer at a 390 px viewport, the generator split pane, and the post-sign-up client-side redirect with the account shown in the new header and sidebar. The full Playwright suite now passes locally against the developer Neon branch.
+- Release: the `2026-10-22-app-shell-and-dark-mode` What's New entry is published from 2026-10-22 and reaches the home page, `/updates`, and the What's New panel.
+- Status: committed on `staging` for developer review; the full Playwright suite passes 9/9 locally, CI end-to-end evidence is outstanding.
+- Dependencies: none. The Zod and Superforms validation work is a separate follow-up item and is not implemented here.
+
+### `PRODUCT-001` — Saved products for repeat label creation
+
+- Need: the proven repeat creator re-enters product data on every label despite a small set of known products; nothing in the product persists reference data. Private evidence: the dated usage reports in the git-ignored `usage_log/` directory.
+- Outcome: a small per-account product list — product name, internal reference, and GTIN — that pre-fills product fields when creating a label. Shipment-specific values (lot, date, count, weight, addresses) remain per-label entries and are never stored in the product list.
+- Acceptance: authenticated, owner-scoped product create/list/update/delete; the product number must contain 8, 12, 13, or 14 digits, and a failed GS1 check digit is a visible warning that does not block saving while a stored `gs1_valid` flag records whether the number is a valid GS1 code; labels keep rejecting invalid GTINs; selecting a product fills only product fields; deleting a product never changes saved labels, SSCCs, or template versions; measurement-plan event additions are implemented so analytics failures cannot block the workflow; a What's New entry is published and the guide mentions the product list.
+- Evidence planned: `npm run quality` (unit tests for API scoping, validation, and product pre-fill), the CI end-to-end job against a disposable branch covering product creation through a saved label, and a focused browser check of the picker and empty state.
+- Status: both increments are verified in CI and deployed to staging. The first is pull request #44 (merge commit `3afd0cf`), with migration `0009` applied by the guarded staging dispatch (run 39708947039). The owner-requested GS1 flag is pull request #46 (merge commit `1170df0`): the check-digit warning no longer blocks saving, and the `gs1_valid` column records GS1 validity, backfilled by migration `0010` (applied by guarded dispatch run 39710319104), verified by `npm run quality` (24 files, 179 unit tests) and CI run 39710106289. `staging.sscc-labels.com` serves the new deployment with no products errors recorded after the migration. Outstanding: the staging browser check of the uncorrected-number flow, migrations `0009`+`0010` on the developer database, and the guarded production migration before any merge into `master`.
+- Dependencies: existing shared validation and label APIs; one new table and migration applied through the guarded procedure; measurement-plan event contract additions; no renderer, SSCC-allocation, or template-version change. Product deletion must never orphan label history.
+- Source: [Work Plan §4](./WORK_PLAN.md#4-improvements) and private usage reports (`usage_log/`, git-ignored).
 
 ## Ready
 
@@ -32,7 +59,7 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 - Outcome: download a saved label as PDF or ZPL, selecting 203, 300, or 600 dpi for ZPL without allocating another SSCC.
 - Acceptance: authenticated, owner-scoped downloads; original template/layout and GS1 data preserved; supported printer resolutions use whole-dot barcode modules and checked quiet zones; user text cannot inject printer commands; visible download/retry controls; existing PDFs remain compatible; public guide explains PDF/ZPL downloads and the announcement appears in What's New and `/updates`.
 - Evidence: `npm run quality` passes (19 files, 112 unit tests, Vercel build); focused browser ZPL/PDF download and retry check passes; 11 representative PDFs match the original renderer byte-for-byte; built public pages `/`, `/updates`, and `/guide` render the ZPL announcement and guidance.
-- Status: prior review evidence retained; awaits developer closeout after the `PRINT-001` production release.
+- Status: prior review evidence retained; no AI implementation work remains; awaits developer closeout after the `PRINT-001` production release.
 - Release: release note enabled and public guidance complete in app content; ready for developer review, merge, and deployment.
 - Dependencies: existing saved-label/settings APIs and GS1 encoder; no migration, print bridge, or external rendering service. Physical printer verification remains `VERIFY-001`.
 - Architecture: includes the `ARCH-001` shared-layout extraction needed by this concrete export.
@@ -50,8 +77,8 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 | Order | ID             | Outcome                                                                                               | Why now                                                              | Detailed source                                                                      |
 | ----: | -------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-|     2 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
-|     3 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
+|     3 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
+|     4 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
 
 ## Backlog
 
@@ -60,7 +87,6 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `SEARCH-001`   | Existing labels      | Filter SSCC, GTIN, and lot search by creation date                                                             | Small user-facing improvement                                                                         |
 | `INSIGHT-001`  | Product evidence     | Review Search Console and accumulated product events, then adjust priorities                                   | Requires enough usage data; do not infer adoption from clicks alone                                   |
 | `FEEDBACK-002` | User research        | Interview or survey repeat creators, one-time creators, configured non-creators, and signup-only users         | Record task, printer, output, and obstacle without placing identities in Git                          |
-| `PRODUCT-001`  | Saved products       | Validate the need and smallest useful product list before building it                                          | Define product fields separately from shipment values                                                 |
 | `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                  | Depends on lifecycle rules from `DATA-001`                                                            |
 | `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                 | Existing `v1`–`v4` compatibility is the baseline                                                      |
 | `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                       | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides            |

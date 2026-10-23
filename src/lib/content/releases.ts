@@ -15,6 +15,42 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-22-app-shell-and-dark-mode',
+    publishedAt: '2026-10-22',
+    category: 'improvement',
+    status: 'published',
+    title: 'A clearer workspace and dark mode',
+    benefit:
+      'Marketing pages and the signed-in workspace are now separate: the site keeps a simple top header, while the app uses a left sidebar for Dashboard, Label Generator, Saved Labels, Settings, and owner Statistics. Every page also has a light and dark theme you can switch from the header.',
+    featureKey: 'app_shell_dark_mode',
+    href: '/dashboard',
+    linkLabel: 'Open the workspace'
+  },
+  {
+    id: '2026-10-22-settings-validation',
+    publishedAt: '2026-10-22',
+    category: 'fix',
+    status: 'published',
+    title: 'Settings catches invalid values before saving',
+    benefit:
+      'The label settings form now explains a bad company prefix, extension digit, or serial reference inline instead of failing after you save, and it warns when the serial reference is too large for the prefix length.',
+    featureKey: 'settings_validation',
+    href: '/settings',
+    linkLabel: 'Review label settings'
+  },
+  {
+    id: '2026-10-21-saved-products',
+    publishedAt: '2026-10-22',
+    category: 'new feature',
+    status: 'published',
+    title: 'Save your products for faster labels',
+    benefit:
+      'Products now have their own page in the sidebar, with brand and net content alongside each GTIN. Select a saved product when creating a label to fill its product fields; shipment details stay on each label.',
+    featureKey: 'saved_products',
+    href: '/products',
+    linkLabel: 'Manage saved products'
+  },
+  {
     id: '2026-10-20-data-export-excel',
     publishedAt: '2026-10-20',
     category: 'new feature',
