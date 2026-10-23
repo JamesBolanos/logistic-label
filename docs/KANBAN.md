@@ -1,6 +1,6 @@
 # Product Kanban
 
-Last reviewed: 2026-10-21 (America/Managua)
+Last reviewed: 2026-10-22 (America/Managua)
 
 This is the only current source for work status and priority. Detailed requirements remain in the linked plans and runbooks, but their checklists do not determine what is active.
 
@@ -20,34 +20,7 @@ None.
 
 ## Review
 
-### `UX-003` — Dedicated product and printer pages with validated settings
-
-- Need: product management and printer configuration sat inside Settings, making one long page mix account, GS1 license, device, and product setup; invalid settings input surfaced late as a generic save failure.
-- Outcome: `/products` and `/printer` are dedicated pages linked from the sidebar; saved products carry brand and net content for GS1 alignment; the saved-labels table groups SSCC and type with clearer column space and consistent download/print actions; the Settings form validates company name, GS1 Company Prefix, extension digit, and serial reference before saving.
-- Acceptance: existing URLs keep working and unauthenticated visitors still redirect; product create/edit/delete, brand, net content, and the label picker work; deleting a product leaves saved labels untouched; the settings form reports invalid prefix length, non-digits, and serial references beyond the prefix capacity inline and saves valid input.
-- Evidence: `npm run quality` passes (25 files, 188 unit tests, TypeScript check, Vercel build) and the full Playwright suite passes 9/9 locally against the developer Neon branch, including brand, net content, settings validation, and history rendering. CI end-to-end evidence and staging smoke checks are outstanding.
-- Status: committed on `staging` for developer review.
-- Dependencies: Zod 4 and Superforms; existing product and settings APIs. The Zod v4 adapter fix is part of this item.
-
-### `UX-002` — Public and application route groups with a dark-mode shell
-
-- Need: marketing and educational pages shared one top navigation bar with the authenticated workspace, so features were mixed and the generator had no application shell.
-- Outcome: `(public)`, `(auth)`, and `(app)` SvelteKit route groups; the public group keeps a top marketing header and footer, and the application group uses a fixed left sidebar (Dashboard, Label Generator, Saved Labels, Statistics for owners, Settings) with an account header for profile and logout.
-- Acceptance: every existing URL keeps working without a redirect; the application group redirects unauthenticated visitors; dark mode covers the public, authentication, and application shells with the choice applied before first paint and a visible toggle; the generator uses a split-pane layout with form controls and the live thermal preview side by side on large screens.
-- Evidence: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); a focused browser check confirmed both shells in both themes, the class-based `dark` state and pre-paint restore, the sidebar drawer at a 390 px viewport, the generator split pane, and the post-sign-up client-side redirect with the account shown in the new header and sidebar. The full Playwright suite now passes locally against the developer Neon branch.
-- Release: the `2026-10-22-app-shell-and-dark-mode` What's New entry is published from 2026-10-22 and reaches the home page, `/updates`, and the What's New panel.
-- Status: committed on `staging` for developer review; the full Playwright suite passes 9/9 locally, CI end-to-end evidence is outstanding.
-- Dependencies: none. The Zod and Superforms validation work is a separate follow-up item and is not implemented here.
-
-### `PRODUCT-001` — Saved products for repeat label creation
-
-- Need: the proven repeat creator re-enters product data on every label despite a small set of known products; nothing in the product persists reference data. Private evidence: the dated usage reports in the git-ignored `usage_log/` directory.
-- Outcome: a small per-account product list — product name, internal reference, and GTIN — that pre-fills product fields when creating a label. Shipment-specific values (lot, date, count, weight, addresses) remain per-label entries and are never stored in the product list.
-- Acceptance: authenticated, owner-scoped product create/list/update/delete; the product number must contain 8, 12, 13, or 14 digits, and a failed GS1 check digit is a visible warning that does not block saving while a stored `gs1_valid` flag records whether the number is a valid GS1 code; labels keep rejecting invalid GTINs; selecting a product fills only product fields; deleting a product never changes saved labels, SSCCs, or template versions; measurement-plan event additions are implemented so analytics failures cannot block the workflow; a What's New entry is published and the guide mentions the product list.
-- Evidence planned: `npm run quality` (unit tests for API scoping, validation, and product pre-fill), the CI end-to-end job against a disposable branch covering product creation through a saved label, and a focused browser check of the picker and empty state.
-- Status: both increments are verified in CI and deployed to staging. The first is pull request #44 (merge commit `3afd0cf`), with migration `0009` applied by the guarded staging dispatch (run 39708947039). The owner-requested GS1 flag is pull request #46 (merge commit `1170df0`): the check-digit warning no longer blocks saving, and the `gs1_valid` column records GS1 validity, backfilled by migration `0010` (applied by guarded dispatch run 39710319104), verified by `npm run quality` (24 files, 179 unit tests) and CI run 39710106289. `staging.sscc-labels.com` serves the new deployment with no products errors recorded after the migration. Outstanding: the staging browser check of the uncorrected-number flow, migrations `0009`+`0010` on the developer database, and the guarded production migration before any merge into `master`.
-- Dependencies: existing shared validation and label APIs; one new table and migration applied through the guarded procedure; measurement-plan event contract additions; no renderer, SSCC-allocation, or template-version change. Product deletion must never orphan label history.
-- Source: [Work Plan §4](./WORK_PLAN.md#4-improvements) and private usage reports (`usage_log/`, git-ignored).
+None.
 
 ## Ready
 
@@ -105,6 +78,29 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                       | Repeated user/customer need or contractual requirement        |
 
 ## Accomplished
+
+### `UX-003` — Dedicated product and printer pages with validated settings
+
+- Outcome: `/products` and `/printer` are dedicated pages linked from the sidebar; saved products carry brand and net content for GS1 alignment; the saved-labels table groups SSCC and type with clearer column space and consistent download/print actions; the Settings form validates company name, GS1 Company Prefix, extension digit, and serial reference before saving.
+- Acceptance evidence: `npm run quality` passes (25 files, 188 unit tests, TypeScript check, Vercel build) and the full Playwright suite passes 9/9 locally against the developer Neon branch, including brand, net content, settings validation, and history rendering. PR #48 checks pass Quality and E2E on the disposable Neon branch; the developer accepted the staging smoke check.
+- Release evidence: squash-merged into `master` in pull request #48 on 2026-10-22 (commit `56c1a7f`) and deployed to `www.sscc-labels.com`. The `2026-10-22-settings-validation` and `2026-10-21-saved-products` What's New entries are published.
+- Decisions: `labelSettingsSchema` mirrors `validateLabelSettings`, the settings form records the same operational events as `POST /api/settings`, and the unused `productSchema` was removed in favor of the authoritative server validation.
+- Dependencies: Zod 4 and Superforms; existing product and settings APIs.
+
+### `UX-002` — Public and application route groups with a dark-mode shell
+
+- Outcome: `(public)`, `(auth)`, and `(app)` SvelteKit route groups; the public group keeps a top marketing header and footer, and the application group uses a fixed left sidebar (Dashboard, Label Generator, Saved Labels, Statistics for owners, Settings) with an account header for profile and logout.
+- Acceptance evidence: `npm run quality` passes (25 files, 188 unit tests, TypeScript check, Vercel build); a focused browser check confirmed both shells in both themes, the class-based `dark` state and pre-paint restore, the sidebar drawer at a 390 px viewport, the generator split pane, and the post-sign-up client-side redirect. The full Playwright suite passes 9/9 locally, and PR #48 checks pass Quality and E2E.
+- Release evidence: squash-merged into `master` in pull request #48 on 2026-10-22 (commit `56c1a7f`) and deployed to `www.sscc-labels.com`. The `2026-10-22-app-shell-and-dark-mode` What's New entry is published and visible on production.
+- Dependencies: none.
+
+### `PRODUCT-001` — Saved products for repeat label creation
+
+- Outcome: a small per-account product list — product name, brand, net content, internal reference, and GTIN — that pre-fills product fields when creating a label. Shipment-specific values (lot, date, count, weight, addresses) remain per-label entries and are never stored in the product list.
+- Acceptance evidence: authenticated, owner-scoped product create/list/update/delete with per-account GTIN uniqueness; a failed GS1 check digit remains a visible warning recorded by `gs1_valid` while labels keep rejecting invalid GTINs; selecting a product fills only product fields; deleting a product never changes saved labels, SSCCs, or template versions. `npm run quality` passes and the full Playwright suite passes 9/9 locally; PR #48 checks pass Quality and E2E.
+- Release evidence: delivered through pull requests #44, #46, and #48; squash-merged into `master` on 2026-10-22 (commit `56c1a7f`). Migrations `0009`, `0010`, and `0011` were applied to production by guarded run 39882279880 before the merge, and the `2026-10-21-saved-products` What's New entry is published from 2026-10-22.
+- Remaining: none for the feature. Developer database migrations `0009`–`0011` were applied by guarded run 39882741690 after the release.
+- Dependencies: existing shared validation and label APIs; measurement-plan event contract additions; no renderer, SSCC-allocation, or template-version change.
 
 ### `EXPORT-003` — Restore the label settings form removed by the Excel export
 
