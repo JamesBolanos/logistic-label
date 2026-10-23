@@ -20,14 +20,23 @@ None.
 
 ## Review
 
+### `UX-003` — Dedicated product and printer pages with validated settings
+
+- Need: product management and printer configuration sat inside Settings, making one long page mix account, GS1 license, device, and product setup; invalid settings input surfaced late as a generic save failure.
+- Outcome: `/products` and `/printer` are dedicated pages linked from the sidebar; saved products carry brand and net content for GS1 alignment; the saved-labels table groups SSCC and type with clearer column space and consistent download/print actions; the Settings form validates company name, GS1 Company Prefix, extension digit, and serial reference before saving.
+- Acceptance: existing URLs keep working and unauthenticated visitors still redirect; product create/edit/delete, brand, net content, and the label picker work; deleting a product leaves saved labels untouched; the settings form reports invalid prefix length, non-digits, and serial references beyond the prefix capacity inline and saves valid input.
+- Evidence: `npm run quality` passes (25 files, 188 unit tests, TypeScript check, Vercel build) and the full Playwright suite passes 9/9 locally against the developer Neon branch, including brand, net content, settings validation, and history rendering. CI end-to-end evidence and staging smoke checks are outstanding.
+- Status: committed on `staging` for developer review.
+- Dependencies: Zod 4 and Superforms; existing product and settings APIs. The Zod v4 adapter fix is part of this item.
+
 ### `UX-002` — Public and application route groups with a dark-mode shell
 
 - Need: marketing and educational pages shared one top navigation bar with the authenticated workspace, so features were mixed and the generator had no application shell.
 - Outcome: `(public)`, `(auth)`, and `(app)` SvelteKit route groups; the public group keeps a top marketing header and footer, and the application group uses a fixed left sidebar (Dashboard, Label Generator, Saved Labels, Statistics for owners, Settings) with an account header for profile and logout.
 - Acceptance: every existing URL keeps working without a redirect; the application group redirects unauthenticated visitors; dark mode covers the public, authentication, and application shells with the choice applied before first paint and a visible toggle; the generator uses a split-pane layout with form controls and the live thermal preview side by side on large screens.
-- Evidence: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); a focused browser check confirmed both shells in both themes, the class-based `dark` state and pre-paint restore, the sidebar drawer at a 390 px viewport, the generator split pane, and the post-sign-up client-side redirect with the account shown in the new header and sidebar.
+- Evidence: `npm run quality` passes (24 files, 179 unit tests, no Svelte diagnostics, TypeScript project check, and Vercel build); a focused browser check confirmed both shells in both themes, the class-based `dark` state and pre-paint restore, the sidebar drawer at a 390 px viewport, the generator split pane, and the post-sign-up client-side redirect with the account shown in the new header and sidebar. The full Playwright suite now passes locally against the developer Neon branch.
 - Release: the `2026-10-22-app-shell-and-dark-mode` What's New entry is published from 2026-10-22 and reaches the home page, `/updates`, and the What's New panel.
-- Status: committed on `staging` for developer review; CI end-to-end evidence is outstanding.
+- Status: committed on `staging` for developer review; the full Playwright suite passes 9/9 locally, CI end-to-end evidence is outstanding.
 - Dependencies: none. The Zod and Superforms validation work is a separate follow-up item and is not implemented here.
 
 ### `PRODUCT-001` — Saved products for repeat label creation

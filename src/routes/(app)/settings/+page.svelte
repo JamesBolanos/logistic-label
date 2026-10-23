@@ -3,24 +3,49 @@
   import { superForm } from 'sveltekit-superforms';
   import AccountPreferences from '#lib/components/Settings/AccountPreferences.svelte';
   import { trackProductEvent } from '#lib/analytics/client.ts';
+  import { classifyHttpFailure } from '#lib/analytics/events.ts';
 
   let { data } = $props();
+
+  let savedOnce = $state(false);
+  let isConfigured = $derived(data.isConfigured || savedOnce);
+  let statusMessage = $state('');
+  let formError = $state('');
 
   const { form, errors, message, enhance, submitting } = superForm(data.form, {
     onUpdated({ form }) {
       if (form.valid && form.message === undefined && form.data) {
         statusMessage = 'Label settings saved.';
-        trackProductEvent('company_settings_saved', { setup_type: 'update' });
+        trackProductEvent('company_settings_saved', {
+          setup_type: isConfigured ? 'update' : 'first_setup'
+        });
+        savedOnce = true;
         formError = '';
+        return;
       }
+
+      if (form.message) {
+        formError = form.message;
+        trackProductEvent('workflow_failed', {
+          step: 'settings_save',
+          error_category: 'unexpected'
+        });
+        return;
+      }
+
+      trackProductEvent('workflow_failed', {
+        step: 'settings_save',
+        error_category: 'validation'
+      });
     },
     onError({ result }) {
       formError = result.error?.message || 'Failed to save settings';
+      trackProductEvent('workflow_failed', {
+        step: 'settings_save',
+        error_category: result.status ? classifyHttpFailure(result.status) : 'network'
+      });
     }
   });
-
-  let statusMessage = $state('');
-  let formError = $state('');
 </script>
 
 <svelte:head>

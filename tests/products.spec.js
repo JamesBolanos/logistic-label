@@ -57,28 +57,39 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
 
     // A saved GTIN-13 is stored in its padded 14-digit form.
     await savedProducts.getByLabel('Product Name').fill('Blue case');
+    await savedProducts.getByLabel('Brand Name').fill('FreshFields');
     await savedProducts.getByLabel('Internal Reference').fill('REF-1');
-    await savedProducts.getByLabel('GTIN', { exact: true }).fill('4006381333931');
+    await savedProducts.getByLabel(/^GTIN/).fill('4006381333931');
+    await savedProducts.getByLabel('Net content value').fill('500');
+    await savedProducts.getByLabel('Net content unit').selectOption('g');
     const blueCreation = captureProductCreation();
     await savedProducts.getByRole('button', { name: 'Save product' }).click();
     const blueProduct = (await (await blueCreation).json()).product;
     const blueRow = savedProducts.locator(`li[data-product-id="${blueProduct.id}"]`);
 
     await expect(blueRow).toBeVisible({ timeout: 10000 });
-    await expect(blueRow).toContainText('GTIN 04006381333931');
-    await expect(blueRow).toContainText('Reference REF-1');
+    await expect(blueRow).toContainText('Brand: FreshFields');
+    await expect(blueRow).toContainText('GTIN: 04006381333931');
+    await expect(blueRow).toContainText('500 g');
+    await expect(blueRow).toContainText('Reference: REF-1');
 
     // Editing keeps the product list working without touching label history.
     await blueRow.getByRole('button', { name: 'Edit' }).click();
+    await expect(blueRow.getByLabel('Brand Name')).toHaveValue('FreshFields');
+    await expect(blueRow.getByLabel('Net content value')).toHaveValue('500');
+    await expect(blueRow.getByLabel('Net content unit')).toHaveValue('g');
     await blueRow.getByLabel('Product Name').fill('Blue case XL');
+    await blueRow.getByLabel('Net content value').fill('750');
     await blueRow.getByRole('button', { name: 'Save changes' }).click();
     await expect(blueRow).toContainText('Blue case XL');
-    await expect(blueRow).toContainText('Reference REF-1');
+    await expect(blueRow).toContainText('Brand: FreshFields');
+    await expect(blueRow).toContainText('750 g');
+    await expect(blueRow).toContainText('Reference: REF-1');
 
     // An uncorrected number keeps its warning but can still be saved; the
     // stored product is flagged as not a valid GS1 GTIN.
     await savedProducts.getByLabel('Product Name').fill('Red case');
-    await savedProducts.getByLabel('GTIN', { exact: true }).fill('4006381333930');
+    await savedProducts.getByLabel(/^GTIN/).fill('4006381333930');
     await expect(
       savedProducts.getByText('This number does not pass the GS1 check digit')
     ).toBeVisible();
@@ -89,7 +100,7 @@ test('saved products fill the label GTIN for repeat creation', async ({ page }, 
     const redRow = savedProducts.locator(`li[data-product-id="${redProduct.id}"]`);
 
     await expect(redRow).toBeVisible({ timeout: 10000 });
-    await expect(redRow).toContainText('GTIN 04006381333930');
+    await expect(redRow).toContainText('GTIN: 04006381333930');
     await expect(redRow).toContainText('Not a valid GS1 GTIN');
     // A second click confirms so an accidental click cannot remove data.
     await redRow.getByRole('button', { name: 'Delete', exact: true }).click();

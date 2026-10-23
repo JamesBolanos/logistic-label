@@ -15,6 +15,14 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-22 — `UX-003` — Settings form fix and local end-to-end verification
+
+- Result: `/settings` renders and saves again, and the full Playwright suite passes locally (9/9) against the developer Neon branch. The blocker was the Superforms adapter: `zod@4` was paired with the Zod v3 adapter, so `/settings` returned 500 and the label-preview and products specs timed out.
+- Decisions: `labelSettingsSchema` mirrors `validateLabelSettings` — 4–12 digit company prefix and the prefix-dependent serial ceiling — so invalid input is reported inline instead of as a save failure. The unused `productSchema` was deleted; product validation stays in `src/lib/server/db/products.js`. The settings form action records the same `company_settings_saved`/`workflow_failed` operational events as `POST /api/settings` and derives `setup_type` from `is_configured`. Decorative required asterisks in the product form are `aria-hidden`, and `tests/products.spec.js` now locates the field with `/^GTIN/` because the label text is `GTIN *`. `tests/label-preview.spec.js` derives a per-run GS1 company prefix so SSCCs from earlier runs on a persistent database cannot collide.
+- Material files: `src/lib/validation/schemas.js`, `src/routes/(app)/settings/+page.server.js`, `src/routes/(app)/settings/+page.svelte`, `src/lib/components/Labels/SavedProducts.svelte`, `tests/products.spec.js`, `tests/label-preview.spec.js`, `tests/unit/labelSettingsSchema.test.ts`.
+- Validation: `npm run quality` passes (25 files, 188 unit tests, TypeScript check, Vercel build; the two Svelte warnings predate this work); `npx playwright test` passes 9/9 locally. Stale end-to-end test accounts left on the developer database by interrupted runs were removed before the passing run.
+- Next: rerun the CI end-to-end gate on `staging`, then complete the staging smoke checks of the new pages and settings validation before the production release.
+
 ## 2026-10-22 — `UX-002` — Public and application route groups with a dark-mode shell
 
 - Result: the app is split into `(public)`, `(auth)`, and `(app)` SvelteKit route groups. Public pages use a top marketing header and footer; the authenticated workspace uses a fixed left sidebar (Dashboard, Label Generator, Saved Labels, owner Statistics, Settings) with an account header for profile and logout. Dark mode is class-based, applies before first paint, and is available from a shared toggle on every shell. The generator now uses a split-pane layout with the form on the left and the live thermal preview on the right at `lg` and above.

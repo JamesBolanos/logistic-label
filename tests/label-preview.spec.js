@@ -13,6 +13,10 @@ test('signed-in user can generate both available shipping situations', async ({
 
   const testRunId = /** @type {{ testRunId?: string }} */ (testInfo.config.metadata).testRunId;
   const email = createTestUserEmail(testRunId);
+  // A per-run company prefix keeps SSCCs unique across runs on a persistent
+  // development database. Leftover labels sharing a prefix would collide and
+  // make the serial-reference assertion below depend on earlier runs.
+  const companyPrefix = `9${String(Date.now()).slice(-7)}`;
   let accountCreationConfirmed = false;
 
   try {
@@ -76,7 +80,7 @@ test('signed-in user can generate both available shipping situations', async ({
 
     await page.goto('/settings');
     await page.getByLabel('Company Name').fill('Preview Test Company');
-    await page.getByLabel('GS1 Company Prefix').fill('1234567');
+    await page.getByLabel('GS1 Company Prefix').fill(companyPrefix);
     await page.getByLabel('Extension Digit').fill('0');
     await page.getByLabel('Next Serial Reference').fill('1');
     await page.getByRole('button', { name: 'Save Settings' }).click();
@@ -400,7 +404,7 @@ test('signed-in user can generate both available shipping situations', async ({
     const resetSettingsResponse = await page.request.post('/api/settings', {
       data: {
         company_name: 'Preview Test Company',
-        gs1_company_prefix: '1234567',
+        gs1_company_prefix: companyPrefix,
         extension_digit: '0',
         next_serial_reference: 1
       }

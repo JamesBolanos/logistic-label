@@ -283,7 +283,9 @@
                         for="edit_name_{product.id}"
                         class="mb-1 block text-sm font-medium text-muted-foreground"
                       >
-                        Product Name <span class="text-red-600 dark:text-red-400">*</span>
+                        Product Name <span aria-hidden="true" class="text-red-600 dark:text-red-400"
+                          >*</span
+                        >
                       </label>
                       <input
                         id="edit_name_{product.id}"
@@ -326,7 +328,8 @@
                         for="edit_gtin_{product.id}"
                         class="mb-1 block text-sm font-medium text-muted-foreground"
                       >
-                        GTIN <span class="text-red-600 dark:text-red-400">*</span>
+                        GTIN <span aria-hidden="true" class="text-red-600 dark:text-red-400">*</span
+                        >
                       </label>
                       <input
                         id="edit_gtin_{product.id}"
@@ -510,7 +513,7 @@
         <div class="grid gap-3 sm:grid-cols-2">
           <div>
             <label for="product_name" class="mb-1 block text-sm font-medium text-muted-foreground">
-              Product Name <span class="text-red-600 dark:text-red-400">*</span>
+              Product Name <span aria-hidden="true" class="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               id="product_name"
@@ -544,7 +547,7 @@
         <div class="grid gap-3 sm:grid-cols-2">
           <div>
             <label for="product_gtin" class="mb-1 block text-sm font-medium text-muted-foreground">
-              GTIN <span class="text-red-600 dark:text-red-400">*</span>
+              GTIN <span aria-hidden="true" class="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               id="product_gtin"
