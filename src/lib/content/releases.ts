@@ -27,15 +27,27 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     linkLabel: 'Open the workspace'
   },
   {
+    id: '2026-10-22-settings-validation',
+    publishedAt: '2026-10-22',
+    category: 'fix',
+    status: 'published',
+    title: 'Settings catches invalid values before saving',
+    benefit:
+      'The label settings form now explains a bad company prefix, extension digit, or serial reference inline instead of failing after you save, and it warns when the serial reference is too large for the prefix length.',
+    featureKey: 'settings_validation',
+    href: '/settings',
+    linkLabel: 'Review label settings'
+  },
+  {
     id: '2026-10-21-saved-products',
-    publishedAt: '2026-10-21',
+    publishedAt: '2026-10-22',
     category: 'new feature',
-    status: 'draft',
+    status: 'published',
     title: 'Save your products for faster labels',
     benefit:
-      'Keep the products you ship often with their GTINs in Settings, then select one when creating a label to fill its GTIN. Shipment details stay on each label.',
+      'Products now have their own page in the sidebar, with brand and net content alongside each GTIN. Select a saved product when creating a label to fill its product fields; shipment details stay on each label.',
     featureKey: 'saved_products',
-    href: '/settings',
+    href: '/products',
     linkLabel: 'Manage saved products'
   },
   {
