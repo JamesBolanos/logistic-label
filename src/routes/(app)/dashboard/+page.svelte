@@ -88,7 +88,10 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Saved Labels -->
-      <div class="bg-surface overflow-hidden shadow rounded-lg">
+      <a
+        href="/labels/history"
+        class="block bg-surface overflow-hidden shadow rounded-lg transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
         <div class="px-4 py-5 sm:p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
@@ -117,7 +120,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
       <!-- Labels Today -->
       <div class="bg-surface overflow-hidden shadow rounded-lg">
