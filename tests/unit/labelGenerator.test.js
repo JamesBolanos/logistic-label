@@ -156,8 +156,8 @@ describe('guided label PDF rendering', () => {
 
     const content = pdf.toString('utf8');
     expect(content).toContain('/MediaBox [0 0 432 576]');
-    expect(content).toContain('CONTENT AND COUNT');
-    expect(content).toContain('LOT AND DATE TRACEABILITY');
+    expect(content).not.toContain('CONTENT AND COUNT');
+    expect(content).not.toContain('LOT AND DATE TRACEABILITY');
     expect(content).toContain('PACK DATE');
     expect(content).toContain('LOT-26/09');
     expect(content).toContain('\\(13\\)260928\\(10\\)LOT-26/09');

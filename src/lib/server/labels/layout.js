@@ -220,7 +220,7 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
 
   drawLine(content, left, 246, right, 246, 1.5);
   drawLine(content, 190, 246, 190, 286, 0.8);
-  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 166, 278, 260, 13);
+  drawLargeInfoField(content, 'CONTENT / GTIN', labelData.gtin, 18, 166, 278, 260, 13);
   drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 82, 278, 260, 11);
 
   drawCenteredText(content, 'CONTENT AND COUNT', PAGE_WIDTH / 2, 239, 7, true);
@@ -258,13 +258,13 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   drawLine(content, left, 410, right, 410, 0.8);
   drawLine(content, 210, 410, 210, 452, 0.8);
   drawLine(content, 310, 410, 310, 452, 0.8);
-  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 186, 444, 426, 15);
+  drawLargeInfoField(content, 'CONTENT / GTIN', labelData.gtin, 18, 186, 444, 426, 15);
   drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 216, 88, 444, 426, 12);
   drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 316, 92, 444, 426, 11);
 
   drawLine(content, left, 376, right, 376, 1.5);
   drawLine(content, middle, 376, middle, 410, 0.8);
-  drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number || '-', 18, 186, 402);
+  drawInfoFieldFitted(content, 'BATCH / LOT', labelData.lot_number || '-', 18, 186, 402);
   drawInfoFieldFitted(
     content,
     dateOption?.dataTitle || 'DATE',
@@ -275,34 +275,20 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   );
 
   if (traceabilityElements.length) {
-    drawBarcodeBlock(
-      content,
-      'CONTENT AND COUNT',
-      contentElements,
-      366,
-      268,
-      252,
-      LARGE_PAGE_WIDTH
-    );
-    drawBarcodeBlock(
-      content,
-      'LOT AND DATE TRACEABILITY',
-      traceabilityElements,
-      244,
-      146,
-      130,
-      LARGE_PAGE_WIDTH
-    );
-    drawBarcodeBlock(content, 'SSCC', ssccElements, 122, 24, 9, LARGE_PAGE_WIDTH);
+    drawBarcodeBlock(content, null, contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
+    drawBarcodeBlock(content, null, traceabilityElements, 244, 146, 130, LARGE_PAGE_WIDTH);
+    drawBarcodeBlock(content, null, ssccElements, 122, 24, 9, LARGE_PAGE_WIDTH);
     return;
   }
 
-  drawBarcodeBlock(content, 'CONTENT AND COUNT', contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
-  drawBarcodeBlock(content, 'SSCC', ssccElements, 194, 96, 80, LARGE_PAGE_WIDTH);
+  drawBarcodeBlock(content, null, contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
+  drawBarcodeBlock(content, null, ssccElements, 194, 96, 80, LARGE_PAGE_WIDTH);
 }
 
 function drawBarcodeBlock(content, title, elements, titleY, barcodeY, hriY, pageWidth) {
-  drawCenteredText(content, title, pageWidth / 2, titleY, 7, true);
+  if (title) {
+    drawCenteredText(content, title, pageWidth / 2, titleY, 7, true);
+  }
   drawCompliantBarcode(content, elements, barcodeY, pageWidth);
   drawCenteredText(content, humanReadable(elements), pageWidth / 2, hriY, 9);
 }
