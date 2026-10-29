@@ -90,12 +90,12 @@ function drawTransportLabel(content, labelData, elements, originY, compact) {
     // A boxed zone layout lets warehouse staff scan the label visually in the
     // same order every time while keeping the SSCC symbol isolated at the bottom.
     drawOutlineRect(content, left, 18, right - left, 402, 1.2);
-    drawLine(content, left, 332, right, 332, 2.2);
+    drawLine(content, left, 332, right, 332, 1.5);
     drawLine(content, middle, 332, middle, 420, 0.8);
     drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
     drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
 
-    drawLine(content, left, 282, right, 282, 2.2);
+    drawLine(content, left, 282, right, 282, 1.5);
     drawLargeInfoField(
       content,
       'PO NUMBER',
@@ -104,13 +104,14 @@ function drawTransportLabel(content, labelData, elements, originY, compact) {
       252,
       318,
       292,
-      20
+      20,
+      6
     );
 
-    drawLine(content, left, 220, right, 220, 2.2);
+    drawLine(content, left, 220, right, 220, 1.5);
     drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 252, 268, 234, 27);
 
-    drawLine(content, left, 168, right, 168, 2.2);
+    drawLine(content, left, 168, right, 168, 1.5);
     drawLine(content, middle, 168, middle, 220, 0.8);
     drawLargeInfoField(content, 'GROSS WEIGHT', grossWeight, 18, 120, 206, 181, 15);
     drawLargeInfoField(content, 'COUNT', count, 150, 120, 206, 181, 15);
@@ -204,23 +205,23 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
   // The compact label contains routing data plus two complete barcode blocks.
   // Optional traceability is reserved for 6 × 8 rather than shrinking symbols.
   drawOutlineRect(content, left, 4, right - left, 416, 1.2);
-  drawLine(content, left, 354, right, 354, 2.2);
+  drawLine(content, left, 358, right, 358, 1.5);
   drawLine(content, middle, 354, middle, 420, 0.8);
   drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
   drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
 
-  drawLine(content, left, 322, right, 322, 1.2);
-  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 252, 347, 331, 13);
+  drawLine(content, left, 322, right, 322, 0.8);
+  drawWrappedLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 252, 344, 331, 13);
 
-  drawLine(content, left, 286, right, 286, 1.2);
-  drawLine(content, 196, 286, 196, 322, 0.8);
+  drawLine(content, left, 286, right, 286, 0.8);
+  drawLine(content, 190, 286, 190, 322, 0.8);
   drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 166, 314, 298, 13);
-  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 202, 68, 314, 298, 11);
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 196, 82, 314, 298, 11);
 
-  drawLine(content, left, 246, right, 246, 2.2);
+  drawLine(content, left, 246, right, 246, 1.5);
   drawLine(content, 190, 246, 190, 286, 0.8);
-  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 160, 278, 260, 13);
-  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 74, 278, 260, 11);
+  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 166, 278, 260, 13);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 82, 278, 260, 11);
 
   drawCenteredText(content, 'CONTENT AND COUNT', PAGE_WIDTH / 2, 239, 7, true);
   drawCompliantBarcode(content, contentElements, 145, PAGE_WIDTH);
@@ -244,24 +245,24 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   // information must accompany the SSCC. The added height protects all three
   // 31.75 mm barcode heights instead of compressing the symbols.
   drawOutlineRect(content, left, 4, right - left, 564, 1.2);
-  drawLine(content, left, 494, right, 494, 2.2);
+  drawLine(content, left, 496, right, 496, 1.5);
   drawLine(content, middle, 494, middle, 568, 0.8);
   drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 186, 556);
   drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 222, 186, 556);
 
-  drawLine(content, left, 452, right, 452, 1.2);
+  drawLine(content, left, 452, right, 452, 0.8);
   drawLine(content, middle, 452, middle, 494, 0.8);
-  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 186, 486, 468, 15);
+  drawWrappedLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 186, 484, 468, 15);
   drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 222, 186, 486, 468, 15);
 
-  drawLine(content, left, 410, right, 410, 1.2);
-  drawLine(content, 232, 410, 232, 452, 0.8);
-  drawLine(content, 334, 410, 334, 452, 0.8);
-  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 202, 444, 426, 15);
-  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 240, 84, 444, 426, 12);
-  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 342, 72, 444, 426, 11);
+  drawLine(content, left, 410, right, 410, 0.8);
+  drawLine(content, 210, 410, 210, 452, 0.8);
+  drawLine(content, 310, 410, 310, 452, 0.8);
+  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 186, 444, 426, 15);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 216, 88, 444, 426, 12);
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 316, 92, 444, 426, 11);
 
-  drawLine(content, left, 376, right, 376, 2.2);
+  drawLine(content, left, 376, right, 376, 1.5);
   drawLine(content, middle, 376, middle, 410, 0.8);
   drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number || '-', 18, 186, 402);
   drawInfoFieldFitted(
@@ -587,7 +588,7 @@ function drawText(content, text, x, y, size = 10, bold = false) {
 }
 
 function drawInfoField(content, label, value, x, labelY, valueSize = 11) {
-  drawText(content, label, x, labelY, 8);
+  drawText(content, label, x, labelY, 8, true);
   drawText(content, value, x, labelY - 16, valueSize, true);
 }
 
@@ -595,7 +596,7 @@ function drawInfoFieldFitted(content, label, value, x, width, labelY) {
   const labelSize = fitTextSize(label, width, 7, 5);
   const valueText = String(value ?? '');
   const valueSize = fitTextSize(valueText, width, 10, 6);
-  drawText(content, truncateTextToWidth(label, width, labelSize), x, labelY, labelSize);
+  drawText(content, truncateTextToWidth(label, width, labelSize), x, labelY, labelSize, true);
   drawText(
     content,
     truncateTextToWidth(valueText, width, valueSize, true),
@@ -606,10 +607,10 @@ function drawInfoFieldFitted(content, label, value, x, width, labelY) {
   );
 }
 
-function drawLargeInfoField(content, label, value, x, width, labelY, valueY, preferredSize) {
+function drawLargeInfoField(content, label, value, x, width, labelY, valueY, preferredSize, minimumSize = 8) {
   drawText(content, label, x, labelY, 8, true);
   const valueText = String(value ?? '');
-  const valueSize = fitTextSize(valueText, width, preferredSize, 8);
+  const valueSize = fitTextSize(valueText, width, preferredSize, minimumSize);
   drawText(
     content,
     truncateTextToWidth(valueText, width, valueSize, true),
@@ -620,13 +621,65 @@ function drawLargeInfoField(content, label, value, x, width, labelY, valueY, pre
   );
 }
 
+function drawWrappedLargeInfoField(
+  content,
+  label,
+  value,
+  x,
+  width,
+  labelY,
+  valueY,
+  preferredSize,
+  maxLines = 2
+) {
+  drawText(content, label, x, labelY, 8, true);
+  const valueText = String(value ?? '');
+  let size = fitTextSize(valueText, width, preferredSize, 8);
+  if (estimateTextWidth(valueText, size, true) <= width) {
+    drawText(content, valueText, x, valueY, size, true);
+    return;
+  }
+
+  const lines = [];
+  let remaining = valueText;
+  while (remaining && lines.length < maxLines) {
+    if (estimateTextWidth(remaining, size, true) <= width) {
+      lines.push(remaining);
+      remaining = '';
+      continue;
+    }
+
+    let chunk = remaining;
+    while (chunk.length > 1 && estimateTextWidth(chunk, size, true) > width) {
+      chunk = chunk.slice(0, -1);
+    }
+    if (chunk === remaining) chunk = remaining.slice(0, 1);
+    lines.push(chunk);
+    remaining = remaining.slice(chunk.length);
+
+    if (remaining && lines.length === maxLines) {
+      let last = lines.pop();
+      while (last.length > 1 && estimateTextWidth(`${last}...`, size, true) > width) {
+        last = last.slice(0, -1);
+      }
+      lines.push(`${last}...`);
+      remaining = '';
+    }
+  }
+
+  const lineHeight = size + 3;
+  lines.forEach((line, index) => {
+    drawText(content, line, x, valueY - index * lineHeight, size, true);
+  });
+}
+
 function drawAddressBlock(content, label, value, x, width, labelY) {
   drawText(content, label, x, labelY, 8, true);
   const addressLines = getAddressLines(value, width, 4);
   addressLines.forEach((line, index) => {
     const isCompanyLine = index === 0;
     const size = isCompanyLine ? 10 : 8;
-    drawText(content, line, x, labelY - 16 - index * 11, size, isCompanyLine);
+    drawText(content, line, x, labelY - 16 - index * 10, size, isCompanyLine);
   });
 }
 

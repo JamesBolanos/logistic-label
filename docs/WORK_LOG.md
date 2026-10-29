@@ -15,6 +15,14 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-28 — `RENDER-001` — PDF label rendering consistency improvements
+
+- Result: standardized separator stroke hierarchy, added 4 pt text clearance, made field labels bold, widened count and gross-weight cells, and wrapped long PO numbers in structured labels.
+- Decisions: major separators use 1.5 pt, minor separators and dividers use 0.8 pt, outer borders remain 1.2 pt. Long PO numbers wrap to two lines instead of shrinking below 8 pt. Representative PDFs are generated under `.output/representative-pdfs` and are not committed.
+- Material files: `src/lib/server/labels/layout.js`, `tests/unit/labelGenerator.test.js`, `scripts/render-representative-pdfs.js`, `package.json`.
+- Validation: `npm run quality` passes (27 test files, 198 tests, TypeScript check, and Vercel build); `npm run lint` and `npm run format:check` pass.
+- Next: developer creates the feature branch, runs `npm run quality`, opens the PR, and merges.
+
 ## 2026-10-22 — `UX-002`/`UX-003`/`PRODUCT-001` — Production release
 
 - Result: the app shell, dedicated product and printer pages, saved products with brand and net content, and validated label settings are live on `www.sscc-labels.com`. Release notes for the app shell, saved products, and settings validation are published and visible on production `/updates`.

@@ -20,7 +20,13 @@ None.
 
 ## Review
 
-None.
+### `RENDER-001` — Improve PDF label rendering consistency
+
+- Need: representative labels showed inconsistent separator weights, tight text clearance, mixed label typography, and cramped data cells.
+- Outcome: standardized stroke hierarchy, 4 pt text clearance, bold field labels, wider count/gross-weight cells, and wrapped long PO numbers in structured transport labels.
+- Acceptance evidence: `npm run quality` passes (27 test files, 198 tests, TypeScript check, and Vercel build); representative PDFs regenerated under `.output/representative-pdfs`.
+- Status: implementation complete in the working tree; awaiting developer branch, PR, and merge.
+- Source: visual inspection of representative labels on 2026-10-28.
 
 ## Ready
 

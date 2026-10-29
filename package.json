@@ -23,6 +23,7 @@
     "check:js": "tsc --project ./tsconfig.check.json",
     "test:unit": "vitest run tests/unit",
     "quality": "npm run format:check && npm run lint && npm run check && npm run test:unit && npm run db:check && npm run build",
+    "render:representative-pdfs": "node scripts/render-representative-pdfs.js",
     "db:check": "drizzle-kit check --dialect=postgresql --out=./drizzle",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
