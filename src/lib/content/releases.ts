@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-28-mixed-logistic-label',
+    publishedAt: '2026-10-28',
+    category: 'new feature',
+    status: 'published',
+    title: 'Add mixed-pallet logistic labels',
+    benefit:
+      'Create a label for a pallet or carton containing different products. It identifies the physical unit with an SSCC while mixed contents remain in your WMS, ASN, spreadsheet, or another shipment record.',
+    featureKey: 'mixed_logistic_label',
+    href: '/labels',
+    linkLabel: 'Create a mixed-pallet label'
+  },
+  {
     id: '2026-10-28-trade-item-logistic-label',
     publishedAt: '2026-10-28',
     category: 'new feature',

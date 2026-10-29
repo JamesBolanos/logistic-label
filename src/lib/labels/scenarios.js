@@ -87,15 +87,21 @@ export const LABEL_SCENARIOS = Object.freeze([
   },
   {
     id: 'mixed-logistic-unit',
-    labelType: null,
+    labelType: LABEL_TYPES.MIXED_LOGISTIC_UNIT,
     category: 'Mixed products',
     title: 'Ship a pallet containing different products',
-    status: LABEL_SCENARIO_STATUSES.PLANNED,
-    statusLabel: 'Planned',
+    status: LABEL_SCENARIO_STATUSES.AVAILABLE,
+    statusLabel: 'Available',
     targetUser: 'Distribution and fulfilment teams assembling mixed pallets or cartons.',
     description:
       'Identify the physical unit with an SSCC and communicate its different contents through an ASN, WMS, or another shipment record.',
-    outputs: ['Logistic unit: (00) SSCC-18', 'Mixed contents remain in the linked business record']
+    outputs: [
+      'Ship From, Ship To, PO, carrier, weight, and count',
+      'One GS1-128 barcode: (00) SSCC-18',
+      'Mixed contents remain in the linked business record',
+      '4 × 6 and compact print layouts'
+    ],
+    actionLabel: 'Create a mixed-pallet label'
   },
   {
     id: 'customer-routing-guide',

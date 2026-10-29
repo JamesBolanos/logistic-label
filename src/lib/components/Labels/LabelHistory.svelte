@@ -332,7 +332,7 @@
                       label.template_version
                     )}
                   </div>
-                {:else if label.label_type === LABEL_TYPES.SSCC_ONLY}
+                {:else if label.label_type === LABEL_TYPES.SSCC_ONLY || label.label_type === LABEL_TYPES.MIXED_LOGISTIC_UNIT}
                   {#if label.ship_to}
                     <div>Ship to: {label.ship_to}</div>
                     {#if label.transport_count}

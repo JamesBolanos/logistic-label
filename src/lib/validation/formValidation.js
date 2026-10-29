@@ -66,7 +66,10 @@ export function validateLabelForm(formData) {
     errors.print_layout = 'Choose a supported print layout';
   }
 
-  if (formData.label_type === LABEL_TYPES.SSCC_ONLY) {
+  if (
+    formData.label_type === LABEL_TYPES.SSCC_ONLY ||
+    formData.label_type === LABEL_TYPES.MIXED_LOGISTIC_UNIT
+  ) {
     if (!SSCC_PRINT_LAYOUTS.has(printLayout)) {
       errors.print_layout = 'Choose a supported transport-label print layout';
     }
@@ -191,7 +194,7 @@ export function validateLabelForm(formData) {
 export function sanitizeLabelForm(formData) {
   const labelType = String(formData?.label_type || '').trim();
 
-  if (labelType === LABEL_TYPES.SSCC_ONLY) {
+  if (labelType === LABEL_TYPES.SSCC_ONLY || labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT) {
     return {
       label_type: labelType,
       template_version: getTemplateVersionForLabelType(labelType),

@@ -115,11 +115,15 @@
       <div
         class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4"
       >
-        <h3 class="font-semibold text-blue-950">Identify and route one shipping unit</h3>
+        <h3 class="font-semibold text-blue-950">
+          {labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT
+            ? 'Identify a mixed pallet or carton'
+            : 'Identify and route one shipping unit'}
+        </h3>
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
-          The printed transport information helps people route the shipment. The barcode contains
-          only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or
-          another shipment record.
+          {labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT
+            ? 'The barcode contains only AI (00) and the allocated SSCC. Mixed contents stay in your WMS, ASN, spreadsheet, or another shipment record.'
+            : 'The printed transport information helps people route the shipment. The barcode contains only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or another shipment record.'}
         </p>
       </div>
 

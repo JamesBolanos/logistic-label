@@ -35,7 +35,8 @@ export function generateLogisticLabelLayout(labelData, options = {}) {
 
   if (
     labelData.template_version === TEMPLATE_VERSIONS.TRANSPORT &&
-    labelData.label_type === LABEL_TYPES.SSCC_ONLY
+    (labelData.label_type === LABEL_TYPES.SSCC_ONLY ||
+      labelData.label_type === LABEL_TYPES.MIXED_LOGISTIC_UNIT)
   ) {
     return generateTransportLabelLayout(labelData);
   }

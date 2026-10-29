@@ -15,7 +15,8 @@ describe('business-situation label choices', () => {
     expect(availableScenarios.map((scenario) => scenario.labelType)).toEqual([
       LABEL_TYPES.SSCC_ONLY,
       LABEL_TYPES.HOMOGENEOUS_UNIT,
-      LABEL_TYPES.TRADE_ITEM_UNIT
+      LABEL_TYPES.TRADE_ITEM_UNIT,
+      LABEL_TYPES.MIXED_LOGISTIC_UNIT
     ]);
     expect(
       LABEL_SCENARIOS.filter((scenario) => scenario.status !== LABEL_SCENARIO_STATUSES.AVAILABLE)

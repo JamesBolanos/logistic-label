@@ -136,7 +136,10 @@ const AI_DEFINITIONS = {
 
 /** @param {Record<string, unknown>} labelData @returns {Gs1Element[]} */
 export function buildGs1Elements(labelData) {
-  if (labelData.label_type === 'sscc_only') {
+  if (
+    labelData.label_type === 'sscc_only' ||
+    labelData.label_type === 'mixed_logistic_unit'
+  ) {
     return [{ ai: '00', value: String(labelData.sscc ?? '') }].filter((item) => item.value);
   }
 

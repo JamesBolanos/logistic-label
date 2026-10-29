@@ -7,9 +7,10 @@ describe('public supported-label guide', () => {
     expect(SUPPORTED_LABEL_GUIDES.map((guide) => guide.labelType)).toEqual([
       LABEL_TYPES.SSCC_ONLY,
       LABEL_TYPES.HOMOGENEOUS_UNIT,
-      LABEL_TYPES.TRADE_ITEM_UNIT
+      LABEL_TYPES.TRADE_ITEM_UNIT,
+      LABEL_TYPES.MIXED_LOGISTIC_UNIT
     ]);
-    expect(new Set(SUPPORTED_LABEL_GUIDES.map((guide) => guide.id)).size).toBe(3);
+    expect(new Set(SUPPORTED_LABEL_GUIDES.map((guide) => guide.id)).size).toBe(4);
   });
 
   it('links directly to the matching generator workflow', () => {
