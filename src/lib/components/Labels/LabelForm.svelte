@@ -334,7 +334,7 @@
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
           {labelType === LABEL_TYPES.TRADE_ITEM_UNIT
             ? 'The barcode identifies the complete shipping unit with AI (01) GTIN. A separate bottom barcode identifies the logistic unit with AI (00) SSCC.'
-            : 'The content barcode identifies the contained item with AI (02) and its count with AI (37). A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC.'}
+            : 'The content barcode identifies the contained item with AI (02) and its count with AI (37). A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC. Ship From, Ship To, PO, carrier, and Gross Weight are printed for handling but are not encoded.'}
         </p>
       </div>
 
