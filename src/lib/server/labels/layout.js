@@ -262,7 +262,7 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
 
   drawLine(content, left, 376, right, 376, 1.5);
   drawLine(content, middle, 376, middle, 410, 0.8);
-  drawInfoFieldFitted(content, 'BATCH / LOT', labelData.lot_number || '-', 18, 186, 402);
+  drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number || '-', 18, 186, 402);
   drawInfoFieldFitted(
     content,
     dateOption?.dataTitle || 'DATE',
@@ -427,7 +427,7 @@ function drawHomogeneousTraceabilityFields(content, labelData) {
 
   if (hasDate && hasLot) {
     drawInfoFieldFitted(content, dateOption.dataTitle, labelData.date_value, MARGIN, 88, 356);
-    drawInfoFieldFitted(content, 'BATCH / LOT', labelData.lot_number, 106, 78, 356);
+    drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number, 106, 78, 356);
     drawInfoFieldFitted(content, 'SSCC', labelData.sscc, 190, 80, 356);
     return;
   }
@@ -435,7 +435,7 @@ function drawHomogeneousTraceabilityFields(content, labelData) {
   if (hasDate) {
     drawInfoFieldFitted(content, dateOption.dataTitle, labelData.date_value, MARGIN, 126, 356);
   } else {
-    drawInfoFieldFitted(content, 'BATCH / LOT', labelData.lot_number, MARGIN, 126, 356);
+    drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number, MARGIN, 126, 356);
   }
 
   drawInfoFieldFitted(content, 'SSCC', labelData.sscc, 154, 116, 356);
