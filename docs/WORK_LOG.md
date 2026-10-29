@@ -15,6 +15,14 @@ Keep the newest entry first and include only:
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
 
+## 2026-10-28 — `TRADE-001` — Trade-item logistic unit label style
+
+- Result: added a trade-item logistic unit workflow using `AI (01)` GTIN, optional lot/date, transport fields, and the existing 4×6/6×8 layouts. The form hides count and packaging level for this style, and verification checks `AI (01)` without `AI (02)` or `AI (37)`.
+- Decisions: reuse the structured homogeneous renderer with trade-item-specific field labels and barcode filters. Product GTINs are trade-item GTINs; the selected label type determines whether they are encoded as `AI (01)` or `AI (02)`.
+- Material files: `src/lib/labels/workflows.js`, `src/lib/labels/scenarios.js`, `src/lib/labels/guide.js`, `src/lib/validation/formValidation.js`, `src/lib/components/Labels/LabelForm.svelte`, `src/lib/components/Labels/LabelHistory.svelte`, `src/lib/labels/verification.js`, `src/lib/server/pdf/gs1Barcode.js`, `src/lib/server/labels/layout.js`, tests.
+- Validation: `npm run quality` passes.
+- Next: developer creates the feature branch, runs E2E, opens the PR, and merges.
+
 ## 2026-10-28 — `RENDER-001` — PDF label rendering consistency improvements
 
 - Result: standardized separator stroke hierarchy, added 4 pt text clearance, made field labels bold, widened count and gross-weight cells, and wrapped long PO numbers in structured labels.

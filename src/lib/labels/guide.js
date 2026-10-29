@@ -52,6 +52,28 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
     ],
     sizes: ['4 × 6 — basic contents', '6 × 8 — detailed contents with lot or date'],
     generatorHref: '/labels?type=homogeneous_unit'
+  },
+  {
+    id: 'trade-item-logistic-unit',
+    labelType: LABEL_TYPES.TRADE_ITEM_UNIT,
+    category: 'Orderable case or pallet',
+    title: 'Ship a case or pallet sold as one item',
+    summary:
+      'Describe a logistic unit that is itself an orderable trade item, using its own GTIN instead of a contained-content GTIN.',
+    useWhen: [
+      'The complete case or pallet has its own orderable GTIN.',
+      'You need lot or date traceability for that trade item.',
+      'You do not need to count identical contained items.'
+    ],
+    avoidWhen: [
+      'The unit contains many identical cases or items that should use AI (02) CONTENT and AI (37) COUNT.',
+      'The logistic unit contains different products or GTINs.'
+    ],
+    requiredData: ['Ship From', 'Ship To', 'Trade item GTIN'],
+    optionalData: ['PO Number', 'Carrier', 'Gross Weight', 'Lot', 'One applicable date'],
+    barcodeSummary: ['(01) GTIN', 'Optional date + (10) lot', '(00) SSCC-18 at the bottom'],
+    sizes: ['4 × 6 — basic trade item', '6 × 8 — detailed trade item with lot or date'],
+    generatorHref: '/labels?type=trade_item_unit'
   }
 ]);
 
