@@ -110,7 +110,7 @@
     </div>
   {/if}
 
-  {#if labelType === LABEL_TYPES.SSCC_ONLY}
+  {#if labelType === LABEL_TYPES.SSCC_ONLY || labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT}
     <div class="space-y-4">
       <div
         class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4"
