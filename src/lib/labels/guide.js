@@ -11,14 +11,16 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
     category: 'Standard transport identification',
     title: 'Track one pallet, carton, or parcel',
     summary:
-      'Give one physical shipping unit a unique SSCC while keeping its contents in an ASN, WMS, spreadsheet, or another business record.',
+      'Identify one physical shipping unit with an SSCC. Use this when the pallet itself is the important identifier and its contents do not need to be shown; one product or mixed products are both fine. No GTIN, content, batch/lot, or item count is required.',
     useWhen: [
       'You need to identify and route one logistic unit.',
-      'The contents are already recorded somewhere else.',
-      'A customer-specific routing guide does not require another barcode.'
+      'The pallet itself is the important identifier.',
+      'Contents are one product or mixed and do not need to be encoded.',
+      'You only need an SSCC plus printed transport details.'
     ],
     avoidWhen: [
       'The label must encode a GTIN, item count, lot, or date.',
+      'The complete unit is itself an orderable trade item.',
       'The receiving customer provides a mandatory label specification.'
     ],
     requiredData: ['Ship From', 'Ship To', 'Configured GS1 Company Prefix'],

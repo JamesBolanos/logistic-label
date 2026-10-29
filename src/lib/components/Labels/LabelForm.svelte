@@ -122,8 +122,8 @@
         </h3>
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
           {labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT
-            ? 'The barcode contains only AI (00) and the allocated SSCC. Mixed contents stay in your WMS, ASN, spreadsheet, or another shipment record.'
-            : 'The printed transport information helps people route the shipment. The barcode contains only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or another shipment record.'}
+            ? 'The pallet itself is the important identifier. The barcode contains only AI (00) and the allocated SSCC. No GTIN, content, batch/lot, or item count is required. Gross weight and other transport details can still be printed; gross weight does not require content data.'
+            : 'The pallet itself is the important identifier. The printed transport information helps people route the shipment. The barcode contains only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or another shipment record. No GTIN, content, batch/lot, or item count is required.'}
         </p>
       </div>
 

@@ -22,7 +22,7 @@ export const LABEL_SCENARIOS = Object.freeze([
     statusLabel: 'Available',
     targetUser: 'Warehouses, 3PL operators, cross-docking teams, and freight forwarders.',
     description:
-      'Show where one pallet, carton, or parcel is moving and give that physical shipping unit a unique identity. Use this for mixed pallets too: keep the mixed contents in an ASN, WMS, spreadsheet, or another shipment record.',
+      'Identify one physical shipping unit with an SSCC. Use this when the pallet itself is the important identifier and its contents do not need to be shown: the unit can contain one product or mixed products. No GTIN, content, batch/lot, or item count is required. Ship From, Ship To, PO, carrier, gross weight, and transport count can still be printed for handling, but gross weight does not require content data.',
     outputs: [
       'Ship From, Ship To, PO, carrier, weight, and count',
       'One GS1-128 barcode: (00) SSCC-18',
