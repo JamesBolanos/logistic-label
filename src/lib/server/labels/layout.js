@@ -223,11 +223,9 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
   drawLargeInfoField(content, 'CONTENT / GTIN', labelData.gtin, 18, 166, 278, 260, 13);
   drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 82, 278, 260, 11);
 
-  drawCenteredText(content, 'CONTENT AND COUNT', PAGE_WIDTH / 2, 239, 7, true);
   drawCompliantBarcode(content, contentElements, 145, PAGE_WIDTH);
   drawCenteredText(content, humanReadable(contentElements), PAGE_WIDTH / 2, 129, 9);
 
-  drawCenteredText(content, 'SSCC', PAGE_WIDTH / 2, 118, 7, true);
   drawCompliantBarcode(content, ssccElements, 25, PAGE_WIDTH);
   drawCenteredText(content, humanReadable(ssccElements), PAGE_WIDTH / 2, 10, 9);
 }
