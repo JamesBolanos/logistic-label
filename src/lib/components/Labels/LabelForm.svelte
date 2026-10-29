@@ -323,11 +323,14 @@
         class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4"
       >
         <h3 class="font-semibold text-blue-950">
-          Describe several identical cases or items on one shipping unit
+          {labelType === LABEL_TYPES.TRADE_ITEM_UNIT
+            ? 'Describe one case or pallet sold as a trade item'
+            : 'Describe several identical cases or items on one shipping unit'}
         </h3>
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
-          The content barcode identifies the contained item with AI (02) and its count with AI (37).
-          A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC.
+          {labelType === LABEL_TYPES.TRADE_ITEM_UNIT
+            ? 'The barcode identifies the complete shipping unit with AI (01) GTIN. A separate bottom barcode identifies the logistic unit with AI (00) SSCC.'
+            : 'The content barcode identifies the contained item with AI (02) and its count with AI (37). A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC.'}
         </p>
       </div>
 
@@ -501,49 +504,52 @@
           <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.gtin}</p>
         {/if}
         <p class="mt-1 text-xs text-subtle-foreground">
-          Enter the GTIN assigned to the highest packaging level contained. GTIN-8, GTIN-12, and
-          GTIN-13 values are padded to 14 digits when encoded.
+          {labelType === LABEL_TYPES.TRADE_ITEM_UNIT
+            ? 'Enter the GTIN of the complete case or pallet. GTIN-8, GTIN-12, and GTIN-13 values are padded to 14 digits when encoded.'
+            : 'Enter the GTIN assigned to the highest packaging level contained. GTIN-8, GTIN-12, and GTIN-13 values are padded to 14 digits when encoded.'}
         </p>
       </div>
 
-      <div>
-        <label for="packaging_level" class="mb-1 block text-sm font-medium text-muted-foreground">
-          What does this GTIN identify?
-        </label>
-        <select
-          id="packaging_level"
-          bind:value={formData.packaging_level}
-          class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        >
-          <option value="">Select the contained trade item level</option>
-          {#each PACKAGING_LEVELS as level (level.value)}
-            <option value={level.value}>{level.label}</option>
-          {/each}
-        </select>
-        {#if errors.packaging_level}
-          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.packaging_level}</p>
-        {/if}
-      </div>
+      {#if labelType !== LABEL_TYPES.TRADE_ITEM_UNIT}
+        <div>
+          <label for="packaging_level" class="mb-1 block text-sm font-medium text-muted-foreground">
+            What does this GTIN identify?
+          </label>
+          <select
+            id="packaging_level"
+            bind:value={formData.packaging_level}
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Select the contained trade item level</option>
+            {#each PACKAGING_LEVELS as level (level.value)}
+              <option value={level.value}>{level.label}</option>
+            {/each}
+          </select>
+          {#if errors.packaging_level}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.packaging_level}</p>
+          {/if}
+        </div>
 
-      <div>
-        <label for="quantity" class="mb-1 block text-sm font-medium text-muted-foreground">
-          Number of trade items identified by this GTIN
-        </label>
-        <input
-          type="number"
-          id="quantity"
-          bind:value={formData.quantity}
-          class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          min="1"
-          max="9999"
-          step="1"
-          required
-        />
-        {#if errors.quantity}
-          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity}</p>
-        {/if}
-      </div>
+        <div>
+          <label for="quantity" class="mb-1 block text-sm font-medium text-muted-foreground">
+            Number of trade items identified by this GTIN
+          </label>
+          <input
+            type="number"
+            id="quantity"
+            bind:value={formData.quantity}
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            min="1"
+            max="9999"
+            step="1"
+            required
+          />
+          {#if errors.quantity}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity}</p>
+          {/if}
+        </div>
+      {/if}
 
       <fieldset class="space-y-4 rounded-md border border-border-default p-4">
         <legend class="px-1 text-sm font-medium text-muted-foreground">

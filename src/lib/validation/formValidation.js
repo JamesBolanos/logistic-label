@@ -74,6 +74,44 @@ export function validateLabelForm(formData) {
     return { isValid: Object.keys(errors).length === 0, errors };
   }
 
+  if (formData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT) {
+    if (!HOMOGENEOUS_PRINT_LAYOUTS.has(printLayout)) {
+      errors.print_layout = 'Choose either the 4 × 6 or 6 × 8 trade-item layout';
+    }
+
+    validateTransportFields(formData, errors, { includeCount: false });
+
+    if (!formData.gtin) {
+      errors.gtin = 'Trade item GTIN is required';
+    } else if (!validateGTIN(formData.gtin)) {
+      errors.gtin = 'Enter a valid GTIN-8, GTIN-12, GTIN-13, or GTIN-14';
+    }
+
+    const lotNumber = String(formData.lot_number || '').trim();
+    if (lotNumber && !validateLotNumber(lotNumber)) {
+      errors.lot_number =
+        'Lot number must contain 1 to 20 GS1-compatible letters, numbers, or symbols';
+    }
+
+    const dateAi = String(formData.date_ai || '').trim();
+    const dateValue = String(formData.date_value || '').trim();
+    if (dateAi && !isHomogeneousDateAi(dateAi)) {
+      errors.date_ai = 'Choose a supported GS1 date type';
+    } else if (dateAi && !dateValue) {
+      errors.date_value = 'Enter the selected date';
+    } else if (!dateAi && dateValue) {
+      errors.date_ai = 'Choose what this date means';
+    } else if (dateValue && !validateISODate(dateValue)) {
+      errors.date_value = 'Enter a valid date';
+    }
+
+    if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE && (lotNumber || dateAi || dateValue)) {
+      errors.print_layout = 'Choose the 6 × 8 layout when adding a lot number or date';
+    }
+
+    return { isValid: Object.keys(errors).length === 0, errors };
+  }
+
   if (!HOMOGENEOUS_PRINT_LAYOUTS.has(printLayout)) {
     errors.print_layout = 'Choose either the 4 × 6 or 6 × 8 identical-contents layout';
   }
@@ -174,6 +212,30 @@ export function sanitizeLabelForm(formData) {
       gross_weight_unit: normalizeSingleLine(formData.gross_weight_unit) || null,
       transport_count: hasValue(formData.transport_count) ? Number(formData.transport_count) : null,
       transport_count_type: normalizeSingleLine(formData.transport_count_type) || null
+    };
+  }
+
+  if (labelType === LABEL_TYPES.TRADE_ITEM_UNIT) {
+    return {
+      label_type: labelType,
+      template_version: getTemplateVersionForLabelType(labelType),
+      gtin: normalizeGTIN(formData.gtin || ''),
+      lot_number: String(formData.lot_number || '').trim() || null,
+      production_date: null,
+      date_ai: String(formData.date_ai || '').trim() || null,
+      date_value: String(formData.date_value || '').trim() || null,
+      quantity: null,
+      weight_pounds: null,
+      packaging_level: null,
+      print_layout: String(formData.print_layout || DEFAULT_PRINT_LAYOUT),
+      ship_from: normalizeAddress(formData.ship_from),
+      ship_to: normalizeAddress(formData.ship_to),
+      purchase_order: normalizeSingleLine(formData.purchase_order) || null,
+      carrier: normalizeSingleLine(formData.carrier) || null,
+      gross_weight: hasValue(formData.gross_weight) ? Number(formData.gross_weight) : null,
+      gross_weight_unit: normalizeSingleLine(formData.gross_weight_unit) || null,
+      transport_count: null,
+      transport_count_type: null
     };
   }
 

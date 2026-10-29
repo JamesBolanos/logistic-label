@@ -20,7 +20,21 @@ None.
 
 ## Review
 
-None.
+### `RENDER-001` — Improve PDF label rendering consistency
+
+- Need: representative labels showed inconsistent separator weights, tight text clearance, mixed label typography, and cramped data cells.
+- Outcome: standardized stroke hierarchy, 4 pt text clearance, bold field labels, wider count/gross-weight cells, and wrapped long PO numbers in structured transport labels.
+- Acceptance evidence: `npm run quality` passes (27 test files, 198 tests, TypeScript check, and Vercel build); representative PDFs regenerated under `.output/representative-pdfs`.
+- Status: implementation complete in the working tree; awaiting developer branch, PR, and merge.
+- Source: visual inspection of representative labels on 2026-10-28.
+
+### `TRADE-001` — Add trade-item logistic unit label style
+
+- Need: support cases or pallets that are themselves orderable trade items using `AI (01)`.
+- Outcome: new `trade_item_unit` label type with GTIN, optional lot/date, transport fields, 4×6/6×8 layouts, and verification checks.
+- Acceptance evidence: `npm run quality` passes; manual PDF render confirms `AI (01)` barcode, optional traceability barcode, and lowest SSCC barcode.
+- Status: implementation complete in the working tree; awaiting developer branch, PR, and merge.
+- Source: GS1 Logistic Label Guideline and product roadmap.
 
 ## Ready
 

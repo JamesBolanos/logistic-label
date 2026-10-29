@@ -51,20 +51,23 @@ export const LABEL_SCENARIOS = Object.freeze([
   },
   {
     id: 'trade-item-logistic-unit',
-    labelType: null,
+    labelType: LABEL_TYPES.TRADE_ITEM_UNIT,
     category: 'Orderable case or pallet',
     title: 'Ship a case or pallet sold as one item',
-    status: LABEL_SCENARIO_STATUSES.PLANNED,
-    statusLabel: 'Planned',
+    status: LABEL_SCENARIO_STATUSES.AVAILABLE,
+    statusLabel: 'Available',
     targetUser: 'Suppliers whose complete case or pallet has its own orderable GTIN.',
     description:
-      'This is different from a pallet containing many cases. The complete shipping unit is itself the trade item.',
+      'Use this when the complete case or pallet is itself an orderable trade item with its own GTIN. That is different from a pallet containing many identical cases: the latter uses AI (02) CONTENT plus AI (37) COUNT, while this style uses AI (01) GTIN. GS1 does not allow AI (01) GTIN and AI (02) CONTENT on the same logistic label.',
     // GS1 does not allow (01) GTIN to be combined with (02) CONTENT on one logistic label.
     outputs: [
       'Trade item: (01) GTIN',
+      'No (02) CONTENT or (37) COUNT',
       'Applicable lot or date attributes',
-      'Logistic unit: (00) SSCC-18'
-    ]
+      'Logistic unit: (00) SSCC-18',
+      '4 × 6 basic or 6 × 8 detailed layout'
+    ],
+    actionLabel: 'Create a trade-item label'
   },
   {
     id: 'variable-measure',

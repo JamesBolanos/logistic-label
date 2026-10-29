@@ -25,8 +25,10 @@ const MINIMUM_BAR_HEIGHT_POINTS = (MINIMUM_BAR_HEIGHT_MM / MILLIMETERS_PER_INCH)
 
 export function generateLogisticLabelLayout(labelData, options = {}) {
   if (
-    labelData.template_version === TEMPLATE_VERSIONS.STRUCTURED_CONTENT &&
-    labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT
+    (labelData.template_version === TEMPLATE_VERSIONS.STRUCTURED_CONTENT &&
+      labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT) ||
+    (labelData.template_version === TEMPLATE_VERSIONS.TRADE_ITEM_CONTENT &&
+      labelData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT)
   ) {
     return generateStructuredHomogeneousLabelLayout(labelData);
   }
@@ -90,12 +92,12 @@ function drawTransportLabel(content, labelData, elements, originY, compact) {
     // A boxed zone layout lets warehouse staff scan the label visually in the
     // same order every time while keeping the SSCC symbol isolated at the bottom.
     drawOutlineRect(content, left, 18, right - left, 402, 1.2);
-    drawLine(content, left, 332, right, 332, 2.2);
+    drawLine(content, left, 332, right, 332, 1.5);
     drawLine(content, middle, 332, middle, 420, 0.8);
     drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
     drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
 
-    drawLine(content, left, 282, right, 282, 2.2);
+    drawLine(content, left, 282, right, 282, 1.5);
     drawLargeInfoField(
       content,
       'PO NUMBER',
@@ -104,13 +106,14 @@ function drawTransportLabel(content, labelData, elements, originY, compact) {
       252,
       318,
       292,
-      20
+      20,
+      6
     );
 
-    drawLine(content, left, 220, right, 220, 2.2);
+    drawLine(content, left, 220, right, 220, 1.5);
     drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 252, 268, 234, 27);
 
-    drawLine(content, left, 168, right, 168, 2.2);
+    drawLine(content, left, 168, right, 168, 1.5);
     drawLine(content, middle, 168, middle, 220, 0.8);
     drawLargeInfoField(content, 'GROSS WEIGHT', grossWeight, 18, 120, 206, 181, 15);
     drawLargeInfoField(content, 'COUNT', count, 150, 120, 206, 181, 15);
@@ -198,35 +201,49 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
   const left = 12;
   const right = PAGE_WIDTH - 12;
   const middle = PAGE_WIDTH / 2;
-  const contentElements = getHomogeneousContentElements(elements);
+  const isTradeItem = labelData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT;
+  const contentElements = isTradeItem
+    ? elements.filter((item) => item.ai === '01')
+    : getHomogeneousContentElements(elements);
   const ssccElements = getSSCCElements(elements);
 
   // The compact label contains routing data plus two complete barcode blocks.
   // Optional traceability is reserved for 6 × 8 rather than shrinking symbols.
   drawOutlineRect(content, left, 4, right - left, 416, 1.2);
-  drawLine(content, left, 354, right, 354, 2.2);
+  drawLine(content, left, 358, right, 358, 1.5);
   drawLine(content, middle, 354, middle, 420, 0.8);
   drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
   drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
 
-  drawLine(content, left, 322, right, 322, 1.2);
-  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 252, 347, 331, 13);
+  drawLine(content, left, 322, right, 322, 0.8);
+  drawWrappedLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 252, 344, 331, 13);
 
-  drawLine(content, left, 286, right, 286, 1.2);
-  drawLine(content, 196, 286, 196, 322, 0.8);
+  drawLine(content, left, 286, right, 286, 0.8);
+  drawLine(content, 190, 286, 190, 322, 0.8);
   drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 18, 166, 314, 298, 13);
-  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 202, 68, 314, 298, 11);
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 196, 82, 314, 298, 11);
 
-  drawLine(content, left, 246, right, 246, 2.2);
-  drawLine(content, 190, 246, 190, 286, 0.8);
-  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 160, 278, 260, 13);
-  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 74, 278, 260, 11);
+  drawLine(content, left, 246, right, 246, 1.5);
+  if (!isTradeItem) {
+    drawLine(content, 190, 246, 190, 286, 0.8);
+  }
+  drawLargeInfoField(
+    content,
+    isTradeItem ? 'GTIN' : 'CONTENT',
+    labelData.gtin,
+    18,
+    isTradeItem ? 264 : 166,
+    278,
+    260,
+    13
+  );
+  if (!isTradeItem) {
+    drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 82, 278, 260, 11);
+  }
 
-  drawCenteredText(content, 'CONTENT AND COUNT', PAGE_WIDTH / 2, 239, 7, true);
   drawCompliantBarcode(content, contentElements, 145, PAGE_WIDTH);
   drawCenteredText(content, humanReadable(contentElements), PAGE_WIDTH / 2, 129, 9);
 
-  drawCenteredText(content, 'SSCC', PAGE_WIDTH / 2, 118, 7, true);
   drawCompliantBarcode(content, ssccElements, 25, PAGE_WIDTH);
   drawCenteredText(content, humanReadable(ssccElements), PAGE_WIDTH / 2, 10, 9);
 }
@@ -235,7 +252,10 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   const left = 12;
   const right = LARGE_PAGE_WIDTH - 12;
   const middle = LARGE_PAGE_WIDTH / 2;
-  const contentElements = getHomogeneousContentElements(elements);
+  const isTradeItem = labelData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT;
+  const contentElements = isTradeItem
+    ? elements.filter((item) => item.ai === '01')
+    : getHomogeneousContentElements(elements);
   const traceabilityElements = getHomogeneousTraceabilityElements(elements);
   const ssccElements = getSSCCElements(elements);
   const dateOption = getHomogeneousDateOption(labelData.date_ai);
@@ -244,24 +264,39 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   // information must accompany the SSCC. The added height protects all three
   // 31.75 mm barcode heights instead of compressing the symbols.
   drawOutlineRect(content, left, 4, right - left, 564, 1.2);
-  drawLine(content, left, 494, right, 494, 2.2);
+  drawLine(content, left, 496, right, 496, 1.5);
   drawLine(content, middle, 494, middle, 568, 0.8);
   drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 186, 556);
   drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 222, 186, 556);
 
-  drawLine(content, left, 452, right, 452, 1.2);
+  drawLine(content, left, 452, right, 452, 0.8);
   drawLine(content, middle, 452, middle, 494, 0.8);
-  drawLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 186, 486, 468, 15);
+  drawWrappedLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 186, 484, 468, 15);
   drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 222, 186, 486, 468, 15);
 
-  drawLine(content, left, 410, right, 410, 1.2);
-  drawLine(content, 232, 410, 232, 452, 0.8);
-  drawLine(content, 334, 410, 334, 452, 0.8);
-  drawLargeInfoField(content, 'CONTENT GTIN', labelData.gtin, 18, 202, 444, 426, 15);
-  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 240, 84, 444, 426, 12);
-  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 342, 72, 444, 426, 11);
+  drawLine(content, left, 410, right, 410, 0.8);
+  if (!isTradeItem) {
+    drawLine(content, 210, 410, 210, 452, 0.8);
+    drawLine(content, 310, 410, 310, 452, 0.8);
+  } else {
+    drawLine(content, 310, 410, 310, 452, 0.8);
+  }
+  drawLargeInfoField(
+    content,
+    isTradeItem ? 'GTIN' : 'CONTENT',
+    labelData.gtin,
+    18,
+    isTradeItem ? 286 : 186,
+    444,
+    426,
+    15
+  );
+  if (!isTradeItem) {
+    drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 216, 88, 444, 426, 12);
+  }
+  drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 316, 92, 444, 426, 11);
 
-  drawLine(content, left, 376, right, 376, 2.2);
+  drawLine(content, left, 376, right, 376, 1.5);
   drawLine(content, middle, 376, middle, 410, 0.8);
   drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number || '-', 18, 186, 402);
   drawInfoFieldFitted(
@@ -274,34 +309,20 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   );
 
   if (traceabilityElements.length) {
-    drawBarcodeBlock(
-      content,
-      'CONTENT AND COUNT',
-      contentElements,
-      366,
-      268,
-      252,
-      LARGE_PAGE_WIDTH
-    );
-    drawBarcodeBlock(
-      content,
-      'LOT AND DATE TRACEABILITY',
-      traceabilityElements,
-      244,
-      146,
-      130,
-      LARGE_PAGE_WIDTH
-    );
-    drawBarcodeBlock(content, 'SSCC', ssccElements, 122, 24, 9, LARGE_PAGE_WIDTH);
+    drawBarcodeBlock(content, null, contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
+    drawBarcodeBlock(content, null, traceabilityElements, 244, 146, 130, LARGE_PAGE_WIDTH);
+    drawBarcodeBlock(content, null, ssccElements, 122, 24, 9, LARGE_PAGE_WIDTH);
     return;
   }
 
-  drawBarcodeBlock(content, 'CONTENT AND COUNT', contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
-  drawBarcodeBlock(content, 'SSCC', ssccElements, 194, 96, 80, LARGE_PAGE_WIDTH);
+  drawBarcodeBlock(content, null, contentElements, 366, 268, 252, LARGE_PAGE_WIDTH);
+  drawBarcodeBlock(content, null, ssccElements, 194, 96, 80, LARGE_PAGE_WIDTH);
 }
 
 function drawBarcodeBlock(content, title, elements, titleY, barcodeY, hriY, pageWidth) {
-  drawCenteredText(content, title, pageWidth / 2, titleY, 7, true);
+  if (title) {
+    drawCenteredText(content, title, pageWidth / 2, titleY, 7, true);
+  }
   drawCompliantBarcode(content, elements, barcodeY, pageWidth);
   drawCenteredText(content, humanReadable(elements), pageWidth / 2, hriY, 9);
 }
@@ -496,10 +517,11 @@ function generateLegacyLabelLayout(labelData, options = {}) {
   const elements = buildGs1Elements(labelData);
   const content = [];
 
-  drawCenteredText(
+  const companyName = options.company_name || labelData.company_name || 'COMPANY NAME';
+  drawText(
     content,
-    options.company_name || labelData.company_name || 'COMPANY NAME',
-    PAGE_WIDTH / 2,
+    companyName,
+    round((PAGE_WIDTH - measureHelveticaBold(companyName, 15)) / 2),
     405,
     15,
     true
@@ -587,7 +609,7 @@ function drawText(content, text, x, y, size = 10, bold = false) {
 }
 
 function drawInfoField(content, label, value, x, labelY, valueSize = 11) {
-  drawText(content, label, x, labelY, 8);
+  drawText(content, label, x, labelY, 8, true);
   drawText(content, value, x, labelY - 16, valueSize, true);
 }
 
@@ -595,7 +617,7 @@ function drawInfoFieldFitted(content, label, value, x, width, labelY) {
   const labelSize = fitTextSize(label, width, 7, 5);
   const valueText = String(value ?? '');
   const valueSize = fitTextSize(valueText, width, 10, 6);
-  drawText(content, truncateTextToWidth(label, width, labelSize), x, labelY, labelSize);
+  drawText(content, truncateTextToWidth(label, width, labelSize), x, labelY, labelSize, true);
   drawText(
     content,
     truncateTextToWidth(valueText, width, valueSize, true),
@@ -606,10 +628,10 @@ function drawInfoFieldFitted(content, label, value, x, width, labelY) {
   );
 }
 
-function drawLargeInfoField(content, label, value, x, width, labelY, valueY, preferredSize) {
+function drawLargeInfoField(content, label, value, x, width, labelY, valueY, preferredSize, minimumSize = 8) {
   drawText(content, label, x, labelY, 8, true);
   const valueText = String(value ?? '');
-  const valueSize = fitTextSize(valueText, width, preferredSize, 8);
+  const valueSize = fitTextSize(valueText, width, preferredSize, minimumSize);
   drawText(
     content,
     truncateTextToWidth(valueText, width, valueSize, true),
@@ -620,13 +642,65 @@ function drawLargeInfoField(content, label, value, x, width, labelY, valueY, pre
   );
 }
 
+function drawWrappedLargeInfoField(
+  content,
+  label,
+  value,
+  x,
+  width,
+  labelY,
+  valueY,
+  preferredSize,
+  maxLines = 2
+) {
+  drawText(content, label, x, labelY, 8, true);
+  const valueText = String(value ?? '');
+  let size = fitTextSize(valueText, width, preferredSize, 8);
+  if (estimateTextWidth(valueText, size, true) <= width) {
+    drawText(content, valueText, x, valueY, size, true);
+    return;
+  }
+
+  const lines = [];
+  let remaining = valueText;
+  while (remaining && lines.length < maxLines) {
+    if (estimateTextWidth(remaining, size, true) <= width) {
+      lines.push(remaining);
+      remaining = '';
+      continue;
+    }
+
+    let chunk = remaining;
+    while (chunk.length > 1 && estimateTextWidth(chunk, size, true) > width) {
+      chunk = chunk.slice(0, -1);
+    }
+    if (chunk === remaining) chunk = remaining.slice(0, 1);
+    lines.push(chunk);
+    remaining = remaining.slice(chunk.length);
+
+    if (remaining && lines.length === maxLines) {
+      let last = lines.pop();
+      while (last.length > 1 && estimateTextWidth(`${last}...`, size, true) > width) {
+        last = last.slice(0, -1);
+      }
+      lines.push(`${last}...`);
+      remaining = '';
+    }
+  }
+
+  const lineHeight = size + 3;
+  lines.forEach((line, index) => {
+    drawText(content, line, x, valueY - index * lineHeight, size, true);
+  });
+}
+
 function drawAddressBlock(content, label, value, x, width, labelY) {
   drawText(content, label, x, labelY, 8, true);
   const addressLines = getAddressLines(value, width, 4);
   addressLines.forEach((line, index) => {
     const isCompanyLine = index === 0;
     const size = isCompanyLine ? 10 : 8;
-    drawText(content, line, x, labelY - 16 - index * 11, size, isCompanyLine);
+    drawText(content, line, x, labelY - 16 - index * 10, size, isCompanyLine);
   });
 }
 
@@ -715,9 +789,12 @@ function drawCenteredInfoField(content, label, value, centerX, labelY, valueY, v
   drawCenteredText(content, text, centerX, valueY, valueSize, true);
 }
 
-function drawCenteredText(content, text, centerX, y, size = 10, bold = false) {
+function drawCenteredText(content, text, centerX, y, size = 10, bold = false, glyphWidth = null) {
   const value = String(text ?? '');
-  const x = centerX - estimateTextWidth(value, size, bold) / 2;
+  const width = glyphWidth
+    ? value.length * size * glyphWidth
+    : estimateTextWidth(value, size, bold);
+  const x = centerX - width / 2;
   drawText(content, value, round(x), y, size, bold);
 }
 
@@ -728,6 +805,113 @@ function drawCenteredTextInWidth(content, text, x, width, y, size = 10, bold = f
 function estimateTextWidth(text, size, bold = false) {
   const averageGlyphWidth = bold ? 0.58 : 0.55;
   return text.length * size * averageGlyphWidth;
+}
+
+const HELVETICA_BOLD_WIDTHS = {
+  ' ': 278,
+  '!': 333,
+  '"': 474,
+  '#': 556,
+  $: 556,
+  '%': 889,
+  '&': 667,
+  "'": 278,
+  '(': 333,
+  ')': 333,
+  '*': 389,
+  '+': 584,
+  ',': 278,
+  '-': 333,
+  '.': 278,
+  '/': 278,
+  '0': 556,
+  '1': 556,
+  '2': 556,
+  '3': 556,
+  '4': 556,
+  '5': 556,
+  '6': 556,
+  '7': 556,
+  '8': 556,
+  '9': 556,
+  ':': 333,
+  ';': 333,
+  '<': 584,
+  '=': 584,
+  '>': 584,
+  '?': 611,
+  '@': 975,
+  A: 667,
+  B: 667,
+  C: 722,
+  D: 722,
+  E: 667,
+  F: 611,
+  G: 778,
+  H: 722,
+  I: 278,
+  J: 500,
+  K: 667,
+  L: 556,
+  M: 833,
+  N: 722,
+  O: 778,
+  P: 667,
+  Q: 778,
+  R: 722,
+  S: 667,
+  T: 611,
+  U: 722,
+  V: 667,
+  W: 944,
+  X: 667,
+  Y: 667,
+  Z: 611,
+  '[': 333,
+  '\\': 278,
+  ']': 333,
+  '^': 469,
+  _: 556,
+  '`': 333,
+  a: 556,
+  b: 556,
+  c: 500,
+  d: 556,
+  e: 556,
+  f: 278,
+  g: 556,
+  h: 556,
+  i: 222,
+  j: 222,
+  k: 500,
+  l: 222,
+  m: 833,
+  n: 556,
+  o: 556,
+  p: 556,
+  q: 556,
+  r: 333,
+  s: 500,
+  t: 278,
+  u: 556,
+  v: 500,
+  w: 722,
+  x: 500,
+  y: 500,
+  z: 500,
+  '{': 334,
+  '|': 260,
+  '}': 334,
+  '~': 584
+};
+
+function measureHelveticaBold(text, size) {
+  return (
+    String(text ?? '')
+      .split('')
+      .reduce((sum, char) => sum + (HELVETICA_BOLD_WIDTHS[char] ?? 500), 0) *
+    (size / 1000)
+  );
 }
 
 function drawLine(content, x1, y1, x2, y2, lineWidth = 0.8) {

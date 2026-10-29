@@ -34,7 +34,7 @@
       {:else}
         <div class="border-b border-gray-700 p-2 text-[9px]">
           <div class="grid grid-cols-2 gap-2">
-            <span><strong>CONTENT GTIN</strong><br />00012345600012</span>
+            <span><strong>CONTENT</strong><br />00012345600012</span>
             <span><strong>COUNT</strong><br />120 Each</span>
           </div>
           <div class="mt-2 h-8 barcode-pattern" aria-hidden="true"></div>

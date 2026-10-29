@@ -31,7 +31,7 @@ describe('guided label PDF rendering', () => {
     expect(content).toContain('540.5 kg');
     expect(content).toContain('12 Cartons');
     expect(content).toContain('1.2 w 12 18 264 402 re S');
-    expect(content).toContain('2.2 w 12 332 m 276 332 l S');
+    expect(content).toContain('1.5 w 12 332 m 276 332 l S');
     expect(content.split('\\(00\\)')).toHaveLength(2);
     expect(content).not.toContain('\\(02\\)');
   });
@@ -72,9 +72,9 @@ describe('guided label PDF rendering', () => {
 
     const content = pdf.toString('utf8');
     expect(content).toContain('PDF Test Company');
-    expect(content).toContain('BT /F1 7 Tf 18 386 Td (CONTENT) Tj ET');
+    expect(content).toContain('BT /F2 7 Tf 18 386 Td (CONTENT) Tj ET');
     expect(content).toContain('BT /F2 10 Tf 18 372 Td (00012345600012) Tj ET');
-    expect(content).toContain('BT /F1 7 Tf 222 386 Td (COUNT) Tj ET');
+    expect(content).toContain('BT /F2 7 Tf 222 386 Td (COUNT) Tj ET');
     expect(content).not.toContain('0.8 w 18 392 m 270 392 l S');
     expect(content).toContain('PACK DATE');
     expect(content).toContain('BATCH/LOT');
@@ -156,8 +156,8 @@ describe('guided label PDF rendering', () => {
 
     const content = pdf.toString('utf8');
     expect(content).toContain('/MediaBox [0 0 432 576]');
-    expect(content).toContain('CONTENT AND COUNT');
-    expect(content).toContain('LOT AND DATE TRACEABILITY');
+    expect(content).not.toContain('CONTENT AND COUNT');
+    expect(content).not.toContain('LOT AND DATE TRACEABILITY');
     expect(content).toContain('PACK DATE');
     expect(content).toContain('LOT-26/09');
     expect(content).toContain('\\(13\\)260928\\(10\\)LOT-26/09');
