@@ -58,7 +58,7 @@ export const LABEL_SCENARIOS = Object.freeze([
     statusLabel: 'Available',
     targetUser: 'Suppliers whose complete case or pallet has its own orderable GTIN.',
     description:
-      'Use this when the complete case or pallet is itself an orderable trade item with its own GTIN. That is different from a pallet containing many identical cases: the latter uses AI (02) CONTENT plus AI (37) COUNT, while this style uses AI (01) GTIN. GS1 does not allow AI (01) GTIN and AI (02) CONTENT on the same logistic label.',
+      'Use this when the complete case or pallet is itself an orderable trade item with its own GTIN. That is different from a pallet containing many identical cases: the latter uses AI (02) CONTENT plus AI (37) COUNT, while this style uses AI (01) GTIN. The choice depends on how the product is sold and packaged, such as a case or pallet that is itself the trade item versus a unit containing multiple identical items. GS1 does not allow AI (01) GTIN and AI (02) CONTENT on the same logistic label.',
     // GS1 does not allow (01) GTIN to be combined with (02) CONTENT on one logistic label.
     outputs: [
       'Trade item: (01) GTIN',
