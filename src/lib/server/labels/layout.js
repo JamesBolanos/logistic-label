@@ -211,7 +211,7 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
   // Optional traceability is reserved for 6 × 8 rather than shrinking symbols.
   drawOutlineRect(content, left, 4, right - left, 416, 1.2);
   drawLine(content, left, 358, right, 358, 1.5);
-  drawLine(content, middle, 354, middle, 420, 0.8);
+  drawLine(content, middle, 358, middle, 420, 0.8);
   drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 120, 408);
   drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
 
@@ -265,7 +265,7 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   // 31.75 mm barcode heights instead of compressing the symbols.
   drawOutlineRect(content, left, 4, right - left, 564, 1.2);
   drawLine(content, left, 496, right, 496, 1.5);
-  drawLine(content, middle, 494, middle, 568, 0.8);
+  drawLine(content, middle, 496, middle, 568, 0.8);
   drawAddressBlock(content, 'SHIP FROM', labelData.ship_from, 18, 186, 556);
   drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 222, 186, 556);
 
