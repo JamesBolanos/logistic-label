@@ -140,6 +140,12 @@ test('signed-in user can generate both available shipping situations', async ({
 
     await expect(
       page.getByRole('button', {
+        name: 'Ship a pallet containing different products — Planned',
+        exact: true
+      })
+    ).toBeDisabled();
+    await expect(
+      page.getByRole('button', {
         name: 'Follow a retailer or customer routing guide — Tailored solution',
         exact: true
       })

@@ -22,7 +22,7 @@ export const LABEL_SCENARIOS = Object.freeze([
     statusLabel: 'Available',
     targetUser: 'Warehouses, 3PL operators, cross-docking teams, and freight forwarders.',
     description:
-      'Show where one pallet, carton, or parcel is moving and give that physical shipping unit a unique identity.',
+      'Show where one pallet, carton, or parcel is moving and give that physical shipping unit a unique identity. Use this for mixed pallets too: keep the mixed contents in an ASN, WMS, spreadsheet, or another shipment record.',
     outputs: [
       'Ship From, Ship To, PO, carrier, weight, and count',
       'One GS1-128 barcode: (00) SSCC-18',
@@ -87,21 +87,15 @@ export const LABEL_SCENARIOS = Object.freeze([
   },
   {
     id: 'mixed-logistic-unit',
-    labelType: LABEL_TYPES.MIXED_LOGISTIC_UNIT,
+    labelType: null,
     category: 'Mixed products',
     title: 'Ship a pallet containing different products',
-    status: LABEL_SCENARIO_STATUSES.AVAILABLE,
-    statusLabel: 'Available',
+    status: LABEL_SCENARIO_STATUSES.PLANNED,
+    statusLabel: 'Planned',
     targetUser: 'Distribution and fulfilment teams assembling mixed pallets or cartons.',
     description:
-      'Identify the physical unit with an SSCC and communicate its different contents through an ASN, WMS, or another shipment record.',
-    outputs: [
-      'Ship From, Ship To, PO, carrier, weight, and count',
-      'One GS1-128 barcode: (00) SSCC-18',
-      'Mixed contents remain in the linked business record',
-      '4 × 6 and compact print layouts'
-    ],
-    actionLabel: 'Create a mixed-pallet label'
+      'Identify the physical unit with an SSCC and communicate its different contents through an ASN, WMS, or another shipment record. This is handled by the tracking label, which encodes only the SSCC.',
+    outputs: ['Logistic unit: (00) SSCC-18', 'Mixed contents remain in the linked business record']
   },
   {
     id: 'customer-routing-guide',

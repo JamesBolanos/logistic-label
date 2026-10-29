@@ -75,28 +75,6 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
     sizes: ['4 × 6 — basic trade item', '6 × 8 — detailed trade item with lot or date'],
     generatorHref: '/labels?type=trade_item_unit'
   },
-  {
-    id: 'mixed-logistic-unit',
-    labelType: LABEL_TYPES.MIXED_LOGISTIC_UNIT,
-    category: 'Mixed products',
-    title: 'Ship a pallet containing different products',
-    summary:
-      'Identify a mixed pallet or carton with an SSCC while keeping its different contents in an ASN, WMS, spreadsheet, or another business record.',
-    useWhen: [
-      'The logistic unit contains different products or GTINs.',
-      'You need one unique shipping-unit identity for routing.',
-      'Contents are tracked in another system.'
-    ],
-    avoidWhen: [
-      'You need to encode a GTIN, count, lot, or date on the label.',
-      'The unit contains one product type and should use a homogeneous label.'
-    ],
-    requiredData: ['Ship From', 'Ship To', 'Configured GS1 Company Prefix'],
-    optionalData: ['PO Number', 'Carrier', 'Gross Weight', 'Count and count type'],
-    barcodeSummary: ['(00) SSCC-18'],
-    sizes: ['4 × 6 — one label', '4 × 6 — two identical 4 × 3 copies', '4 × 3 — one label'],
-    generatorHref: '/labels?type=mixed_logistic_unit'
-  }
 ]);
 
 /** @param {unknown} labelType */
