@@ -220,7 +220,7 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
 
   drawLine(content, left, 246, right, 246, 1.5);
   drawLine(content, 190, 246, 190, 286, 0.8);
-  drawLargeInfoField(content, 'CONTENT / GTIN', labelData.gtin, 18, 166, 278, 260, 13);
+  drawLargeInfoField(content, 'CONTENT', labelData.gtin, 18, 166, 278, 260, 13);
   drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 82, 278, 260, 11);
 
   drawCompliantBarcode(content, contentElements, 145, PAGE_WIDTH);
@@ -256,7 +256,7 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   drawLine(content, left, 410, right, 410, 0.8);
   drawLine(content, 210, 410, 210, 452, 0.8);
   drawLine(content, 310, 410, 310, 452, 0.8);
-  drawLargeInfoField(content, 'CONTENT / GTIN', labelData.gtin, 18, 186, 444, 426, 15);
+  drawLargeInfoField(content, 'CONTENT', labelData.gtin, 18, 186, 444, 426, 15);
   drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 216, 88, 444, 426, 12);
   drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 316, 92, 444, 426, 11);
 
@@ -390,7 +390,7 @@ function drawHomogeneousLabel(content, labelData, elements) {
   const ssccElements = elements.filter((item) => item.ai === '00');
 
   if (!traceabilityElements.length) {
-    drawInfoField(content, 'CONTENT / GTIN', labelData.gtin, MARGIN, 374, 16);
+    drawInfoField(content, 'CONTENT', labelData.gtin, MARGIN, 374, 16);
     drawInfoField(content, 'COUNT', String(labelData.quantity), 222, 374, 16);
     drawInfoField(content, 'SSCC', labelData.sscc, MARGIN, 333, 16);
 
@@ -402,7 +402,7 @@ function drawHomogeneousLabel(content, labelData, elements) {
     return;
   }
 
-  drawInfoFieldFitted(content, 'CONTENT / GTIN', labelData.gtin, MARGIN, 190, 386);
+  drawInfoFieldFitted(content, 'CONTENT', labelData.gtin, MARGIN, 190, 386);
   drawInfoFieldFitted(content, 'COUNT', String(labelData.quantity), 222, 48, 386);
   drawHomogeneousTraceabilityFields(content, labelData);
 
