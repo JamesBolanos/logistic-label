@@ -390,7 +390,7 @@ function drawHomogeneousLabel(content, labelData, elements) {
   const ssccElements = elements.filter((item) => item.ai === '00');
 
   if (!traceabilityElements.length) {
-    drawInfoField(content, 'CONTENT', labelData.gtin, MARGIN, 374, 16);
+    drawInfoField(content, 'CONTENT / GTIN', labelData.gtin, MARGIN, 374, 16);
     drawInfoField(content, 'COUNT', String(labelData.quantity), 222, 374, 16);
     drawInfoField(content, 'SSCC', labelData.sscc, MARGIN, 333, 16);
 
@@ -402,7 +402,7 @@ function drawHomogeneousLabel(content, labelData, elements) {
     return;
   }
 
-  drawInfoFieldFitted(content, 'CONTENT', labelData.gtin, MARGIN, 190, 386);
+  drawInfoFieldFitted(content, 'CONTENT / GTIN', labelData.gtin, MARGIN, 190, 386);
   drawInfoFieldFitted(content, 'COUNT', String(labelData.quantity), 222, 48, 386);
   drawHomogeneousTraceabilityFields(content, labelData);
 
@@ -427,7 +427,7 @@ function drawHomogeneousTraceabilityFields(content, labelData) {
 
   if (hasDate && hasLot) {
     drawInfoFieldFitted(content, dateOption.dataTitle, labelData.date_value, MARGIN, 88, 356);
-    drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number, 106, 78, 356);
+    drawInfoFieldFitted(content, 'BATCH / LOT', labelData.lot_number, 106, 78, 356);
     drawInfoFieldFitted(content, 'SSCC', labelData.sscc, 190, 80, 356);
     return;
   }
@@ -435,7 +435,7 @@ function drawHomogeneousTraceabilityFields(content, labelData) {
   if (hasDate) {
     drawInfoFieldFitted(content, dateOption.dataTitle, labelData.date_value, MARGIN, 126, 356);
   } else {
-    drawInfoFieldFitted(content, 'BATCH/LOT', labelData.lot_number, MARGIN, 126, 356);
+    drawInfoFieldFitted(content, 'BATCH / LOT', labelData.lot_number, MARGIN, 126, 356);
   }
 
   drawInfoFieldFitted(content, 'SSCC', labelData.sscc, 154, 116, 356);

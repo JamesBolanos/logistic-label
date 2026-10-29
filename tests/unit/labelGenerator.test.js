@@ -72,12 +72,12 @@ describe('guided label PDF rendering', () => {
 
     const content = pdf.toString('utf8');
     expect(content).toContain('PDF Test Company');
-    expect(content).toContain('BT /F2 7 Tf 18 386 Td (CONTENT) Tj ET');
+    expect(content).toContain('BT /F2 7 Tf 18 386 Td (CONTENT / GTIN) Tj ET');
     expect(content).toContain('BT /F2 10 Tf 18 372 Td (00012345600012) Tj ET');
     expect(content).toContain('BT /F2 7 Tf 222 386 Td (COUNT) Tj ET');
     expect(content).not.toContain('0.8 w 18 392 m 270 392 l S');
     expect(content).toContain('PACK DATE');
-    expect(content).toContain('BATCH/LOT');
+    expect(content).toContain('BATCH / LOT');
     expect(content).toContain('\\(13\\)260928\\(10\\)123456');
     expect(content).toContain('\\(02\\)00012345600012\\(37\\)12');
     expect(content).toContain('\\(00\\)012345670000000015');
