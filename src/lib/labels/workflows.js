@@ -9,7 +9,8 @@ export const TEMPLATE_VERSIONS = Object.freeze({
   LEGACY: 'v1',
   GUIDED_CONTENT: 'v2',
   TRANSPORT: 'v3',
-  STRUCTURED_CONTENT: 'v4'
+  STRUCTURED_CONTENT: 'v4',
+  SSCC_BASIC: 'v5'
 });
 
 export const PRINT_LAYOUTS = Object.freeze({

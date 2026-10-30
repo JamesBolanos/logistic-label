@@ -36,6 +36,22 @@ describe('guided label PDF rendering', () => {
     expect(content).not.toContain('\\(02\\)');
   });
 
+  it('renders the basic SSCC-only label without company or transport fields', async () => {
+    const pdf = await generateLogisticLabelPDF({
+      label_type: 'sscc_only',
+      template_version: 'v5',
+      print_layout: '4x3_single',
+      sscc: '006141411234567890'
+    });
+
+    const content = pdf.toString('utf8');
+    expect(content).toContain('SSCC');
+    expect(content).toContain('006141411234567890');
+    expect(content).toContain('0.8 w 18 136 m 270 136 l S');
+    expect(content).not.toContain('SHIP TO');
+    expect(content).not.toContain('COMPANY NAME');
+  });
+
   it('keeps previously saved v2 SSCC labels on the simple renderer', async () => {
     const pdf = await generateLogisticLabelPDF(
       {

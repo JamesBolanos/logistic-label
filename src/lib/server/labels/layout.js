@@ -47,6 +47,13 @@ export function generateLogisticLabelLayout(labelData, options = {}) {
     return generateGuidedLabelLayout(labelData, options);
   }
 
+  if (
+    labelData.template_version === TEMPLATE_VERSIONS.SSCC_BASIC &&
+    labelData.label_type === LABEL_TYPES.SSCC_ONLY
+  ) {
+    return generateBasicSSCCLabelLayout(labelData, options);
+  }
+
   return generateLegacyLabelLayout(labelData, options);
 }
 
@@ -383,6 +390,37 @@ function drawCompactSSCCLabel(content, labelData, elements, companyName, originY
 
   drawCompliantBarcode(content, elements, originY + 42, PAGE_WIDTH);
   drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, originY + 24, 10);
+}
+
+function drawBasicSSCCCompactLabel(content, labelData, elements, originY) {
+  drawOutlineRect(content, MARGIN, originY + 4, PAGE_WIDTH - MARGIN * 2, COMPACT_PAGE_HEIGHT - 8, 1.2);
+  drawLine(content, MARGIN, originY + 145, PAGE_WIDTH - MARGIN, originY + 145, 0.8);
+
+  drawText(content, 'SSCC', MARGIN + 4, originY + 188, 10, true);
+  drawCenteredText(content, String(labelData.sscc ?? ''), PAGE_WIDTH / 2, originY + 165, 16, true);
+
+  drawCompliantBarcode(content, elements, originY + 42, PAGE_WIDTH);
+  drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, originY + 24, 9);
+}
+
+function generateBasicSSCCLabelLayout(labelData, options, elements = buildGs1Elements(labelData)) {
+  const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
+
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE) {
+    const content = [];
+    drawBasicSSCCCompactLabel(content, labelData, elements, 0);
+    return createLayout(content, PAGE_WIDTH, COMPACT_PAGE_HEIGHT);
+  }
+
+  if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_TWO_UP) {
+    const content = [];
+    drawBasicSSCCCompactLabel(content, labelData, elements, COMPACT_PAGE_HEIGHT);
+    drawBasicSSCCCompactLabel(content, labelData, elements, 0);
+    drawCutGuide(content, COMPACT_PAGE_HEIGHT, PAGE_WIDTH);
+    return createLayout(content, PAGE_WIDTH, PAGE_HEIGHT);
+  }
+
+  throw new Error('Unsupported basic SSCC print layout');
 }
 
 function drawHomogeneousLabel(content, labelData, elements) {

@@ -190,5 +190,29 @@
     "carrier": null,
     "gross_weight": null,
     "gross_weight_unit": null
+  },
+  {
+    "id": 9009,
+    "user_id": "rPmv2hgx96NySS5NLiJZlub1WJL9eEgF",
+    "user_name": "JAIME BOLANOS DIAZ",
+    "company_name": "DEMO Company",
+    "label_type": "sscc_only",
+    "template_version": "v5",
+    "print_layout": "4x3_single",
+    "gtin": null,
+    "lot_number": null,
+    "production_date": null,
+    "quantity": null,
+    "weight_pounds": null,
+    "sscc": "006141411234567890",
+    "packaging_level": null,
+    "date_ai": null,
+    "date_value": null,
+    "ship_from": null,
+    "ship_to": null,
+    "purchase_order": null,
+    "carrier": null,
+    "gross_weight": null,
+    "gross_weight_unit": null
   }
 ]
