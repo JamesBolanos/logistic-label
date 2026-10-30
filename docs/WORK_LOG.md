@@ -2,6 +2,14 @@
 
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
 
+## 2026-10-30 — `TRADE-001`/scenario cleanup — Remove unrequested label scenarios
+
+- Result: removed the trade-item logistic unit workflow and all planned scenario cards (variable-measure, mixed-logistic-unit, and trade-item) from the generator and public guide. The available workflows are now transport identification and identical contents only.
+- Decisions: keep tailored customer-specific guidance; do not surface scenarios that are not implemented or requested. Removed the planned status from scenario metadata and the related planned UI branch.
+- Material files: `src/lib/labels/scenarios.js`, `src/lib/labels/guide.js`, `src/lib/labels/workflows.js`, `src/lib/labels/verification.js`, `src/lib/validation/formValidation.js`, `src/lib/server/labels/layout.js`, `src/lib/server/pdf/gs1Barcode.js`, `src/lib/components/Labels/LabelForm.svelte`, `src/lib/components/Labels/LabelHistory.svelte`, `src/lib/components/Labels/LabelWorkflowSelector.svelte`, `src/lib/content/releases.ts`, `docs/labels/GUIDED_LABEL_WORKFLOWS.md`, `docs/KANBAN.md`, tests.
+- Validation: `npm run quality` passes (26 test files, 197 tests, TypeScript check, Vercel build); `npm run lint` and `npm run format:check` pass.
+- Next: developer reviews the diff and merges staging to production.
+
 ## Entry Format
 
 Keep the newest entry first and include only:
@@ -14,6 +22,22 @@ Keep the newest entry first and include only:
 - One next action or blocking condition.
 
 Never include secrets, personal data, production records, private usage statistics, reset links, database URLs, or raw command output.
+
+## 2026-10-28 — `TRADE-001` — Trade-item logistic unit label style
+
+- Result: added a trade-item logistic unit workflow using `AI (01)` GTIN, optional lot/date, transport fields, and the existing 4×6/6×8 layouts. The form hides count and packaging level for this style, and verification checks `AI (01)` without `AI (02)` or `AI (37)`.
+- Decisions: reuse the structured homogeneous renderer with trade-item-specific field labels and barcode filters. Product GTINs are trade-item GTINs; the selected label type determines whether they are encoded as `AI (01)` or `AI (02)`.
+- Material files: `src/lib/labels/workflows.js`, `src/lib/labels/scenarios.js`, `src/lib/labels/guide.js`, `src/lib/validation/formValidation.js`, `src/lib/components/Labels/LabelForm.svelte`, `src/lib/components/Labels/LabelHistory.svelte`, `src/lib/labels/verification.js`, `src/lib/server/pdf/gs1Barcode.js`, `src/lib/server/labels/layout.js`, tests.
+- Validation: `npm run quality` passes.
+- Next: developer creates the feature branch, runs E2E, opens the PR, and merges.
+
+## 2026-10-28 — `RENDER-001` — PDF label rendering consistency improvements
+
+- Result: standardized separator stroke hierarchy, added 4 pt text clearance, made field labels bold, widened count and gross-weight cells, and wrapped long PO numbers in structured labels.
+- Decisions: major separators use 1.5 pt, minor separators and dividers use 0.8 pt, outer borders remain 1.2 pt. Long PO numbers wrap to two lines instead of shrinking below 8 pt. Representative PDFs are generated under `.output/representative-pdfs` and are not committed.
+- Material files: `src/lib/server/labels/layout.js`, `tests/unit/labelGenerator.test.js`, `scripts/render-representative-pdfs.js`, `package.json`.
+- Validation: `npm run quality` passes (27 test files, 198 tests, TypeScript check, and Vercel build); `npm run lint` and `npm run format:check` pass.
+- Next: developer creates the feature branch, runs `npm run quality`, opens the PR, and merges.
 
 ## 2026-10-22 — `UX-002`/`UX-003`/`PRODUCT-001` — Production release
 

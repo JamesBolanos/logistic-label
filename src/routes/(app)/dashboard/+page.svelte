@@ -87,8 +87,11 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      <!-- Total Labels -->
-      <div class="bg-surface overflow-hidden shadow rounded-lg">
+      <!-- Saved Labels -->
+      <a
+        href="/labels/history"
+        class="block bg-surface overflow-hidden shadow rounded-lg transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
         <div class="px-4 py-5 sm:p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
@@ -108,7 +111,7 @@
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
-              <dt class="text-sm font-medium text-subtle-foreground truncate">Total Labels</dt>
+              <dt class="text-sm font-medium text-subtle-foreground truncate">Saved Labels</dt>
               <dd class="flex items-baseline">
                 <div class="text-2xl font-semibold text-foreground">
                   {stats.totalLabels}
@@ -117,7 +120,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </a>
 
       <!-- Labels Today -->
       <div class="bg-surface overflow-hidden shadow rounded-lg">

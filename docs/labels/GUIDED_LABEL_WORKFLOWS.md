@@ -9,8 +9,6 @@ Available situations map to the existing stable data contract:
 | Track a pallet, carton, or parcel      | `sscc_only`        | Uniquely identify one physical logistic unit while keeping its contents in an ASN, WMS, spreadsheet, or other record |
 | Ship multiple identical cases or items | `homogeneous_unit` | Identify a logistic unit containing a count of trade items that all share the same GTIN                              |
 
-Planned cards explain later scenarios without accepting unsupported data. These include an orderable case or pallet using `AI (01)`, variable-measure or perishable goods, mixed logistic units, and customer-specific routing-guide implementations.
-
 The detailed GS1 rules and source references are summarized in [`GS1_LOGISTIC_LABEL_GUIDE.md`](../GS1_LOGISTIC_LABEL_GUIDE.md). The repository also contains the source [`GS1 Logistic Label Guideline`](../GS1_Logistic_Label_Guideline.pdf).
 
 ## Track a pallet, carton, or parcel (`sscc_only`)

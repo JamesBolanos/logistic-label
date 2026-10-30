@@ -11,11 +11,12 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
     category: 'Standard transport identification',
     title: 'Track one pallet, carton, or parcel',
     summary:
-      'Give one physical shipping unit a unique SSCC while keeping its contents in an ASN, WMS, spreadsheet, or another business record.',
+      'Identify one physical shipping unit with an SSCC. Use this when the pallet itself is the important identifier and its contents do not need to be shown; one product or mixed products are both fine. No GTIN, content, batch/lot, or item count is required.',
     useWhen: [
       'You need to identify and route one logistic unit.',
-      'The contents are already recorded somewhere else.',
-      'A customer-specific routing guide does not require another barcode.'
+      'The pallet itself is the important identifier.',
+      'Contents are one product or mixed and do not need to be encoded.',
+      'You only need an SSCC plus printed transport details.'
     ],
     avoidWhen: [
       'The label must encode a GTIN, item count, lot, or date.',
@@ -39,10 +40,7 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
       'You know the number of trade items identified by that GTIN.',
       'Optional lot or date traceability applies to the identical contents.'
     ],
-    avoidWhen: [
-      'The complete case or pallet is itself the orderable trade item using AI (01).',
-      'The logistic unit contains different products or different GTINs.'
-    ],
+    avoidWhen: ['The logistic unit contains different products or different GTINs.'],
     requiredData: ['Ship From', 'Ship To', 'Content GTIN', 'Packaging level', 'Exact count'],
     optionalData: ['PO Number', 'Carrier', 'Gross Weight', 'Lot', 'One applicable date'],
     barcodeSummary: [
@@ -52,6 +50,24 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
     ],
     sizes: ['4 × 6 — basic contents', '6 × 8 — detailed contents with lot or date'],
     generatorHref: '/labels?type=homogeneous_unit'
+  },
+  {
+    id: 'basic-sscc',
+    labelType: LABEL_TYPES.SSCC_BASIC,
+    category: 'Minimal SSCC identification',
+    title: 'Create a basic SSCC label',
+    summary:
+      'Identify one physical shipping unit with an SSCC only. The label prints the SSCC number and its GS1-128 barcode, without transport fields.',
+    useWhen: [
+      'You need only a scannable SSCC on a small label.',
+      'Contents and transport details are tracked elsewhere.'
+    ],
+    avoidWhen: ['The label must show Ship From, Ship To, PO, carrier, weight, or count.'],
+    requiredData: ['Configured GS1 Company Prefix'],
+    optionalData: [],
+    barcodeSummary: ['(00) SSCC-18'],
+    sizes: ['4 × 3 — one label', '4 × 6 — two identical 4 × 3 copies'],
+    generatorHref: '/labels?type=sscc_basic'
   }
 ]);
 

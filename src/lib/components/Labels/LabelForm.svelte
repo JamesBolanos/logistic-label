@@ -3,6 +3,7 @@
   import { trackProductEvent } from '#lib/analytics/client.ts';
   import { getAvailableScenarioForLabelType } from '#lib/labels/scenarios.js';
   import {
+    BASIC_SSCC_PRINT_LAYOUT_OPTIONS,
     DEFAULT_PRINT_LAYOUT,
     HOMOGENEOUS_DATE_OPTIONS,
     HOMOGENEOUS_PRINT_LAYOUT_OPTIONS,
@@ -43,6 +44,12 @@
 
   $effect(() => {
     formData.label_type = labelType;
+    if (
+      labelType === LABEL_TYPES.SSCC_BASIC &&
+      !BASIC_SSCC_PRINT_LAYOUT_OPTIONS.some((layout) => layout.value === formData.print_layout)
+    ) {
+      formData.print_layout = PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE;
+    }
     if (!companyNameApplied && companyName) {
       formData.ship_from = companyName;
       companyNameApplied = true;
@@ -110,16 +117,20 @@
     </div>
   {/if}
 
-  {#if labelType === LABEL_TYPES.SSCC_ONLY}
+  {#if labelType === LABEL_TYPES.SSCC_ONLY || labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT}
     <div class="space-y-4">
       <div
         class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4"
       >
-        <h3 class="font-semibold text-blue-950">Identify and route one shipping unit</h3>
+        <h3 class="font-semibold text-blue-950">
+          {labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT
+            ? 'Identify a mixed pallet or carton'
+            : 'Identify and route one shipping unit'}
+        </h3>
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
-          The printed transport information helps people route the shipment. The barcode contains
-          only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or
-          another shipment record.
+          {labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT
+            ? 'The pallet itself is the important identifier. The barcode contains only AI (00) and the allocated SSCC. No GTIN, content, batch/lot, or item count is required. Gross weight and other transport details can still be printed; gross weight does not require content data.'
+            : 'The pallet itself is the important identifier. The printed transport information helps people route the shipment. The barcode contains only AI (00) and the allocated SSCC, which can link to your WMS, ASN, spreadsheet, or another shipment record. No GTIN, content, batch/lot, or item count is required.'}
         </p>
       </div>
 
@@ -317,6 +328,49 @@
         {/if}
       </fieldset>
     </div>
+  {:else if labelType === LABEL_TYPES.SSCC_BASIC}
+    <div class="space-y-4">
+      <div
+        class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4"
+      >
+        <h3 class="font-semibold text-blue-950">Create a basic SSCC label</h3>
+        <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
+          The label prints only the SSCC number and its GS1-128 barcode. Transport details are not
+          printed or encoded.
+        </p>
+      </div>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-medium text-muted-foreground">Print layout</legend>
+        <div class="grid gap-3">
+          {#each BASIC_SSCC_PRINT_LAYOUT_OPTIONS as layout (layout.value)}
+            <label
+              class={`flex gap-3 rounded-md border p-3 ${
+                layout.available
+                  ? 'cursor-pointer border-border-strong bg-surface hover:border-blue-400'
+                  : 'cursor-not-allowed border-border-default bg-surface-strong opacity-70'
+              }`}
+            >
+              <input
+                type="radio"
+                name="print_layout"
+                value={layout.value}
+                bind:group={formData.print_layout}
+                disabled={!layout.available}
+                class="mt-1 h-4 w-4 border-border-strong text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+              />
+              <span>
+                <span class="block text-sm font-medium text-foreground">{layout.label}</span>
+                <span class="mt-1 block text-xs text-muted-foreground">{layout.description}</span>
+              </span>
+            </label>
+          {/each}
+        </div>
+        {#if errors.print_layout}
+          <p class="mt-2 text-sm text-red-600 dark:text-red-400">{errors.print_layout}</p>
+        {/if}
+      </fieldset>
+    </div>
   {:else}
     <div class="space-y-5">
       <div
@@ -327,7 +381,8 @@
         </h3>
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
           The content barcode identifies the contained item with AI (02) and its count with AI (37).
-          A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC.
+          A separate bottom barcode identifies the complete shipping unit with AI (00) SSCC. Ship
+          From, Ship To, PO, carrier, and Gross Weight are printed for handling but are not encoded.
         </p>
       </div>
 

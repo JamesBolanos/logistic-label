@@ -2,7 +2,6 @@ import { LABEL_TYPES } from './workflows.js';
 
 export const LABEL_SCENARIO_STATUSES = Object.freeze({
   AVAILABLE: 'available',
-  PLANNED: 'planned',
   TAILORED: 'tailored'
 });
 
@@ -22,7 +21,7 @@ export const LABEL_SCENARIOS = Object.freeze([
     statusLabel: 'Available',
     targetUser: 'Warehouses, 3PL operators, cross-docking teams, and freight forwarders.',
     description:
-      'Show where one pallet, carton, or parcel is moving and give that physical shipping unit a unique identity.',
+      'Identify one physical shipping unit with an SSCC. Use this when the pallet itself is the important identifier and its contents do not need to be shown: the unit can contain one product or mixed products. No GTIN, content, batch/lot, or item count is required. Ship From, Ship To, PO, carrier, gross weight, and transport count can still be printed for handling, but gross weight does not require content data.',
     outputs: [
       'Ship From, Ship To, PO, carrier, weight, and count',
       'One GS1-128 barcode: (00) SSCC-18',
@@ -50,49 +49,20 @@ export const LABEL_SCENARIOS = Object.freeze([
     actionLabel: 'Create a one-product label'
   },
   {
-    id: 'trade-item-logistic-unit',
-    labelType: null,
-    category: 'Orderable case or pallet',
-    title: 'Ship a case or pallet sold as one item',
-    status: LABEL_SCENARIO_STATUSES.PLANNED,
-    statusLabel: 'Planned',
-    targetUser: 'Suppliers whose complete case or pallet has its own orderable GTIN.',
+    id: 'basic-sscc-label',
+    labelType: LABEL_TYPES.SSCC_BASIC,
+    category: 'Minimal SSCC identification',
+    title: 'Create a basic SSCC label',
+    status: LABEL_SCENARIO_STATUSES.AVAILABLE,
+    statusLabel: 'Available',
+    targetUser: 'Users who need only a scannable SSCC on a small label.',
     description:
-      'This is different from a pallet containing many cases. The complete shipping unit is itself the trade item.',
-    // GS1 does not allow (01) GTIN to be combined with (02) CONTENT on one logistic label.
+      'Identify one physical shipping unit with an SSCC only. The label prints the SSCC number and its GS1-128 barcode, without transport fields.',
     outputs: [
-      'Trade item: (01) GTIN',
-      'Applicable lot or date attributes',
-      'Logistic unit: (00) SSCC-18'
-    ]
-  },
-  {
-    id: 'variable-measure',
-    labelType: null,
-    category: 'Fresh food and variable measure',
-    title: 'Ship variable-weight or perishable goods',
-    status: LABEL_SCENARIO_STATUSES.PLANNED,
-    statusLabel: 'Planned',
-    targetUser: 'Meat, seafood, produce, and cold-chain suppliers.',
-    description:
-      'Capture the product, actual measure, lot, and applicable dates using rules defined for the specific trade-item scenario.',
-    outputs: [
-      'Product identification and an approved measure AI',
-      'Applicable lot and date attributes',
-      'Logistic unit: (00) SSCC-18'
-    ]
-  },
-  {
-    id: 'mixed-logistic-unit',
-    labelType: null,
-    category: 'Mixed products',
-    title: 'Ship a pallet containing different products',
-    status: LABEL_SCENARIO_STATUSES.PLANNED,
-    statusLabel: 'Planned',
-    targetUser: 'Distribution and fulfilment teams assembling mixed pallets or cartons.',
-    description:
-      'Identify the physical unit with an SSCC and communicate its different contents through an ASN, WMS, or another shipment record.',
-    outputs: ['Logistic unit: (00) SSCC-18', 'Mixed contents remain in the linked business record']
+      'One GS1-128 barcode: (00) SSCC-18',
+      '4 × 3 and two-copy 4 × 6 layouts'
+    ],
+    actionLabel: 'Create a basic SSCC label'
   },
   {
     id: 'customer-routing-guide',

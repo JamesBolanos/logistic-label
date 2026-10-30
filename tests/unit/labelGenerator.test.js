@@ -31,9 +31,25 @@ describe('guided label PDF rendering', () => {
     expect(content).toContain('540.5 kg');
     expect(content).toContain('12 Cartons');
     expect(content).toContain('1.2 w 12 18 264 402 re S');
-    expect(content).toContain('2.2 w 12 332 m 276 332 l S');
+    expect(content).toContain('1.5 w 12 332 m 276 332 l S');
     expect(content.split('\\(00\\)')).toHaveLength(2);
     expect(content).not.toContain('\\(02\\)');
+  });
+
+  it('renders the basic SSCC-only label without company or transport fields', async () => {
+    const pdf = await generateLogisticLabelPDF({
+      label_type: 'sscc_only',
+      template_version: 'v5',
+      print_layout: '4x3_single',
+      sscc: '006141411234567890'
+    });
+
+    const content = pdf.toString('utf8');
+    expect(content).toContain('SSCC');
+    expect(content).toContain('006141411234567890');
+    expect(content).toContain('0.8 w 18 145 m 270 145 l S');
+    expect(content).not.toContain('SHIP TO');
+    expect(content).not.toContain('COMPANY NAME');
   });
 
   it('keeps previously saved v2 SSCC labels on the simple renderer', async () => {
@@ -72,9 +88,9 @@ describe('guided label PDF rendering', () => {
 
     const content = pdf.toString('utf8');
     expect(content).toContain('PDF Test Company');
-    expect(content).toContain('BT /F1 7 Tf 18 386 Td (CONTENT) Tj ET');
+    expect(content).toContain('BT /F2 7 Tf 18 386 Td (CONTENT) Tj ET');
     expect(content).toContain('BT /F2 10 Tf 18 372 Td (00012345600012) Tj ET');
-    expect(content).toContain('BT /F1 7 Tf 222 386 Td (COUNT) Tj ET');
+    expect(content).toContain('BT /F2 7 Tf 222 386 Td (COUNT) Tj ET');
     expect(content).not.toContain('0.8 w 18 392 m 270 392 l S');
     expect(content).toContain('PACK DATE');
     expect(content).toContain('BATCH/LOT');
@@ -156,8 +172,8 @@ describe('guided label PDF rendering', () => {
 
     const content = pdf.toString('utf8');
     expect(content).toContain('/MediaBox [0 0 432 576]');
-    expect(content).toContain('CONTENT AND COUNT');
-    expect(content).toContain('LOT AND DATE TRACEABILITY');
+    expect(content).not.toContain('CONTENT AND COUNT');
+    expect(content).not.toContain('LOT AND DATE TRACEABILITY');
     expect(content).toContain('PACK DATE');
     expect(content).toContain('LOT-26/09');
     expect(content).toContain('\\(13\\)260928\\(10\\)LOT-26/09');

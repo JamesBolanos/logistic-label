@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-10-30-label-detail-corrections',
+    publishedAt: '2026-10-30',
+    category: 'improvement',
+    status: 'published',
+    title: 'Refine existing label details',
+    benefit:
+      'Existing transport and identical-contents labels now use clearer field labels, consistent separator weights, better text clearance, and corrected GS1 data titles for content and batch/lot information.',
+    featureKey: 'label_detail_corrections',
+    href: '/labels',
+    linkLabel: 'Create a label'
+  },
+  {
     id: '2026-10-22-app-shell-and-dark-mode',
     publishedAt: '2026-10-22',
     category: 'improvement',
@@ -25,18 +37,6 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     featureKey: 'app_shell_dark_mode',
     href: '/dashboard',
     linkLabel: 'Open the workspace'
-  },
-  {
-    id: '2026-10-22-settings-validation',
-    publishedAt: '2026-10-22',
-    category: 'fix',
-    status: 'published',
-    title: 'Settings catches invalid values before saving',
-    benefit:
-      'The label settings form now explains a bad company prefix, extension digit, or serial reference inline instead of failing after you save, and it warns when the serial reference is too large for the prefix length.',
-    featureKey: 'settings_validation',
-    href: '/settings',
-    linkLabel: 'Review label settings'
   },
   {
     id: '2026-10-21-saved-products',

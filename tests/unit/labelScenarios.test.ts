@@ -7,14 +7,15 @@ import {
 import { getLabelTypeName, LABEL_TYPES } from '../../src/lib/labels/workflows.js';
 
 describe('business-situation label choices', () => {
-  it('maps only the two supported situations to persisted label types', () => {
+  it('maps the supported situations to persisted label types', () => {
     const availableScenarios = LABEL_SCENARIOS.filter(
       (scenario) => scenario.status === LABEL_SCENARIO_STATUSES.AVAILABLE
     );
 
     expect(availableScenarios.map((scenario) => scenario.labelType)).toEqual([
       LABEL_TYPES.SSCC_ONLY,
-      LABEL_TYPES.HOMOGENEOUS_UNIT
+      LABEL_TYPES.HOMOGENEOUS_UNIT,
+      LABEL_TYPES.SSCC_BASIC
     ]);
     expect(
       LABEL_SCENARIOS.filter((scenario) => scenario.status !== LABEL_SCENARIO_STATUSES.AVAILABLE)
@@ -23,20 +24,12 @@ describe('business-situation label choices', () => {
     ).toBe(true);
   });
 
-  it('keeps the contained-items and orderable-trade-item situations separate', () => {
+  it('keeps the contained-items scenario available', () => {
     const containedItems = getAvailableScenarioForLabelType(LABEL_TYPES.HOMOGENEOUS_UNIT);
-    const tradeItemUnit = LABEL_SCENARIOS.find(
-      (scenario) => scenario.id === 'trade-item-logistic-unit'
-    );
 
     expect(containedItems).toMatchObject({
       title: 'Ship multiple identical cases or items',
       outputs: expect.arrayContaining(['Contents: (02) GTIN plus (37) count'])
-    });
-    expect(tradeItemUnit).toMatchObject({
-      labelType: null,
-      status: LABEL_SCENARIO_STATUSES.PLANNED,
-      outputs: expect.arrayContaining(['Trade item: (01) GTIN'])
     });
   });
 
