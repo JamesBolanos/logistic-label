@@ -30,22 +30,6 @@ export const LABEL_SCENARIOS = Object.freeze([
     actionLabel: 'Create a transport label'
   },
   {
-    id: 'basic-sscc-label',
-    labelType: LABEL_TYPES.SSCC_BASIC,
-    category: 'Minimal SSCC identification',
-    title: 'Create a basic SSCC label',
-    status: LABEL_SCENARIO_STATUSES.AVAILABLE,
-    statusLabel: 'Available',
-    targetUser: 'Users who need only a scannable SSCC on a small label.',
-    description:
-      'Identify one physical shipping unit with an SSCC only. The label prints the SSCC number and its GS1-128 barcode, without transport fields.',
-    outputs: [
-      'One GS1-128 barcode: (00) SSCC-18',
-      '4 × 3 and two-copy 4 × 6 layouts'
-    ],
-    actionLabel: 'Create a basic SSCC label'
-  },
-  {
     id: 'ship-identical-items',
     labelType: LABEL_TYPES.HOMOGENEOUS_UNIT,
     category: 'One-product pallet or shipping unit',
@@ -63,6 +47,22 @@ export const LABEL_SCENARIOS = Object.freeze([
       '4 × 6 basic or 6 × 8 detailed layout'
     ],
     actionLabel: 'Create a one-product label'
+  },
+  {
+    id: 'basic-sscc-label',
+    labelType: LABEL_TYPES.SSCC_BASIC,
+    category: 'Minimal SSCC identification',
+    title: 'Create a basic SSCC label',
+    status: LABEL_SCENARIO_STATUSES.AVAILABLE,
+    statusLabel: 'Available',
+    targetUser: 'Users who need only a scannable SSCC on a small label.',
+    description:
+      'Identify one physical shipping unit with an SSCC only. The label prints the SSCC number and its GS1-128 barcode, without transport fields.',
+    outputs: [
+      'One GS1-128 barcode: (00) SSCC-18',
+      '4 × 3 and two-copy 4 × 6 layouts'
+    ],
+    actionLabel: 'Create a basic SSCC label'
   },
   {
     id: 'customer-routing-guide',
