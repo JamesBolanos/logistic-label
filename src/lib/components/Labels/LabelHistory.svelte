@@ -312,26 +312,6 @@
                       label.template_version
                     )}
                   </div>
-                {:else if label.label_type === LABEL_TYPES.TRADE_ITEM_UNIT}
-                  {#if label.ship_to}
-                    <div>Ship to: {label.ship_to}</div>
-                  {/if}
-                  <div class="mt-1 font-mono text-xs">GTIN {label.gtin}</div>
-                  {#if label.lot_number}
-                    <div class="mt-1 text-xs">Lot: {label.lot_number}</div>
-                  {/if}
-                  {#if label.date_ai && label.date_value}
-                    <div class="mt-1 text-xs">
-                      {formatTraceabilityDate(label.date_ai, label.date_value)}
-                    </div>
-                  {/if}
-                  <div class="mt-1 text-xs">
-                    {getPrintLayoutName(
-                      label.print_layout,
-                      label.label_type,
-                      label.template_version
-                    )}
-                  </div>
                 {:else if label.label_type === LABEL_TYPES.SSCC_ONLY || label.label_type === LABEL_TYPES.MIXED_LOGISTIC_UNIT}
                   {#if label.ship_to}
                     <div>Ship to: {label.ship_to}</div>

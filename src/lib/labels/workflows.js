@@ -1,7 +1,6 @@
 export const LABEL_TYPES = Object.freeze({
   SSCC_ONLY: 'sscc_only',
   HOMOGENEOUS_UNIT: 'homogeneous_unit',
-  TRADE_ITEM_UNIT: 'trade_item_unit',
   MIXED_LOGISTIC_UNIT: 'mixed_logistic_unit',
   LEGACY_DEMO: 'legacy_demo'
 });
@@ -10,8 +9,7 @@ export const TEMPLATE_VERSIONS = Object.freeze({
   LEGACY: 'v1',
   GUIDED_CONTENT: 'v2',
   TRANSPORT: 'v3',
-  STRUCTURED_CONTENT: 'v4',
-  TRADE_ITEM_CONTENT: 'v5'
+  STRUCTURED_CONTENT: 'v4'
 });
 
 export const PRINT_LAYOUTS = Object.freeze({
@@ -105,7 +103,6 @@ export const TRANSPORT_COUNT_TYPES = Object.freeze([
 const supportedLabelTypes = new Set([
   LABEL_TYPES.SSCC_ONLY,
   LABEL_TYPES.HOMOGENEOUS_UNIT,
-  LABEL_TYPES.TRADE_ITEM_UNIT,
   LABEL_TYPES.MIXED_LOGISTIC_UNIT
 ]);
 const packagingLevelValues = new Set(PACKAGING_LEVELS.map((level) => level.value));
@@ -194,7 +191,6 @@ export function getLabelTypeName(value) {
   // above remain unchanged because they are stored with every saved label.
   if (value === LABEL_TYPES.SSCC_ONLY) return 'Transport unit tracking';
   if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return 'Identical contents';
-  if (value === LABEL_TYPES.TRADE_ITEM_UNIT) return 'Trade item logistic unit';
   if (value === LABEL_TYPES.MIXED_LOGISTIC_UNIT) return 'Mixed logistic unit';
   return 'Legacy label';
 }
@@ -203,7 +199,6 @@ export function getLabelTypeName(value) {
 export function getTemplateVersionForLabelType(value) {
   if (value === LABEL_TYPES.SSCC_ONLY) return TEMPLATE_VERSIONS.TRANSPORT;
   if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return TEMPLATE_VERSIONS.STRUCTURED_CONTENT;
-  if (value === LABEL_TYPES.TRADE_ITEM_UNIT) return TEMPLATE_VERSIONS.TRADE_ITEM_CONTENT;
   if (value === LABEL_TYPES.MIXED_LOGISTIC_UNIT) return TEMPLATE_VERSIONS.TRANSPORT;
   return TEMPLATE_VERSIONS.LEGACY;
 }

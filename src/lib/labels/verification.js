@@ -29,7 +29,6 @@ const DISPLAY_AI_ORDER = ['02', '37', '11', '13', '15', '16', '17', '10', '00'];
 export function buildSuccessfulLabelVerification(labelData, applicationIdentifiers) {
   const aiSet = new Set(applicationIdentifiers);
   const isHomogeneous = labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT;
-  const isTradeItem = labelData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT;
   const orderedAis = DISPLAY_AI_ORDER.filter((ai) => aiSet.has(ai));
 
   /** @type {LabelVerificationCheck[]} */
@@ -52,21 +51,6 @@ export function buildSuccessfulLabelVerification(labelData, applicationIdentifie
         id: 'content_count_association',
         label: 'AI (02) content is paired with AI (37) count',
         passed: aiSet.has('02') && aiSet.has('37')
-      }
-    );
-  }
-
-  if (isTradeItem) {
-    checks.push(
-      {
-        id: 'gtin_check_digit',
-        label: 'Trade item GTIN check digit is valid',
-        passed: validateGTIN(String(labelData.gtin ?? ''))
-      },
-      {
-        id: 'trade_item_identifier',
-        label: 'AI (01) identifies the trade item without AI (02) or AI (37)',
-        passed: aiSet.has('01') && !aiSet.has('02') && !aiSet.has('37')
       }
     );
   }

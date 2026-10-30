@@ -143,18 +143,6 @@ export function buildGs1Elements(labelData) {
     return [{ ai: '00', value: String(labelData.sscc ?? '') }].filter((item) => item.value);
   }
 
-  if (labelData.label_type === 'trade_item_unit') {
-    const dateAi = String(labelData.date_ai ?? '');
-    const dateValue = formatDateForAi(labelData.date_value);
-
-    return [
-      { ai: '00', value: String(labelData.sscc ?? '') },
-      { ai: '01', value: String(labelData.gtin ?? '') },
-      { ai: dateAi, value: dateValue },
-      { ai: '10', value: String(labelData.lot_number ?? '') }
-    ].filter((item) => item.ai && item.value);
-  }
-
   if (labelData.label_type === 'homogeneous_unit') {
     const dateAi = String(labelData.date_ai ?? '');
     const dateValue = formatDateForAi(labelData.date_value);

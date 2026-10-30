@@ -25,10 +25,8 @@ const MINIMUM_BAR_HEIGHT_POINTS = (MINIMUM_BAR_HEIGHT_MM / MILLIMETERS_PER_INCH)
 
 export function generateLogisticLabelLayout(labelData, options = {}) {
   if (
-    (labelData.template_version === TEMPLATE_VERSIONS.STRUCTURED_CONTENT &&
-      labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT) ||
-    (labelData.template_version === TEMPLATE_VERSIONS.TRADE_ITEM_CONTENT &&
-      labelData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT)
+    labelData.template_version === TEMPLATE_VERSIONS.STRUCTURED_CONTENT &&
+    labelData.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT
   ) {
     return generateStructuredHomogeneousLabelLayout(labelData);
   }
@@ -202,10 +200,7 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
   const left = 12;
   const right = PAGE_WIDTH - 12;
   const middle = PAGE_WIDTH / 2;
-  const isTradeItem = labelData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT;
-  const contentElements = isTradeItem
-    ? elements.filter((item) => item.ai === '01')
-    : getHomogeneousContentElements(elements);
+  const contentElements = getHomogeneousContentElements(elements);
   const ssccElements = getSSCCElements(elements);
 
   // The compact label contains routing data plus two complete barcode blocks.
@@ -225,22 +220,9 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
   drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 196, 82, 314, 298, 11);
 
   drawLine(content, left, 246, right, 246, 1.5);
-  if (!isTradeItem) {
-    drawLine(content, 190, 246, 190, 286, 0.8);
-  }
-  drawLargeInfoField(
-    content,
-    isTradeItem ? 'GTIN' : 'CONTENT',
-    labelData.gtin,
-    18,
-    isTradeItem ? 264 : 166,
-    278,
-    260,
-    13
-  );
-  if (!isTradeItem) {
-    drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 82, 278, 260, 11);
-  }
+  drawLine(content, 190, 246, 190, 286, 0.8);
+  drawLargeInfoField(content, 'CONTENT', labelData.gtin, 18, 166, 278, 260, 13);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 196, 82, 278, 260, 11);
 
   drawCompliantBarcode(content, contentElements, 145, PAGE_WIDTH);
   drawCenteredText(content, humanReadable(contentElements), PAGE_WIDTH / 2, 129, 9);
@@ -253,10 +235,7 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   const left = 12;
   const right = LARGE_PAGE_WIDTH - 12;
   const middle = LARGE_PAGE_WIDTH / 2;
-  const isTradeItem = labelData.label_type === LABEL_TYPES.TRADE_ITEM_UNIT;
-  const contentElements = isTradeItem
-    ? elements.filter((item) => item.ai === '01')
-    : getHomogeneousContentElements(elements);
+  const contentElements = getHomogeneousContentElements(elements);
   const traceabilityElements = getHomogeneousTraceabilityElements(elements);
   const ssccElements = getSSCCElements(elements);
   const dateOption = getHomogeneousDateOption(labelData.date_ai);
@@ -276,25 +255,10 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
   drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 222, 186, 486, 468, 15);
 
   drawLine(content, left, 410, right, 410, 0.8);
-  if (!isTradeItem) {
-    drawLine(content, 210, 410, 210, 452, 0.8);
-    drawLine(content, 310, 410, 310, 452, 0.8);
-  } else {
-    drawLine(content, 310, 410, 310, 452, 0.8);
-  }
-  drawLargeInfoField(
-    content,
-    isTradeItem ? 'GTIN' : 'CONTENT',
-    labelData.gtin,
-    18,
-    isTradeItem ? 286 : 186,
-    444,
-    426,
-    15
-  );
-  if (!isTradeItem) {
-    drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 216, 88, 444, 426, 12);
-  }
+  drawLine(content, 210, 410, 210, 452, 0.8);
+  drawLine(content, 310, 410, 310, 452, 0.8);
+  drawLargeInfoField(content, 'CONTENT', labelData.gtin, 18, 186, 444, 426, 15);
+  drawLargeInfoField(content, 'COUNT', formatHomogeneousCount(labelData), 216, 88, 444, 426, 12);
   drawLargeInfoField(content, 'GROSS WEIGHT', formatGrossWeight(labelData), 316, 92, 444, 426, 11);
 
   drawLine(content, left, 376, right, 376, 1.5);

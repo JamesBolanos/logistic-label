@@ -27,18 +27,6 @@ export const releaseUpdates: readonly ReleaseUpdate[] = [
     linkLabel: 'Create a mixed-pallet label'
   },
   {
-    id: '2026-10-28-trade-item-logistic-label',
-    publishedAt: '2026-10-28',
-    category: 'new feature',
-    status: 'published',
-    title: 'Add trade-item logistic labels',
-    benefit:
-      'Create a label for a case or pallet that is itself an orderable trade item. It uses AI (01) GTIN instead of the homogeneous unit content barcode, with optional lot or date traceability and the same SSCC-based logistic-unit identity.',
-    featureKey: 'trade_item_logistic_label',
-    href: '/labels',
-    linkLabel: 'Create a trade-item label'
-  },
-  {
     id: '2026-10-22-app-shell-and-dark-mode',
     publishedAt: '2026-10-22',
     category: 'improvement',

@@ -20,7 +20,6 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
     ],
     avoidWhen: [
       'The label must encode a GTIN, item count, lot, or date.',
-      'The complete unit is itself an orderable trade item.',
       'The receiving customer provides a mandatory label specification.'
     ],
     requiredData: ['Ship From', 'Ship To', 'Configured GS1 Company Prefix'],
@@ -41,10 +40,7 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
       'You know the number of trade items identified by that GTIN.',
       'Optional lot or date traceability applies to the identical contents.'
     ],
-    avoidWhen: [
-      'The complete case or pallet is itself the orderable trade item using AI (01).',
-      'The logistic unit contains different products or different GTINs.'
-    ],
+    avoidWhen: ['The logistic unit contains different products or different GTINs.'],
     requiredData: ['Ship From', 'Ship To', 'Content GTIN', 'Packaging level', 'Exact count'],
     optionalData: ['PO Number', 'Carrier', 'Gross Weight', 'Lot', 'One applicable date'],
     barcodeSummary: [
@@ -54,29 +50,7 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
     ],
     sizes: ['4 × 6 — basic contents', '6 × 8 — detailed contents with lot or date'],
     generatorHref: '/labels?type=homogeneous_unit'
-  },
-  {
-    id: 'trade-item-logistic-unit',
-    labelType: LABEL_TYPES.TRADE_ITEM_UNIT,
-    category: 'Orderable case or pallet',
-    title: 'Ship a case or pallet sold as one item',
-    summary:
-      'Describe a logistic unit that is itself an orderable trade item, using its own GTIN instead of a contained-content GTIN.',
-    useWhen: [
-      'The complete case or pallet has its own orderable GTIN.',
-      'You need lot or date traceability for that trade item.',
-      'You do not need to count identical contained items.'
-    ],
-    avoidWhen: [
-      'The unit contains many identical cases or items that should use AI (02) CONTENT and AI (37) COUNT.',
-      'The logistic unit contains different products or GTINs.'
-    ],
-    requiredData: ['Ship From', 'Ship To', 'Trade item GTIN'],
-    optionalData: ['PO Number', 'Carrier', 'Gross Weight', 'Lot', 'One applicable date'],
-    barcodeSummary: ['(01) GTIN', 'Optional date + (10) lot', '(00) SSCC-18 at the bottom'],
-    sizes: ['4 × 6 — basic trade item', '6 × 8 — detailed trade item with lot or date'],
-    generatorHref: '/labels?type=trade_item_unit'
-  },
+  }
 ]);
 
 /** @param {unknown} labelType */
