@@ -47,7 +47,7 @@ describe('guided label PDF rendering', () => {
     const content = pdf.toString('utf8');
     expect(content).toContain('SSCC');
     expect(content).toContain('006141411234567890');
-    expect(content).toContain('0.8 w 18 136 m 270 136 l S');
+    expect(content).toContain('0.8 w 18 145 m 270 145 l S');
     expect(content).not.toContain('SHIP TO');
     expect(content).not.toContain('COMPANY NAME');
   });

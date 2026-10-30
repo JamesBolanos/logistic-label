@@ -3,6 +3,7 @@
   import { trackProductEvent } from '#lib/analytics/client.ts';
   import { getAvailableScenarioForLabelType } from '#lib/labels/scenarios.js';
   import {
+    BASIC_SSCC_PRINT_LAYOUT_OPTIONS,
     DEFAULT_PRINT_LAYOUT,
     HOMOGENEOUS_DATE_OPTIONS,
     HOMOGENEOUS_PRINT_LAYOUT_OPTIONS,
@@ -43,6 +44,12 @@
 
   $effect(() => {
     formData.label_type = labelType;
+    if (
+      labelType === LABEL_TYPES.SSCC_BASIC &&
+      !BASIC_SSCC_PRINT_LAYOUT_OPTIONS.some((layout) => layout.value === formData.print_layout)
+    ) {
+      formData.print_layout = PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE;
+    }
     if (!companyNameApplied && companyName) {
       formData.ship_from = companyName;
       companyNameApplied = true;
@@ -294,6 +301,49 @@
         <legend class="mb-2 text-sm font-medium text-muted-foreground">Print layout</legend>
         <div class="grid gap-3">
           {#each SSCC_PRINT_LAYOUT_OPTIONS as layout (layout.value)}
+            <label
+              class={`flex gap-3 rounded-md border p-3 ${
+                layout.available
+                  ? 'cursor-pointer border-border-strong bg-surface hover:border-blue-400'
+                  : 'cursor-not-allowed border-border-default bg-surface-strong opacity-70'
+              }`}
+            >
+              <input
+                type="radio"
+                name="print_layout"
+                value={layout.value}
+                bind:group={formData.print_layout}
+                disabled={!layout.available}
+                class="mt-1 h-4 w-4 border-border-strong text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+              />
+              <span>
+                <span class="block text-sm font-medium text-foreground">{layout.label}</span>
+                <span class="mt-1 block text-xs text-muted-foreground">{layout.description}</span>
+              </span>
+            </label>
+          {/each}
+        </div>
+        {#if errors.print_layout}
+          <p class="mt-2 text-sm text-red-600 dark:text-red-400">{errors.print_layout}</p>
+        {/if}
+      </fieldset>
+    </div>
+  {:else if labelType === LABEL_TYPES.SSCC_BASIC}
+    <div class="space-y-4">
+      <div
+        class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4"
+      >
+        <h3 class="font-semibold text-blue-950">Create a basic SSCC label</h3>
+        <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
+          The label prints only the SSCC number and its GS1-128 barcode. Transport details are not
+          printed or encoded.
+        </p>
+      </div>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-medium text-muted-foreground">Print layout</legend>
+        <div class="grid gap-3">
+          {#each BASIC_SSCC_PRINT_LAYOUT_OPTIONS as layout (layout.value)}
             <label
               class={`flex gap-3 rounded-md border p-3 ${
                 layout.available

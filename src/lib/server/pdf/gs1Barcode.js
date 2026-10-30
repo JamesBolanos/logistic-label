@@ -138,6 +138,7 @@ const AI_DEFINITIONS = {
 export function buildGs1Elements(labelData) {
   if (
     labelData.label_type === 'sscc_only' ||
+    labelData.label_type === 'sscc_basic' ||
     labelData.label_type === 'mixed_logistic_unit'
   ) {
     return [{ ai: '00', value: String(labelData.sscc ?? '') }].filter((item) => item.value);

@@ -1,5 +1,6 @@
 export const LABEL_TYPES = Object.freeze({
   SSCC_ONLY: 'sscc_only',
+  SSCC_BASIC: 'sscc_basic',
   HOMOGENEOUS_UNIT: 'homogeneous_unit',
   MIXED_LOGISTIC_UNIT: 'mixed_logistic_unit',
   LEGACY_DEMO: 'legacy_demo'
@@ -58,6 +59,21 @@ export const SSCC_PRINT_LAYOUT_OPTIONS = Object.freeze([
   }
 ]);
 
+export const BASIC_SSCC_PRINT_LAYOUT_OPTIONS = Object.freeze([
+  {
+    value: PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE,
+    label: '4 × 3 — one label',
+    description: 'One basic SSCC label with the SSCC number and barcode only.',
+    available: true
+  },
+  {
+    value: PRINT_LAYOUTS.FOUR_BY_SIX_TWO_UP,
+    label: '4 × 6 — two copies',
+    description: 'Two identical basic SSCC labels with the same SSCC and a cut guide.',
+    available: true
+  }
+]);
+
 export const HOMOGENEOUS_PRINT_LAYOUT_OPTIONS = Object.freeze([
   {
     value: PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
@@ -103,6 +119,7 @@ export const TRANSPORT_COUNT_TYPES = Object.freeze([
 /** @type {Set<string>} */
 const supportedLabelTypes = new Set([
   LABEL_TYPES.SSCC_ONLY,
+  LABEL_TYPES.SSCC_BASIC,
   LABEL_TYPES.HOMOGENEOUS_UNIT,
   LABEL_TYPES.MIXED_LOGISTIC_UNIT
 ]);
@@ -112,7 +129,7 @@ const transportWeightUnits = new Set(TRANSPORT_WEIGHT_UNITS.map((unit) => unit.v
 const transportCountTypes = new Set(TRANSPORT_COUNT_TYPES.map((type) => type.value));
 /** @type {Set<string>} */
 const supportedPrintLayouts = new Set(
-  [...SSCC_PRINT_LAYOUT_OPTIONS, ...HOMOGENEOUS_PRINT_LAYOUT_OPTIONS]
+  [...SSCC_PRINT_LAYOUT_OPTIONS, ...BASIC_SSCC_PRINT_LAYOUT_OPTIONS, ...HOMOGENEOUS_PRINT_LAYOUT_OPTIONS]
     .filter((layout) => layout.available)
     .map((layout) => layout.value)
 );
@@ -165,7 +182,9 @@ export function getPrintLayoutName(value, labelType, templateVersion) {
   const options =
     labelType === LABEL_TYPES.HOMOGENEOUS_UNIT
       ? HOMOGENEOUS_PRINT_LAYOUT_OPTIONS
-      : SSCC_PRINT_LAYOUT_OPTIONS;
+      : labelType === LABEL_TYPES.SSCC_BASIC
+        ? BASIC_SSCC_PRINT_LAYOUT_OPTIONS
+        : SSCC_PRINT_LAYOUT_OPTIONS;
   return (
     options.find((layout) => layout.value === value)?.label ||
     [...SSCC_PRINT_LAYOUT_OPTIONS, ...HOMOGENEOUS_PRINT_LAYOUT_OPTIONS].find(
@@ -190,6 +209,7 @@ export function getLabelSizeForPrintLayout(value) {
 export function getLabelTypeName(value) {
   // These compact names appear in history and dashboards. The technical values
   // above remain unchanged because they are stored with every saved label.
+  if (value === LABEL_TYPES.SSCC_BASIC) return 'Basic SSCC label';
   if (value === LABEL_TYPES.SSCC_ONLY) return 'Transport unit tracking';
   if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return 'Identical contents';
   if (value === LABEL_TYPES.MIXED_LOGISTIC_UNIT) return 'Mixed logistic unit';
@@ -198,6 +218,7 @@ export function getLabelTypeName(value) {
 
 /** @param {unknown} value */
 export function getTemplateVersionForLabelType(value) {
+  if (value === LABEL_TYPES.SSCC_BASIC) return TEMPLATE_VERSIONS.SSCC_BASIC;
   if (value === LABEL_TYPES.SSCC_ONLY) return TEMPLATE_VERSIONS.TRANSPORT;
   if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return TEMPLATE_VERSIONS.STRUCTURED_CONTENT;
   if (value === LABEL_TYPES.MIXED_LOGISTIC_UNIT) return TEMPLATE_VERSIONS.TRANSPORT;

@@ -27,6 +27,11 @@ const SSCC_PRINT_LAYOUTS = new Set([
   PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE
 ]);
 /** @type {ReadonlySet<string>} */
+const BASIC_SSCC_PRINT_LAYOUTS = new Set([
+  PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE,
+  PRINT_LAYOUTS.FOUR_BY_SIX_TWO_UP
+]);
+/** @type {ReadonlySet<string>} */
 const HOMOGENEOUS_PRINT_LAYOUTS = new Set([
   PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
   PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE
@@ -64,6 +69,13 @@ export function validateLabelForm(formData) {
   const printLayout = formData.print_layout || DEFAULT_PRINT_LAYOUT;
   if (!isSupportedPrintLayout(printLayout)) {
     errors.print_layout = 'Choose a supported print layout';
+  }
+
+  if (formData.label_type === LABEL_TYPES.SSCC_BASIC) {
+    if (!BASIC_SSCC_PRINT_LAYOUTS.has(printLayout)) {
+      errors.print_layout = 'Choose a supported basic SSCC print layout';
+    }
+    return { isValid: Object.keys(errors).length === 0, errors };
   }
 
   if (
@@ -155,6 +167,30 @@ export function validateLabelForm(formData) {
  */
 export function sanitizeLabelForm(formData) {
   const labelType = String(formData?.label_type || '').trim();
+
+  if (labelType === LABEL_TYPES.SSCC_BASIC) {
+    return {
+      label_type: labelType,
+      template_version: getTemplateVersionForLabelType(labelType),
+      gtin: null,
+      lot_number: null,
+      production_date: null,
+      date_ai: null,
+      date_value: null,
+      quantity: null,
+      weight_pounds: null,
+      packaging_level: null,
+      print_layout: String(formData.print_layout || PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE),
+      ship_from: null,
+      ship_to: null,
+      purchase_order: null,
+      carrier: null,
+      gross_weight: null,
+      gross_weight_unit: null,
+      transport_count: null,
+      transport_count_type: null
+    };
+  }
 
   if (labelType === LABEL_TYPES.SSCC_ONLY || labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT) {
     return {

@@ -6,9 +6,10 @@ describe('public supported-label guide', () => {
   it('documents each available workflow exactly once', () => {
     expect(SUPPORTED_LABEL_GUIDES.map((guide) => guide.labelType)).toEqual([
       LABEL_TYPES.SSCC_ONLY,
+      LABEL_TYPES.SSCC_BASIC,
       LABEL_TYPES.HOMOGENEOUS_UNIT
     ]);
-    expect(new Set(SUPPORTED_LABEL_GUIDES.map((guide) => guide.id)).size).toBe(2);
+    expect(new Set(SUPPORTED_LABEL_GUIDES.map((guide) => guide.id)).size).toBe(3);
   });
 
   it('links directly to the matching generator workflow', () => {
