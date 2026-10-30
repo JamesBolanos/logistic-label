@@ -10,9 +10,7 @@
   function statusClass(status) {
     if (status === LABEL_SCENARIO_STATUSES.AVAILABLE)
       return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300';
-    if (status === LABEL_SCENARIO_STATUSES.TAILORED)
-      return 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300';
-    return 'bg-surface-strong text-muted-foreground';
+    return 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300';
   }
 </script>
 

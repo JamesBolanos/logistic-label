@@ -265,7 +265,7 @@
       <a
         href="mailto:jbolanosdiaz@gmail.com?subject=Tailored%20logistic%20label%20implementation"
         onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'guide_cta' })}
-        class="mt-4 inline-flex rounded-md bg-white px-4 py-2 font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-surface focus:ring-offset-blue-700"
+        class="mt-4 inline-flex rounded-md bg-white px-4 py-2 font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-700"
       >
         Discuss a tailored solution
       </a>

@@ -2,6 +2,14 @@
 
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
 
+## 2026-10-30 — `TRADE-001`/scenario cleanup — Remove unrequested label scenarios
+
+- Result: removed the trade-item logistic unit workflow and all planned scenario cards (variable-measure, mixed-logistic-unit, and trade-item) from the generator and public guide. The available workflows are now transport identification and identical contents only.
+- Decisions: keep tailored customer-specific guidance; do not surface scenarios that are not implemented or requested. Removed the planned status from scenario metadata and the related planned UI branch.
+- Material files: `src/lib/labels/scenarios.js`, `src/lib/labels/guide.js`, `src/lib/labels/workflows.js`, `src/lib/labels/verification.js`, `src/lib/validation/formValidation.js`, `src/lib/server/labels/layout.js`, `src/lib/server/pdf/gs1Barcode.js`, `src/lib/components/Labels/LabelForm.svelte`, `src/lib/components/Labels/LabelHistory.svelte`, `src/lib/components/Labels/LabelWorkflowSelector.svelte`, `src/lib/content/releases.ts`, `docs/labels/GUIDED_LABEL_WORKFLOWS.md`, `docs/KANBAN.md`, tests.
+- Validation: `npm run quality` passes (26 test files, 197 tests, TypeScript check, Vercel build); `npm run lint` and `npm run format:check` pass.
+- Next: developer reviews the diff and merges staging to production.
+
 ## Entry Format
 
 Keep the newest entry first and include only:
