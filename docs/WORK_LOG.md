@@ -2,6 +2,14 @@
 
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
 
+## 2026-11-08 — `BATCH-001` — Multiple basic SSCC labels as one PDF
+
+- Result: added a `Number of labels` field (1–10) to the basic SSCC form, generated one new SSCC per requested label, and returned all labels as one multi-page PDF. Updated the server PDF writer to emit a valid multi-page PDF and added a batch download endpoint. Preview now uses a layout-aware aspect ratio and can render all requested basic SSCC pages.
+- Decisions: scoped to basic SSCC only; preserved the existing 4 × 3 single and 4 × 6 two-copy layouts; capped the batch at 10; stored each label independently; preview SSCCs are derived in memory without advancing settings.
+- Material files: `src/lib/components/Labels/LabelForm.svelte`, `src/lib/validation/formValidation.js`, `src/routes/(app)/labels/+page.svelte`, `src/routes/api/pdf/generate/+server.js`, `src/routes/api/pdf/download-batch/+server.js`, `src/lib/server/pdf/labelGenerator.js`, `src/lib/components/Labels/LabelPreview.svelte`, `src/routes/api/pdf/preview/+server.js`, `src/lib/content/releases.ts`, `docs/KANBAN.md`.
+- Validation: `npm run format:check`, `npm run lint`, `npm run check`, `npm run test:unit` (26 files, 199 tests), `npm run build`, and `npm run db:check` pass.
+- Next: developer reviews the diff, runs focused browser checks, opens the PR, and merges.
+
 ## 2026-10-30 — `TRADE-001`/scenario cleanup — Remove unrequested label scenarios
 
 - Result: removed the trade-item logistic unit workflow and all planned scenario cards (variable-measure, mixed-logistic-unit, and trade-item) from the generator and public guide. The available workflows are now transport identification and identical contents only.

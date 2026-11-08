@@ -15,6 +15,18 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-11-08-basic-sscc-batch-and-preview',
+    publishedAt: '2026-11-08',
+    category: 'new feature',
+    status: 'published',
+    title: 'Generate several basic SSCC labels at once',
+    benefit:
+      'Basic SSCC labels can now be created in batches of up to 10. Each label receives its own SSCC, all pages are combined into one PDF, and the preview now uses the correct label shape and shows every requested page.',
+    featureKey: 'basic_sscc_batch_pdf',
+    href: '/labels?type=sscc_basic',
+    linkLabel: 'Create basic SSCC labels'
+  },
+  {
     id: '2026-10-30-label-detail-corrections',
     publishedAt: '2026-10-30',
     category: 'improvement',
