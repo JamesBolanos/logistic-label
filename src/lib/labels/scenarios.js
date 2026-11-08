@@ -60,7 +60,8 @@ export const LABEL_SCENARIOS = Object.freeze([
       'Identify one physical shipping unit with an SSCC only. The label prints the SSCC number and its GS1-128 barcode, without transport fields.',
     outputs: [
       'One GS1-128 barcode: (00) SSCC-18',
-      '4 × 3 and two-copy 4 × 6 layouts'
+      '4 × 3 and two-copy 4 × 6 layouts',
+      'Up to 10 labels in one PDF'
     ],
     actionLabel: 'Create a basic SSCC label'
   },
