@@ -1,10 +1,13 @@
 // src/routes/api/pdf/preview/+server.js
 import { json } from '@sveltejs/kit';
-import { generateLogisticLabelPDF } from '#lib/server/pdf/labelGenerator.js';
+import {
+  generateLogisticLabelPDF,
+  generateMultipleLogisticLabels
+} from '#lib/server/pdf/labelGenerator.js';
 import { validateLabelForm, sanitizeLabelForm } from '#lib/server/validation/formValidation.js';
 import { getLabelSettings } from '#lib/server/db/settings.js';
 import { generateSSCC } from '#lib/utils/gs1Utils.js';
-import { getLabelSizeForPrintLayout } from '#lib/labels/workflows.js';
+import { getLabelSizeForPrintLayout, LABEL_TYPES } from '#lib/labels/workflows.js';
 import {
   buildSuccessfulLabelVerification,
   LABEL_VERIFICATION_HEADER,
@@ -93,24 +96,37 @@ export async function POST({ request, locals }) {
       );
     }
 
-    const sscc = generateSSCC({
-      gs1CompanyPrefix: settings.gs1_company_prefix,
-      extensionDigit: settings.extension_digit,
-      serialReference: settings.next_serial_reference
+    const previewCount =
+      sanitizedData.label_type === LABEL_TYPES.SSCC_BASIC
+        ? Math.min(10, Math.max(1, Number(sanitizedData.label_count) || 1))
+        : 1;
+
+    const previewLabelDataList = Array.from({ length: previewCount }, (_, index) => {
+      const sscc = generateSSCC({
+        gs1CompanyPrefix: settings.gs1_company_prefix,
+        extensionDigit: settings.extension_digit,
+        serialReference: settings.next_serial_reference + index
+      });
+
+      return {
+        ...sanitizedData,
+        id: 'preview',
+        sscc,
+        created_at: new Date().toISOString()
+      };
     });
 
-    // Prepare complete label data for preview
-    const previewLabelData = {
-      ...sanitizedData,
-      id: 'preview',
-      sscc,
-      created_at: new Date().toISOString()
-    };
+    const previewLabelData = previewLabelDataList[0];
 
     // Generate PDF
-    const pdfBuffer = await generateLogisticLabelPDF(previewLabelData, {
-      company_name: settings.company_name
-    });
+    const pdfBuffer =
+      previewLabelDataList.length === 1
+        ? await generateLogisticLabelPDF(previewLabelData, {
+            company_name: settings.company_name
+          })
+        : await generateMultipleLogisticLabels(previewLabelDataList, {
+            company_name: settings.company_name
+          });
 
     // Send only controlled verification metadata. Label contents stay in the PDF
     // and are never copied into response headers or product analytics.

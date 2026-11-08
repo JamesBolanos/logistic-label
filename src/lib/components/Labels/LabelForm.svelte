@@ -33,7 +33,8 @@
     gross_weight: '',
     gross_weight_unit: '',
     transport_count: '',
-    transport_count_type: ''
+    transport_count_type: '',
+    label_count: '1'
   });
   let isLoading = $state(false);
   let errors = $state({});
@@ -49,6 +50,9 @@
       !BASIC_SSCC_PRINT_LAYOUT_OPTIONS.some((layout) => layout.value === formData.print_layout)
     ) {
       formData.print_layout = PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE;
+    }
+    if (labelType === LABEL_TYPES.SSCC_BASIC && !formData.label_count) {
+      formData.label_count = '1';
     }
     if (!companyNameApplied && companyName) {
       formData.ship_from = companyName;
@@ -337,6 +341,27 @@
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
           The label prints only the SSCC number and its GS1-128 barcode. Transport details are not
           printed or encoded.
+        </p>
+      </div>
+
+      <div>
+        <label for="label_count" class="mb-1 block text-sm font-medium text-muted-foreground">
+          Number of labels <span class="font-normal text-subtle-foreground">(1 to 10)</span>
+        </label>
+        <input
+          id="label_count"
+          type="number"
+          bind:value={formData.label_count}
+          min="1"
+          max="10"
+          step="1"
+          class="w-32 rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        {#if errors.label_count}
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.label_count}</p>
+        {/if}
+        <p class="mt-1 text-xs text-subtle-foreground">
+          Each label receives a new SSCC. All labels are generated as one PDF.
         </p>
       </div>
 
