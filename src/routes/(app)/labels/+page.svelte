@@ -115,6 +115,8 @@
 
       const data = await response.json();
       generatedLabelId = data.labelId;
+      const generatedLabelIds = Array.isArray(data.labelIds) ? data.labelIds : [data.labelId];
+      const generatedCount = Number(data.count) || generatedLabelIds.length || 1;
 
       trackProductEvent('label_saved', {
         label_type: labelData.label_type,
@@ -125,7 +127,11 @@
 
       workflowStep = 'pdf_response';
       const pdfStartedAt = Date.now();
-      const pdfResponse = await fetch(`/api/pdf/download/${generatedLabelId}`, {
+      const downloadUrl =
+        generatedCount > 1
+          ? `/api/pdf/download-batch?ids=${generatedLabelIds.join(',')}`
+          : `/api/pdf/download/${generatedLabelId}`;
+      const pdfResponse = await fetch(downloadUrl, {
         headers: {
           'X-Operation-ID': createOperationId(),
           'X-Download-Source': 'new_label'
@@ -148,7 +154,10 @@
       const url = window.URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `gs1_label_${generatedLabelId}.pdf`;
+      anchor.download =
+        generatedCount > 1
+          ? `gs1_labels_${generatedLabelId}.pdf`
+          : `gs1_label_${generatedLabelId}.pdf`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();

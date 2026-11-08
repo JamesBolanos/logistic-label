@@ -54,7 +54,8 @@ const HOMOGENEOUS_PRINT_LAYOUTS = new Set([
  *   gross_weight?: string | number,
  *   gross_weight_unit?: string,
  *   transport_count?: string | number,
- *   transport_count_type?: string
+ *   transport_count_type?: string,
+ *   label_count?: string | number
  * }} formData
  */
 export function validateLabelForm(formData) {
@@ -75,6 +76,16 @@ export function validateLabelForm(formData) {
     if (!BASIC_SSCC_PRINT_LAYOUTS.has(printLayout)) {
       errors.print_layout = 'Choose a supported basic SSCC print layout';
     }
+
+    const rawCount = formData.label_count;
+    const labelCount =
+      rawCount === undefined || rawCount === null || String(rawCount).trim() === ''
+        ? 1
+        : Number(rawCount);
+    if (!Number.isInteger(labelCount) || labelCount < 1 || labelCount > 10) {
+      errors.label_count = 'Number of labels must be a whole number from 1 to 10';
+    }
+
     return { isValid: Object.keys(errors).length === 0, errors };
   }
 
@@ -162,13 +173,20 @@ export function validateLabelForm(formData) {
  *   gross_weight?: string | number,
  *   gross_weight_unit?: string,
  *   transport_count?: string | number,
- *   transport_count_type?: string
+ *   transport_count_type?: string,
+ *   label_count?: string | number
  * }} formData
  */
 export function sanitizeLabelForm(formData) {
   const labelType = String(formData?.label_type || '').trim();
 
   if (labelType === LABEL_TYPES.SSCC_BASIC) {
+    const rawCount = formData.label_count;
+    const labelCount =
+      rawCount === undefined || rawCount === null || String(rawCount).trim() === ''
+        ? 1
+        : Number.parseInt(String(rawCount), 10);
+
     return {
       label_type: labelType,
       template_version: getTemplateVersionForLabelType(labelType),
@@ -188,7 +206,8 @@ export function sanitizeLabelForm(formData) {
       gross_weight: null,
       gross_weight_unit: null,
       transport_count: null,
-      transport_count_type: null
+      transport_count_type: null,
+      label_count: Number.isInteger(labelCount) ? Math.min(10, Math.max(1, labelCount)) : 1
     };
   }
 

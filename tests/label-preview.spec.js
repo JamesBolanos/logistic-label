@@ -27,7 +27,7 @@ test('signed-in user can generate both available shipping situations', async ({
     await page.getByRole('link', { name: 'View all updates' }).click();
     await expect(page).toHaveURL(/\/updates$/);
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
-    await expect(page.getByText('Password recovery is available')).toBeVisible();
+    await expect(page.getByText('Generate several basic SSCC labels at once')).toBeVisible();
 
     await page.goto('/signup', { waitUntil: 'networkidle' });
 

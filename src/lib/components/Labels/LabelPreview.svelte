@@ -21,6 +21,13 @@
   let verification = $state(null);
   let objectUrl = null;
 
+  const previewAspectRatio = $derived.by(() => {
+    const labelSize = labelData ? getLabelSizeForPrintLayout(labelData.print_layout) : '4x6';
+    if (labelSize === '4x3') return '4 / 3';
+    if (labelSize === '6x8') return '3 / 4';
+    return '2 / 3';
+  });
+
   onDestroy(() => {
     revokePreviewUrl();
   });
@@ -111,7 +118,8 @@
       <iframe
         src={previewUrl}
         title="Label Preview"
-        class="h-[36rem] w-full max-w-sm rounded-md bg-white shadow-sm"
+        class="w-full max-w-sm rounded-md bg-white shadow-sm"
+        style={`aspect-ratio: ${previewAspectRatio};`}
       ></iframe>
     </div>
     <div class="mt-4 text-sm text-gray-500">

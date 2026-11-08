@@ -2,8 +2,7 @@ import { getBarcodeModules } from './gs1Barcode.js';
 import { generateLogisticLabelLayout } from '../labels/layout.js';
 export { calculateBarcodeGeometry, validateGuidedLabelBarcodeFit } from '../labels/layout.js';
 
-export async function generateLogisticLabelPDF(labelData, options = {}) {
-  const layout = generateLogisticLabelLayout(labelData, options);
+function renderLayoutToContent(layout) {
   const content = [];
   for (const item of layout.content) {
     switch (item.type) {
@@ -43,7 +42,18 @@ export async function generateLogisticLabelPDF(labelData, options = {}) {
         break;
     }
   }
-  return createPdf(content.join('\n'), layout.width, layout.height);
+  return content.join('\n');
+}
+
+export async function generateLogisticLabelPDF(labelData, options = {}) {
+  const layout = generateLogisticLabelLayout(labelData, options);
+  return createPdf([
+    {
+      content: renderLayoutToContent(layout),
+      width: layout.width,
+      height: layout.height
+    }
+  ]);
 }
 
 export async function generateMultipleLogisticLabels(labelDataArray, options = {}) {
@@ -51,10 +61,16 @@ export async function generateMultipleLogisticLabels(labelDataArray, options = {
     throw new Error('No label data provided');
   }
 
-  const pages = await Promise.all(
-    labelDataArray.map((label) => generateLogisticLabelPDF(label, options))
-  );
-  return Buffer.concat(pages);
+  const pages = labelDataArray.map((label) => {
+    const layout = generateLogisticLabelLayout(label, options);
+    return {
+      content: renderLayoutToContent(layout),
+      width: layout.width,
+      height: layout.height
+    };
+  });
+
+  return createPdf(pages);
 }
 
 function drawText(content, text, x, y, size = 10, bold = false) {
@@ -86,15 +102,43 @@ function drawRect(content, x, y, width, height) {
   content.push(`${round(x)} ${round(y)} ${round(width)} ${round(height)} re f`);
 }
 
-function createPdf(pageContent, pageWidth, pageHeight) {
-  const objects = [
-    '<< /Type /Catalog /Pages 2 0 R >>',
-    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>`,
-    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
-    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
-    `<< /Length ${Buffer.byteLength(pageContent, 'utf8')} >>\nstream\n${pageContent}\nendstream`
-  ];
+function createPdf(pages) {
+  const normalizedPages = pages.map((page) => ({
+    content: page.content,
+    width: page.width,
+    height: page.height
+  }));
+
+  const pageCount = normalizedPages.length;
+  const fontRegularId = 3 + 2 * pageCount;
+  const fontBoldId = 4 + 2 * pageCount;
+  const totalObjects = 4 + 2 * pageCount;
+  const objects = new Array(totalObjects);
+
+  objects[0] = '<< /Type /Catalog /Pages 2 0 R >>';
+
+  const pageIds = [];
+  for (let i = 0; i < pageCount; i += 1) {
+    pageIds.push(3 + i);
+  }
+  objects[1] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${pageCount} >>`;
+
+  for (let i = 0; i < pageCount; i += 1) {
+    const contentId = 3 + pageCount + i;
+    const page = normalizedPages[i];
+    objects[2 + i] =
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${page.width} ${page.height}] /Resources << /Font << /F1 ${fontRegularId} 0 R /F2 ${fontBoldId} 0 R >> >> /Contents ${contentId} 0 R >>`;
+  }
+
+  for (let i = 0; i < pageCount; i += 1) {
+    const contentIndex = 2 + pageCount + i;
+    const page = normalizedPages[i];
+    objects[contentIndex] =
+      `<< /Length ${Buffer.byteLength(page.content, 'utf8')} >>\nstream\n${page.content}\nendstream`;
+  }
+
+  objects[2 + 2 * pageCount] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+  objects[3 + 2 * pageCount] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>';
 
   let pdf = '%PDF-1.4\n';
   const offsets = [0];
