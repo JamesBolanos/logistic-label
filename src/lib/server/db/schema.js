@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  jsonb,
   uniqueIndex,
   varchar
 } from 'drizzle-orm/pg-core';
@@ -153,6 +154,9 @@ export const product = pgTable(
     gs1Valid: boolean('gs1_valid').notNull().default(false),
     netContentValue: varchar('net_content_value', { length: 32 }),
     netContentUnit: varchar('net_content_unit', { length: 12 }),
+    gpc: varchar('gpc', { length: 8 }),
+    imageUrl: text('image_url'),
+    targetMarket: jsonb('target_market').default([]),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
   },

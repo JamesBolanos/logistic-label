@@ -33,7 +33,7 @@ Sources: [CI workflow](.github/workflows/ci.yml), [npm scripts](package.json), [
 
 1. Read [KANBAN.md](docs/KANBAN.md) and the newest relevant [work-log entry](docs/WORK_LOG.md).
 2. Select or create an item with a stable ID, need, outcome, acceptance evidence, and dependencies. Move it into **Work in Progress** before implementation. Keep only one item across Work in Progress and Review; complete, block, or return the previous item to Ready first.
-3. Start with a clean working tree and current `master`. Do not discard unrelated local changes.
+3. Start with a clean working tree and current `master`. Do not discard unrelated local changes. Always branch from `master`, never from `staging`; `staging` is an integration branch and may contain unreleased work.
 
 ```bash
 git status --short
@@ -285,6 +285,7 @@ Do not copy status into older plans. Consult detailed plans only for the selecte
 | Migration failed or was canceled                   | Stop promotion; inspect the failed step and actual database state. Determine whether retry is safe before starting another run.                                                                                    |
 | Production app is unhealthy after release          | Restore a known compatible application deployment through Vercel or ship a reviewed fix. Confirm that the previous app supports the current schema. Application rollback does not undo database changes.           |
 | Data was changed incorrectly                       | Assess the affected writes and recovery point before any restore. Database restore can discard legitimate writes since that point; follow a reviewed recovery plan.                                                |
+| Branched from `staging` instead of `master`        | Recreate the feature branch from current `master`, or merge `origin/master` into the feature branch and resolve conflicts before opening the PR. Do not carry unreleased staging work into a production release.   |
 | Staging push has no GitHub CI run                  | Expected: push CI is configured only for `master`. Use a PR or a manual `none` run on staging.                                                                                                                     |
 | Migration run shows Quality/E2E skipped            | Expected for a migration dispatch. Verify a separate successful check run for the reviewed content.                                                                                                                |
 | Missing variable/API key or environment mismatch   | Correct the service configuration and confirm the selected project/branch/database. Do not bypass guards or paste credentials into logs.                                                                           |
