@@ -55,6 +55,9 @@ const storedProduct = {
   name: 'Blue case',
   internalReference: 'REF-1',
   gtin: '04006381333931',
+  gpc: null,
+  imageUrl: null,
+  targetMarket: [],
   createdAt: new Date('2026-10-21T00:00:00Z'),
   updatedAt: new Date('2026-10-21T00:00:00Z')
 };
@@ -75,6 +78,9 @@ describe('saved product persistence', () => {
         name: 'Blue case',
         internal_reference: 'REF-1',
         gtin: '04006381333931',
+        gpc: null,
+        image_url: null,
+        target_market: [],
         created_at: '2026-10-21T00:00:00.000Z',
         updated_at: '2026-10-21T00:00:00.000Z'
       }
