@@ -2,6 +2,14 @@
 
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
 
+## 2026-11-09 — `PRODUCT-003` — Searchable GPC and country lookups
+
+- Result: added static GPC and ISO country lists, plus searchable datalist selectors for GPC and target market in the Saved Products form.
+- Decisions: GPC and country data are stored as compact JS arrays; target market remains an array of ISO country codes; GPC uses native datalist autocomplete.
+- Material files: `src/lib/data/gpcCodes.js`, `src/lib/data/countries.js`, `src/lib/components/Labels/SavedProducts.svelte`, `docs/KANBAN.md`.
+- Validation: `npm run quality` passes.
+- Next: developer reviews the diff, runs focused browser checks, opens the PR, and merges.
+
 ## 2026-11-08 — `PRODUCT-002` — Complete product identification structure
 
 - Result: added GPC, image URL, and target market (ISO country codes) to saved products. Updated the product schema, migration, validation, API mapping, and Settings UI.

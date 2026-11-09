@@ -3,6 +3,8 @@
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
   import { validateGTIN } from '#lib/utils/gs1Utils.js';
+  import { COUNTRIES } from '#lib/data/countries.js';
+  import { GPC_CODES } from '#lib/data/gpcCodes.js';
 
   const GTIN_PATTERN = /^(?:\d{8}|\d{12}|\d{13}|\d{14})$/;
   const GTIN_WARNING =
@@ -46,6 +48,8 @@
 
   let confirmDeleteId = $state(null);
   let isDeleting = $state(false);
+  let countrySearch = $state('');
+  let editCountrySearch = $state('');
 
   let gtinWarning = $derived(gtinWarningFor(formData.gtin));
   let editGtinWarning = $derived(editingId === null ? '' : gtinWarningFor(editData.gtin));
@@ -64,6 +68,41 @@
   function gtinWarningFor(value) {
     const gtin = String(value || '').trim();
     return GTIN_PATTERN.test(gtin) && !validateGTIN(gtin) ? GTIN_WARNING : '';
+  }
+
+  function resolveCountryCode(value) {
+    const normalized = String(value || '').trim();
+    if (!normalized) return '';
+    const byCode = COUNTRIES.find((country) => country.code === normalized.toUpperCase());
+    if (byCode) return byCode.code;
+    const byName = COUNTRIES.find(
+      (country) => country.name.toLowerCase() === normalized.toLowerCase()
+    );
+    return byName?.code || '';
+  }
+
+  function addCountry(value = countrySearch) {
+    const code = resolveCountryCode(value);
+    if (!code) return;
+    const current = formData.target_market
+      .split(',')
+      .map((item) => item.trim().toUpperCase())
+      .filter(Boolean);
+    if (!current.includes(code)) current.push(code);
+    formData.target_market = current.join(', ');
+    countrySearch = '';
+  }
+
+  function addEditCountry(value = editCountrySearch) {
+    const code = resolveCountryCode(value);
+    if (!code) return;
+    const current = editData.target_market
+      .split(',')
+      .map((item) => item.trim().toUpperCase())
+      .filter(Boolean);
+    if (!current.includes(code)) current.push(code);
+    editData.target_market = current.join(', ');
+    editCountrySearch = '';
   }
 
   async function loadProducts() {
@@ -449,12 +488,18 @@
                     <input
                       id="edit_gpc_{product.id}"
                       type="text"
+                      list="edit-gpc-options-{product.id}"
                       inputmode="numeric"
                       bind:value={editData.gpc}
                       maxlength="8"
                       autocomplete="off"
                       class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <datalist id="edit-gpc-options-{product.id}">
+                      {#each GPC_CODES as gpc (gpc.code)}
+                        <option value={gpc.code}>{gpc.description}</option>
+                      {/each}
+                    </datalist>
                     {#if editErrors.gpc}
                       <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.gpc}</p>
                     {/if}
@@ -502,6 +547,28 @@
                       {editErrors.target_market}
                     </p>
                   {/if}
+                  <div class="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      list="edit-country-options-{product.id}"
+                      bind:value={editCountrySearch}
+                      placeholder="Search country or ISO code"
+                      autocomplete="off"
+                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onclick={() => addEditCountry()}
+                      class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <datalist id="edit-country-options-{product.id}">
+                    {#each COUNTRIES as country (country.code)}
+                      <option value={country.code}>{country.name}</option>
+                    {/each}
+                  </datalist>
                 </div>
                 <div class="flex gap-2">
                   <button
@@ -741,12 +808,18 @@
           <input
             id="product_gpc"
             type="text"
+            list="gpc-options"
             inputmode="numeric"
             bind:value={formData.gpc}
             maxlength="8"
             autocomplete="off"
             class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <datalist id="gpc-options">
+            {#each GPC_CODES as gpc (gpc.code)}
+              <option value={gpc.code}>{gpc.description}</option>
+            {/each}
+          </datalist>
           {#if errors.gpc}
             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.gpc}</p>
           {/if}
@@ -790,6 +863,28 @@
         {#if errors.target_market}
           <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.target_market}</p>
         {/if}
+        <div class="mt-2 flex gap-2">
+          <input
+            type="text"
+            list="country-options"
+            bind:value={countrySearch}
+            placeholder="Search country or ISO code"
+            autocomplete="off"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="button"
+            onclick={() => addCountry()}
+            class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Add
+          </button>
+        </div>
+        <datalist id="country-options">
+          {#each COUNTRIES as country (country.code)}
+            <option value={country.code}>{country.name}</option>
+          {/each}
+        </datalist>
       </div>
       <div class="flex justify-end">
         <button
