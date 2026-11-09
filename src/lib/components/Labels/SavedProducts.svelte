@@ -20,7 +20,10 @@
     internal_reference: '',
     gtin: '',
     net_content_value: '',
-    net_content_unit: ''
+    net_content_unit: '',
+    gpc: '',
+    image_url: '',
+    target_market: ''
   });
   let errors = $state({});
   let isSaving = $state(false);
@@ -33,7 +36,10 @@
     internal_reference: '',
     gtin: '',
     net_content_value: '',
-    net_content_unit: ''
+    net_content_unit: '',
+    gpc: '',
+    image_url: '',
+    target_market: ''
   });
   let editErrors = $state({});
   let editSaving = $state(false);
@@ -94,7 +100,13 @@
           'Content-Type': 'application/json',
           'X-Operation-ID': createOperationId()
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          target_market: formData.target_market
+            .split(',')
+            .map((value) => value.trim().toUpperCase())
+            .filter(Boolean)
+        })
       });
       responseStatus = response.status;
       const data = await response.json();
@@ -111,7 +123,10 @@
         internal_reference: '',
         gtin: '',
         net_content_value: '',
-        net_content_unit: ''
+        net_content_unit: '',
+        gpc: '',
+        image_url: '',
+        target_market: ''
       };
       trackProductEvent('product_saved', { setup_type: data.setupType });
     } catch (error) {
@@ -134,7 +149,10 @@
       internal_reference: product.internal_reference || '',
       gtin: product.gtin,
       net_content_value: product.net_content_value || '',
-      net_content_unit: product.net_content_unit || ''
+      net_content_unit: product.net_content_unit || '',
+      gpc: product.gpc || '',
+      image_url: product.image_url || '',
+      target_market: Array.isArray(product.target_market) ? product.target_market.join(', ') : ''
     };
     editErrors = {};
     confirmDeleteId = null;
@@ -148,7 +166,10 @@
       internal_reference: '',
       gtin: '',
       net_content_value: '',
-      net_content_unit: ''
+      net_content_unit: '',
+      gpc: '',
+      image_url: '',
+      target_market: ''
     };
     editErrors = {};
   }
@@ -167,7 +188,13 @@
           'Content-Type': 'application/json',
           'X-Operation-ID': createOperationId()
         },
-        body: JSON.stringify(editData)
+        body: JSON.stringify({
+          ...editData,
+          target_market: editData.target_market
+            .split(',')
+            .map((value) => value.trim().toUpperCase())
+            .filter(Boolean)
+        })
       });
       responseStatus = response.status;
       const data = await response.json();
@@ -409,6 +436,73 @@
                     {/if}
                   </div>
                 </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label
+                      for="edit_gpc_{product.id}"
+                      class="mb-1 block text-sm font-medium text-muted-foreground"
+                    >
+                      GPC <span class="font-normal text-subtle-foreground"
+                        >(optional, 8 digits)</span
+                      >
+                    </label>
+                    <input
+                      id="edit_gpc_{product.id}"
+                      type="text"
+                      inputmode="numeric"
+                      bind:value={editData.gpc}
+                      maxlength="8"
+                      autocomplete="off"
+                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {#if editErrors.gpc}
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.gpc}</p>
+                    {/if}
+                  </div>
+                  <div>
+                    <label
+                      for="edit_image_url_{product.id}"
+                      class="mb-1 block text-sm font-medium text-muted-foreground"
+                    >
+                      Image URL <span class="font-normal text-subtle-foreground">(optional)</span>
+                    </label>
+                    <input
+                      id="edit_image_url_{product.id}"
+                      type="url"
+                      bind:value={editData.image_url}
+                      maxlength="2048"
+                      autocomplete="off"
+                      class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {#if editErrors.image_url}
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {editErrors.image_url}
+                      </p>
+                    {/if}
+                  </div>
+                </div>
+                <div>
+                  <label
+                    for="edit_target_market_{product.id}"
+                    class="mb-1 block text-sm font-medium text-muted-foreground"
+                  >
+                    Target Market <span class="font-normal text-subtle-foreground"
+                      >(optional, comma-separated ISO codes)</span
+                    >
+                  </label>
+                  <input
+                    id="edit_target_market_{product.id}"
+                    type="text"
+                    bind:value={editData.target_market}
+                    autocomplete="off"
+                    class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {#if editErrors.target_market}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {editErrors.target_market}
+                    </p>
+                  {/if}
+                </div>
                 <div class="flex gap-2">
                   <button
                     type="submit"
@@ -453,6 +547,25 @@
                       Reference: {product.internal_reference}
                     {/if}
                   </p>
+                  {#if product.gpc || product.image_url || product.target_market?.length}
+                    <p class="mt-1 text-xs text-muted-foreground">
+                      {#if product.gpc}
+                        GPC: {product.gpc}
+                      {/if}
+                      {#if product.image_url}
+                        {#if product.gpc}
+                          ·
+                        {/if}
+                        Image available
+                      {/if}
+                      {#if product.target_market?.length}
+                        {#if product.gpc || product.image_url}
+                          ·
+                        {/if}
+                        Markets: {product.target_market.join(', ')}
+                      {/if}
+                    </p>
+                  {/if}
                   {#if product.gs1_valid === false}
                     <p class="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
                       Not a valid GS1 GTIN — correct it before encoding it on a label.
@@ -619,6 +732,64 @@
             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.net_content_unit}</p>
           {/if}
         </div>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label for="product_gpc" class="mb-1 block text-sm font-medium text-muted-foreground">
+            GPC <span class="font-normal text-subtle-foreground">(optional, 8 digits)</span>
+          </label>
+          <input
+            id="product_gpc"
+            type="text"
+            inputmode="numeric"
+            bind:value={formData.gpc}
+            maxlength="8"
+            autocomplete="off"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {#if errors.gpc}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.gpc}</p>
+          {/if}
+        </div>
+        <div>
+          <label
+            for="product_image_url"
+            class="mb-1 block text-sm font-medium text-muted-foreground"
+          >
+            Image URL <span class="font-normal text-subtle-foreground">(optional)</span>
+          </label>
+          <input
+            id="product_image_url"
+            type="url"
+            bind:value={formData.image_url}
+            maxlength="2048"
+            autocomplete="off"
+            class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {#if errors.image_url}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.image_url}</p>
+          {/if}
+        </div>
+      </div>
+      <div>
+        <label
+          for="product_target_market"
+          class="mb-1 block text-sm font-medium text-muted-foreground"
+        >
+          Target Market <span class="font-normal text-subtle-foreground"
+            >(optional, comma-separated ISO codes)</span
+          >
+        </label>
+        <input
+          id="product_target_market"
+          type="text"
+          bind:value={formData.target_market}
+          autocomplete="off"
+          class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        {#if errors.target_market}
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.target_market}</p>
+        {/if}
       </div>
       <div class="flex justify-end">
         <button

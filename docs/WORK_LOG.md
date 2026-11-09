@@ -2,6 +2,14 @@
 
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
 
+## 2026-11-08 — `PRODUCT-002` — Complete product identification structure
+
+- Result: added GPC, image URL, and target market (ISO country codes) to saved products. Updated the product schema, migration, validation, API mapping, and Settings UI.
+- Decisions: GPC is stored as 8-digit text; image URL is validated as http/https; target market is stored as a JSON array of uppercase 2-letter ISO country codes. Migration `0012_daffy_wallflower.sql` was applied to the developer database.
+- Material files: `src/lib/server/db/schema.js`, `drizzle/0012_daffy_wallflower.sql`, `src/lib/server/db/products.js`, `src/lib/components/Labels/SavedProducts.svelte`, `docs/KANBAN.md`.
+- Validation: `npm run db:check`, `npm run db:migrate`, `npm run lint`, `npm run check`, `npm run quality`, and `npm run test:unit` pass.
+- Next: developer reviews the diff, runs focused browser checks, opens the PR, and merges.
+
 ## 2026-11-08 — `BATCH-001` — Multiple basic SSCC labels as one PDF
 
 - Result: added a `Number of labels` field (1–10) to the basic SSCC form, generated one new SSCC per requested label, and returned all labels as one multi-page PDF. Updated the server PDF writer to emit a valid multi-page PDF and added a batch download endpoint. Preview now uses a layout-aware aspect ratio and can render all requested basic SSCC pages.
