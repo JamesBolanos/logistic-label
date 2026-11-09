@@ -12,6 +12,7 @@
   let statusMessage = $state('');
   let formError = $state('');
 
+  // svelte-ignore state_referenced_locally
   const { form, errors, message, enhance, submitting } = superForm(data.form, {
     onUpdated({ form }) {
       if (form.valid && form.message === undefined && form.data) {

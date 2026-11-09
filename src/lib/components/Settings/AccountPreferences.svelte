@@ -4,6 +4,7 @@
   let { user = null } = $props();
 
   // Display name
+  // svelte-ignore state_referenced_locally
   let displayName = $state(user?.name || '');
   let nameSaving = $state(false);
   let nameError = $state('');

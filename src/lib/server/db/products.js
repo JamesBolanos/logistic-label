@@ -8,6 +8,9 @@ const MAX_NAME_LENGTH = 120;
 const MAX_BRAND_LENGTH = 120;
 const MAX_REFERENCE_LENGTH = 50;
 const MAX_NET_CONTENT_VALUE_LENGTH = 32;
+const MAX_GPC_LENGTH = 8;
+const MAX_IMAGE_URL_LENGTH = 2048;
+const ISO_COUNTRY_CODE_PATTERN = /^[A-Z]{2}$/;
 const PRODUCT_NUMBER_PATTERN = /^(?:\d{8}|\d{12}|\d{13}|\d{14})$/;
 
 const NET_CONTENT_UNITS = new Set([
@@ -210,6 +213,68 @@ export function validateProductData(data, { partial = false } = {}) {
     }
   }
 
+  const hasGpc = data?.gpc !== undefined;
+  if (hasGpc || !partial) {
+    const gpc = normalizeSingleLine(data?.gpc);
+    if (gpc && !/^\\d{8}$/.test(gpc)) {
+      errors.gpc = 'GPC must be an 8-digit code';
+    } else if (gpc.length > MAX_GPC_LENGTH) {
+      errors.gpc = `GPC must be ${MAX_GPC_LENGTH} digits or fewer`;
+    } else {
+      values.gpc = gpc || null;
+    }
+  }
+
+  const hasImageUrl = data?.image_url !== undefined;
+  if (hasImageUrl || !partial) {
+    const imageUrl = normalizeSingleLine(data?.image_url);
+    if (imageUrl) {
+      try {
+        const parsed = new URL(imageUrl);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+          throw new Error('invalid protocol');
+        }
+      } catch {
+        errors.image_url = 'Image URL must be a valid http or https URL';
+      }
+    }
+    if (!errors.image_url && imageUrl.length > MAX_IMAGE_URL_LENGTH) {
+      errors.image_url = `Image URL must be ${MAX_IMAGE_URL_LENGTH} characters or fewer`;
+    }
+    if (!errors.image_url) {
+      values.imageUrl = imageUrl || null;
+    }
+  }
+
+  const hasTargetMarket = data?.target_market !== undefined;
+  if (hasTargetMarket || !partial) {
+    const rawTargetMarket = data?.target_market;
+    let targetMarket = null;
+
+    if (rawTargetMarket === null || rawTargetMarket === undefined || rawTargetMarket === '') {
+      targetMarket = [];
+    } else if (Array.isArray(rawTargetMarket)) {
+      targetMarket = rawTargetMarket
+        .map((value) =>
+          String(value || '')
+            .trim()
+            .toUpperCase()
+        )
+        .filter(Boolean);
+    } else {
+      errors.target_market = 'Target market must be a list of ISO country codes';
+    }
+
+    if (targetMarket !== null) {
+      const invalid = targetMarket.find((code) => !ISO_COUNTRY_CODE_PATTERN.test(code));
+      if (invalid) {
+        errors.target_market = 'Target market must use 2-letter ISO country codes';
+      } else {
+        values.targetMarket = targetMarket;
+      }
+    }
+  }
+
   return {
     isValid: Object.keys(errors).length === 0,
     errors,
@@ -271,6 +336,9 @@ function toApiProduct(row) {
     gs1_valid: row.gs1Valid,
     net_content_value: row.netContentValue,
     net_content_unit: row.netContentUnit,
+    gpc: row.gpc,
+    image_url: row.imageUrl,
+    target_market: row.targetMarket || [],
     created_at: row.createdAt?.toISOString?.() || row.createdAt,
     updated_at: row.updatedAt?.toISOString?.() || row.updatedAt
   };
