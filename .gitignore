@@ -28,3 +28,6 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .aider*
+
+# Large source datasets used to generate lookup lists
+src/lib/data/*.json

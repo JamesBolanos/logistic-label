@@ -216,7 +216,7 @@ export function validateProductData(data, { partial = false } = {}) {
   const hasGpc = data?.gpc !== undefined;
   if (hasGpc || !partial) {
     const gpc = normalizeSingleLine(data?.gpc);
-    if (gpc && !/^\\d{8}$/.test(gpc)) {
+    if (gpc && !/^\d{8}$/.test(gpc)) {
       errors.gpc = 'GPC must be an 8-digit code';
     } else if (gpc.length > MAX_GPC_LENGTH) {
       errors.gpc = `GPC must be ${MAX_GPC_LENGTH} digits or fewer`;
