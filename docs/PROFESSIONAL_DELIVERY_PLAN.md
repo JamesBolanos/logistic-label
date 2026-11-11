@@ -114,17 +114,15 @@ Use Google's official reCAPTCHA test configuration and preview-only authenticati
 
 ### One-Person Change Flow
 
-1. Select one ready task with acceptance criteria and create a short-lived branch from `master`.
-2. Develop against an explicitly selected Neon non-production branch and run the fast local quality command.
-3. Open a GitHub pull request as the review, traceability, and evidence record.
-4. Run GitHub Actions quality checks. The E2E job creates a branch from `test-base`, uses synthetic data, and deletes the branch in its always-run cleanup step.
-5. Use a Vercel feature preview only when hosted browser review adds value. Dependabot changes rely on GitHub Actions, and stable OAuth/CAPTCHA checks use `staging.sscc-labels.com`.
-6. Inspect the diff, migration SQL, CI evidence, and any requested preview or staging smoke result.
-7. Squash-merge only after required checks pass. Vercel builds the `master` commit for Production.
-8. Apply any guarded, backward-compatible production migrations, satisfy Deployment Checks, and assign the production domain.
-9. Run the production smoke checklist, review errors, record the release, and remove the short-lived Git branch and any manually created database branch.
+The [feature release guide](./HOW_TO_DEPLOY_A_NEW_FEATURE.md) is the authoritative routine procedure, including CI gates, smoke tests, migration order, and closeout. In summary:
 
-Keep the persistent staging branch for release-critical verification that needs a stable domain or production-like callbacks. Routine dependency, workflow, and documentation changes should rely on GitHub checks without creating a hosted preview database.
+1. Select one ready task with acceptance criteria and create a short-lived branch from `master`.
+2. Open a pull request from the feature branch into `staging`; rely on GitHub checks and smoke-test the affected path on stable staging.
+3. Open a release pull request from `staging` into `master`. Merge with **Create a merge commit** after required checks pass.
+4. For schema changes, apply the guarded production migration before merging code that depends on it.
+5. Smoke-test production, record release evidence, update Kanban status, and delete the short-lived feature branch.
+
+Promotion is one-way: do not merge `master` back into `staging`. The release merge commit can make `master` appear one commit ahead even when the branches have identical file trees; that is expected. Keep the persistent staging branch for release-critical verification that needs a stable domain or production-like callbacks. Routine dependency, workflow, and documentation changes should rely on GitHub checks without creating a hosted preview database.
 
 ### Drizzle and Migration Policy
 

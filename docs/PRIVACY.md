@@ -1,6 +1,6 @@
 # Privacy Statement
 
-_Last updated: September 26, 2026_
+_Last updated: November 11, 2026_
 
 ## Introduction
 
@@ -14,6 +14,7 @@ We collect and process the following types of information:
 - Business data submitted by users (such as labels, documents, and related metadata)
 - Usage data (such as access logs, device information, and interaction data)
 - Password-reset delivery data (the recipient email address and message delivery metadata)
+- If you use the public request form, the reply address and request details you choose to submit
 
 ## Purpose of Data Processing
 
@@ -21,6 +22,8 @@ We process your data for the following purposes:
 
 - To provide and maintain the core functionality of the application
 - To authenticate users and secure access to business data
+- To reply to suggestions and tailored-project inquiries submitted through the public request form
+- To temporarily limit automated or repeated public form submissions using the source IP address
 - To improve the application and user experience
 - To comply with legal obligations
 
@@ -34,6 +37,7 @@ We process your data for the following purposes:
 
 - We do not sell or rent your personal or business data to third parties.
 - Data may be shared with service providers strictly for application hosting, authentication, security email delivery, maintenance, or legal compliance.
+- The transactional email provider processes password-reset and public request emails, including request details and reply addresses.
 - We may disclose data if required by law or to protect the rights and safety of users or others.
 
 ## User Rights
@@ -51,7 +55,7 @@ To exercise these rights, please contact us at the address provided below.
 
 ## Data Retention
 
-We retain your data only as long as necessary to fulfill the purposes outlined above or as required by law. Data will be securely deleted when no longer needed.
+Public request details are emailed and are not saved in the application database. The email provider may retain messages under its own policies. The source IP used for request throttling is held temporarily in server memory and is not included in the email. Other data is retained only as long as necessary to fulfill the purposes outlined above or as required by law.
 
 ## Changes to This Privacy Statement
 

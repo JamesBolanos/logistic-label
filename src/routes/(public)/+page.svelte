@@ -61,11 +61,12 @@
     <div class="max-w-4xl mx-auto px-6 py-16 text-center text-white">
       <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">SSCC Labels</h1>
       <p class="mt-6 text-xl max-w-2xl mx-auto">
-        Choose what you need to ship, then create the label that fits that real-world situation.
+        Choose from three supported label workflows and see how a real label is created, from
+        company setup to download.
       </p>
       <p class="mt-4 text-base text-blue-100 max-w-2xl mx-auto">
-        I will keep improving it and adding label formats, printer support, and workflow features.
-        It also works as a preview for teams that need a tailored private solution.
+        A real SSCC requires an account and your organization's GS1 Company Prefix. Explore the
+        static demo and step-by-step guide before you start.
       </p>
       <div class="mt-10">
         <div class="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4">
@@ -91,11 +92,17 @@
             </a>
           {/if}
           <a
-            href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
-            onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'home_hero' })}
+            href="/guide"
             class="flex items-center justify-center px-6 py-3 border border-white text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:text-lg"
           >
-            Contact Me
+            View the demo and guide
+          </a>
+          <a
+            href="/guide#custom-request"
+            onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'home_hero' })}
+            class="flex items-center justify-center px-6 py-3 border border-blue-100 text-base font-medium rounded-md text-white bg-transparent hover:bg-blue-700 md:text-lg"
+          >
+            Need a tailored project?
           </a>
         </div>
       </div>
@@ -267,6 +274,7 @@
       <ul class="mt-2">
         <li>Track one pallet, carton, or parcel using AI (00) SSCC</li>
         <li>Ship multiple identical cases or items using AI (02) CONTENT and AI (37) COUNT</li>
+        <li>Create a basic SSCC-only label without transport details</li>
         <li>Optional batch/lot and production, packaging, best-before, sell-by, or expiry date</li>
         <li>A separate AI (00) SSCC barcode as the lowest barcode on the label</li>
       </ul>
@@ -276,12 +284,11 @@
   <!-- CTA Section -->
   <div class="mt-16 text-center">
     <h2 class="text-3xl font-extrabold text-foreground sm:text-4xl">
-      Generate Labels Now, Suggest Improvements, Or Request A Tailored Version
+      Need something beyond the free generator?
     </h2>
     <p class="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-      Create an account to use the free label generator. Contact me if you want to suggest
-      improvements to the public tool or discuss a tailored version for your formats, printers,
-      data, and workflow.
+      The free tool supports three common workflows. Suggest an improvement or tell me about a
+      specific requirement for a customer label, printer, data flow, or integration.
     </p>
     <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
       {#if isLoggedIn}
@@ -300,11 +307,11 @@
         </a>
       {/if}
       <a
-        href="mailto:jbolanosdiaz@gmail.com?subject=Private%20SSCC%20Labels%20implementation"
+        href="/guide#custom-request"
         onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'home_cta' })}
         class="inline-flex items-center justify-center px-8 py-3 border border-border-strong text-base font-medium rounded-md text-foreground bg-surface hover:bg-surface-muted md:text-lg"
       >
-        Contact Me
+        Suggest or discuss a tailored project
       </a>
     </div>
   </div>

@@ -26,7 +26,7 @@ Do not treat unchecked items in older plans, generated AI history, or historical
 ## Status Updates
 
 - Move the selected item into **Work in progress** before implementation.
-- Move it to **Review** when its acceptance evidence is ready.
-- Move it to **Accomplished** only after merge or release, as required by the item.
-- Add one concise, dated work-log entry for a meaningful increment. Record decisions and evidence, not a transcript.
+- Move it to **Review** when implementation and acceptance evidence are ready, even if developer review, merge, or deployment is still pending. Do not leave completed implementation in progress just because release work remains.
+- Move it to **Accomplished** only after the required merge or release is confirmed.
+- Add one concise, dated work-log entry for a meaningful implementation increment. If release is pending, say so; update that same entry with the actual release evidence rather than waiting for a later feature or creating a duplicate. Record decisions and evidence, not a transcript.
 - Update existing Kanban entries instead of copying status into README files, architecture notes, or detailed plans.

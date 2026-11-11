@@ -11,6 +11,7 @@ export const productEventNames = [
   'data_export_succeeded',
   'workflow_failed',
   'custom_contact_clicked',
+  'custom_request_submitted',
   'release_update_viewed',
   'release_cta_clicked',
   'password_reset_requested',
@@ -63,6 +64,7 @@ const allowedParameters: Record<ProductEventName, readonly string[]> = {
   data_export_succeeded: ['format'],
   workflow_failed: ['step', 'error_category', 'duration_ms'],
   custom_contact_clicked: ['placement'],
+  custom_request_submitted: ['request_type'],
   release_update_viewed: ['release_id', 'change_category', 'feature_key'],
   release_cta_clicked: ['release_id', 'feature_key'],
   password_reset_requested: [],
@@ -79,7 +81,8 @@ const controlledValues: Record<string, ReadonlySet<string>> = {
   source: new Set(['new_label', 'history']),
   step: new Set(workflowSteps),
   error_category: new Set(failureCategories),
-  placement: new Set(['home_hero', 'home_cta', 'guide_cta']),
+  placement: new Set(['home_hero', 'home_cta', 'guide_cta', 'guide_email_fallback']),
+  request_type: new Set(['improvement', 'tailored_project']),
   change_category: new Set(['fix', 'improvement', 'new_feature'])
 };
 
