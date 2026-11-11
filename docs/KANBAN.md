@@ -1,6 +1,6 @@
 # Product Kanban
 
-Last reviewed: 2026-10-22 (America/Managua)
+Last reviewed: 2026-11-11 (America/Managua)
 
 This is the only current source for work status and priority. Detailed requirements remain in the linked plans and runbooks, but their checklists do not determine what is active.
 
@@ -12,25 +12,53 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 - Work-in-progress limit: **one item** across In progress and Review.
 - Select work by user value, data or standards risk, evidence, and effort.
 - Every implementation item needs acceptance criteria, appropriate tests, a release note when user-visible, and a short entry in [`WORK_LOG.md`](./WORK_LOG.md).
+- **In progress** means implementation is actively underway. Move a fully implemented item to **Review** once its acceptance evidence is ready, even if review, merge, or deployment is still pending. Move it to **Accomplished** after the required release is confirmed.
+- Start the work-log entry when there is a meaningful implementation increment. Mark it as awaiting review/release when applicable, then update the same entry with actual release evidence; do not defer recording completed work until a later feature.
 - Keep private usage evidence in the git-ignored `usage_log/` directory.
 
 ## Work in Progress
 
-None.
-
 ## Review
+
+### `FEEDBACK-001` — Make tailored requests clear and actionable
+
+- Need: customer-specific requirements appear unavailable, and the general contact links do not help visitors explain what they need.
+- Outcome: distinguish the three free workflows from tailored work and provide separate public request paths for product suggestions and tailored-project inquiries.
+- Acceptance: a public form validates and emails requests to `jbolanosdiaz@gmail.com` through the existing Resend integration; visitors receive clear success and retry feedback; spam protection and privacy disclosures are in place; analytics records successful submissions using controlled categories only; no inquiry content is persisted by the application; a draft release note is prepared for release; the screenshot showcase remains out of scope.
+- Decisions: email-only delivery to `jbolanosdiaz@gmail.com`; no private in-app inbox, database storage, or screenshot showcase.
+- Evidence: focused unit tests, request-event privacy tests, public guide browser checks including network-failure input retention and 390 px overflow, and `npm run quality` pass.
+- Status: Ready for developer review on `feature/general-improvements`; release note remains a draft.
+- Source: [Tailored request requirements](./FEEDBACK_REQUESTS.md).
+
+## Ready
+
+Items are ordered. Start only the first item unless new evidence changes priority.
+
+### `UX-004` — Reduce first-use friction
+
+- Need: visitors should understand the supported product before signup, and new users should know how to reach a first real label without guessing.
+- Outcome: improve the public home/guide entry, first-time setup guidance, and recoverability of signup/CAPTCHA errors.
+- Acceptance: a public step-by-step guide includes static samples matching the app's single-label outputs (transport 4 × 6, identical contents 4 × 6, basic SSCC 4 × 3) and explains account creation, required company setup, shipment entry, preview/checks, and save/download; it clearly says real SSCC allocation requires the organization's licensed GS1 Company Prefix; samples use GTIN/SSCC placeholders, non-scannable barcodes, and “DEMO — NOT VALID FOR SHIPPING” marks; public visuals cannot allocate/save labels; CAPTCHA failure/retry is clear without weakening security; existing flows remain intact.
+- Scope: one feature branch, proposed name `feature/general-improvements`; no analytics/reporting changes, What's New announcement, database migration, or new dependency.
+- Difficulty: medium; roughly 2–4 focused engineering days. Public guide/demo work is localized; CAPTCHA script lifecycle and safe retry are the most technically delicate portion. See the linked brief for the slice-by-slice plan and estimate.
+- Status: Ready for developer review.
+- Source: [First-use experience improvements](./UX_FIRST_USE_IMPROVEMENTS.md).
+
+### `DOC-003` — Reduce duplicated repository documentation
+
+- Need: repository-wide guidance, feature documentation, historical snapshots, and conflicting release instructions are mixed together.
+- Outcome: keep one concise, canonical feature → staging → master release guide; remove obsolete package analysis; align supporting release docs; keep Architecture focused on system structure and link to feature references.
+- Acceptance: supporting docs agree with merge-commit promotion and no reverse sync; migration order and environment safeguards remain clear; Architecture avoids duplicating feature specifications; references resolve and formatting passes.
+- Dependencies: current release guide, preview runbook, and focused feature documentation.
+- Status: Ready for developer review.
 
 ### `RENDER-001` — Improve PDF label rendering consistency
 
 - Need: representative labels showed inconsistent separator weights, tight text clearance, mixed label typography, and cramped data cells.
 - Outcome: standardized stroke hierarchy, 4 pt text clearance, bold field labels, wider count/gross-weight cells, and wrapped long PO numbers in structured transport labels.
-- Acceptance evidence: `npm run quality` passes (26 test files, 197 tests, TypeScript check, and Vercel build); representative PDFs regenerated under `.output/representative-pdfs`.
-- Status: implementation complete in the working tree; awaiting developer branch, PR, and merge.
+- Acceptance evidence: `npm run quality` passes (26 test files, 197 unit tests, TypeScript check, and Vercel build); representative PDFs regenerated under `.output/representative-pdfs`.
+- Status: Ready for developer review.
 - Source: visual inspection of representative labels on 2026-10-28.
-
-## Ready
-
-Items are ordered. Start only the first item unless new evidence changes priority.
 
 ### `EXPORT-002` — Download saved labels as ZPL
 
@@ -54,29 +82,28 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 - Dependencies: existing save, history-list, and PDF-download APIs; no migration or new service.
 - Source: [Work Plan §4](./WORK_PLAN.md#4-improvements).
 
-| Order | ID             | Outcome                                                                                               | Why now                                                              | Detailed source                                                                      |
-| ----: | -------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-|     3 | `DATA-001`     | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior         | GS1 identifier integrity and real-world data safety                  | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
-|     4 | `FEEDBACK-001` | Add a categorized request path that separates suggestions from concrete tailored-project requirements | Converts user interest into actionable product and business evidence | [Work Plan §4](./WORK_PLAN.md#4-improvements)                                        |
+| Order | ID         | Outcome                                                                                       | Why now                                             | Detailed source                                                                      |
+| ----: | ---------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
+|     3 | `DATA-001` | Prevent SSCC reallocation for at least one year after shipment, with clear retention behavior | GS1 identifier integrity and real-world data safety | [GS1 requirements](./GS1_REQUIREMENTS.md#allocating-serial-shipping-container-codes) |
 
 ## Backlog
 
-| ID             | Theme                | Desired outcome                                                                                                              | Notes or dependency                                                                                                                                                                                                                                |
-| -------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SEARCH-001`   | Existing labels      | Filter SSCC, GTIN, and lot search by creation date                                                                           | Small user-facing improvement                                                                                                                                                                                                                      |
-| `INSIGHT-001`  | Product evidence     | Review Search Console and accumulated product events, then adjust priorities                                                 | Requires enough usage data; do not infer adoption from clicks alone                                                                                                                                                                                |
-| `FEEDBACK-002` | User research        | Interview or survey repeat creators, one-time creators, configured non-creators, and signup-only users                       | Record task, printer, output, and obstacle without placing identities in Git                                                                                                                                                                       |
-| `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                                | Depends on lifecycle rules from `DATA-001`                                                                                                                                                                                                         |
-| `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                               | Existing `v1`–`v4` compatibility is the baseline                                                                                                                                                                                                   |
-| `PRODUCT-002`  | Product data         | Complete product identification with GPC, image URL, and target market (ISO country codes)                                   | Depends on `PRODUCT-001`; requires a product-table migration and updates to product validation, API, and UI                                                                                                                                        |
-| `PRODUCT-003`  | Product data         | Add searchable GPC and country lookups to the Saved Products form                                                            | Depends on `PRODUCT-002`; uses static built-in GPC and ISO country lists                                                                                                                                                                           |
-| `BATCH-001`    | Label output         | Generate multiple basic SSCC labels as one multi-page PDF, allocating a new SSCC for each and advancing the serial reference | Depends on atomic `allocateSSCC`, the basic SSCC renderer, and a true multi-page PDF writer; preserve the existing 4 × 3 single and 4 × 6 two-copy basic SSCC layouts; cap the requested count; no migration if each label is stored independently |
-| `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                                     | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides                                                                                                                                                         |
-| `DELIVERY-001` | Migrations/releases  | Complete fresh and incremental migration verification, release gates, smoke checks, and recovery documentation               | Detailed delivery backlog remains in the professional plan                                                                                                                                                                                         |
-| `DELIVERY-003` | Migrations/releases  | Keep `staging` current with `master` and detect a stale staging deployment before it serves outdated code                    | The `staging` branch fell sixteen commits behind in October 2026 and served a seventeen-day-old build                                                                                                                                              |
-| `OPS-001`      | Operations           | Add privacy-safe error monitoring, structured logs, readiness/uptime checks, and alerts                                      | Keep operational telemetry separate from product analytics                                                                                                                                                                                         |
-| `SEC-001`      | Security             | Add `SECURITY.md`, scanning, secret rotation, access review, and auth/header/database review                                 | Prioritize before commercial expansion                                                                                                                                                                                                             |
-| `RECOVERY-001` | Continuity           | Document provider recovery limits and run a non-production restore drill; add incident and outage runbooks                   | Do not copy production personal data into the drill                                                                                                                                                                                                |
+| ID             | Theme                | Desired outcome                                                                                                                     | Notes or dependency                                                                                                                                                                                                                                |
+| -------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SEARCH-001`   | Existing labels      | Filter SSCC, GTIN, and lot search by creation date                                                                                  | Small user-facing improvement                                                                                                                                                                                                                      |
+| `INSIGHT-001`  | Product evidence     | Review Search Console and accumulated product events, then adjust priorities                                                        | Requires enough usage data; do not infer adoption from clicks alone                                                                                                                                                                                |
+| `FEEDBACK-002` | User research        | Interview or survey repeat creators, one-time creators, configured non-creators, and signup-only users                              | Record task, printer, output, and obstacle without placing identities in Git                                                                                                                                                                       |
+| `LABEL-001`    | Identifier lifecycle | Make reprint of an existing logistic unit distinct from allocating a new SSCC                                                       | Depends on lifecycle rules from `DATA-001`                                                                                                                                                                                                         |
+| `LABEL-002`    | Compatibility        | Preserve saved label data and renderer versions as settings and layouts evolve                                                      | Existing `v1`–`v4` compatibility is the baseline                                                                                                                                                                                                   |
+| `PRODUCT-002`  | Product data         | Complete product identification with GPC, image URL, and target market (ISO country codes)                                          | Depends on `PRODUCT-001`; requires a product-table migration and updates to product validation, API, and UI                                                                                                                                        |
+| `PRODUCT-003`  | Product data         | Add searchable GPC and country lookups to the Saved Products form                                                                   | Depends on `PRODUCT-002`; uses static built-in GPC and ISO country lists                                                                                                                                                                           |
+| `BATCH-001`    | Label output         | Generate multiple basic SSCC labels as one multi-page PDF, allocating a new SSCC for each and advancing the serial reference        | Depends on atomic `allocateSSCC`, the basic SSCC renderer, and a true multi-page PDF writer; preserve the existing 4 × 3 single and 4 × 6 two-copy basic SSCC layouts; cap the requested count; no migration if each label is stored independently |
+| `WORKFLOW-001` | New labels           | Select the next scenario from repeated requests or a tailored engagement                                                            | Candidates include AI (01), mixed units, perishables, and retailer-specific routing guides                                                                                                                                                         |
+| `DELIVERY-001` | Migrations/releases  | Complete fresh and incremental migration verification, release gates, smoke checks, and recovery documentation                      | Detailed delivery backlog remains in the professional plan                                                                                                                                                                                         |
+| `DELIVERY-003` | Migrations/releases  | Keep staging available for release-critical verification and detect stale deployments without reverse-syncing `master` to `staging` | After a release merge, `master` may be one merge commit ahead while both branches have the same tree; that is expected                                                                                                                             |
+| `OPS-001`      | Operations           | Add privacy-safe error monitoring, structured logs, readiness/uptime checks, and alerts                                             | Keep operational telemetry separate from product analytics                                                                                                                                                                                         |
+| `SEC-001`      | Security             | Add `SECURITY.md`, scanning, secret rotation, access review, and auth/header/database review                                        | Prioritize before commercial expansion                                                                                                                                                                                                             |
+| `RECOVERY-001` | Continuity           | Document provider recovery limits and run a non-production restore drill; add incident and outage runbooks                          | Do not copy production personal data into the drill                                                                                                                                                                                                |
 
 ## Blocked or Deferred
 
@@ -148,9 +175,9 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 
 ### `DOC-002` — Document feature deployment from staging to production
 
-- Outcome: a root-level deployment guide covering the current GitHub/Vercel/Neon flow, commands, documentation, verification, and recovery.
+- Outcome: a deployment guide covering the current GitHub/Vercel/Neon flow, commands, documentation, verification, and recovery.
 - Acceptance evidence: workflow/runbook cross-check complete; 56 local document links and 15 shell examples validated; Markdown formatting and `npm run quality` pass (151 unit tests and Vercel build). No E2E needed for documentation-only work.
-- Release evidence: merged into `master` in commit `f521af6`; the guide is [HOW_TO_DEPLOY_A_NEW_FEATURE.md](../HOW_TO_DEPLOY_A_NEW_FEATURE.md).
+- Release evidence: merged into `master` in commit `f521af6`; the guide is [HOW_TO_DEPLOY_A_NEW_FEATURE.md](./HOW_TO_DEPLOY_A_NEW_FEATURE.md).
 
 | Area                | Delivered outcome                                                                                                                                                     | Evidence                                                                                                                               |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -175,14 +202,13 @@ Use this map to avoid loading every Markdown file into an AI session.
 | [`PROFESSIONAL_DELIVERY_PLAN.md`](./PROFESSIONAL_DELIVERY_PLAN.md)           | Detailed delivery, security, operations, and recovery backlog                        |
 | [`../README.md`](../README.md)                                               | Setup, stack, environment contract, and repository entry point                       |
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md)                                   | Branch, quality, PR, dependency, and release workflow                                |
-| [`../HOW_TO_DEPLOY_A_NEW_FEATURE.md`](../HOW_TO_DEPLOY_A_NEW_FEATURE.md)     | Staging-to-production release steps, migration commands, and documentation checklist |
+| [`HOW_TO_DEPLOY_A_NEW_FEATURE.md`](./HOW_TO_DEPLOY_A_NEW_FEATURE.md)         | Staging-to-production release steps, migration commands, and documentation checklist |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md)                                       | Current system structure and durable technical constraints                           |
 | [`GS1_REQUIREMENTS.md`](./GS1_REQUIREMENTS.md)                               | SSCC allocation and aggregation rules                                                |
 | [`GS1_LOGISTIC_LABEL_GUIDE.md`](./GS1_LOGISTIC_LABEL_GUIDE.md)               | App-specific analysis of the source GS1 guideline                                    |
 | [`labels/GUIDED_LABEL_WORKFLOWS.md`](./labels/GUIDED_LABEL_WORKFLOWS.md)     | Current workflow inputs, AIs, layouts, and compatibility                             |
 | [`PRIVACY.md`](./PRIVACY.md)                                                 | Canonical repository privacy statement                                               |
 | `analytics/*.md`, `auth/*.md`, `professional-delivery/*.md`                  | Focused measurement, authentication, environment, and baseline runbooks              |
-| [`PACKAGE_ANALYSIS_SEP_24.md`](./PACKAGE_ANALYSIS_SEP_24.md)                 | Historical package snapshot; not a current status source                             |
 | [`../.github/pull_request_template.md`](../.github/pull_request_template.md) | Pull-request review checklist                                                        |
 
 Ignored `.aider*` files are generated local AI-tool history and are not project documentation.

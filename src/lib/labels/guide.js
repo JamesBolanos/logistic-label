@@ -1,13 +1,14 @@
-import { LABEL_TYPES } from './workflows.js';
+import { LABEL_TYPES, PRINT_LAYOUTS } from './workflows.js';
 
 /**
- * Public guidance for the two workflows the free generator currently supports.
+ * Public guidance for the workflows the free generator currently supports.
  * Keeping these facts in data lets the guide and its tests share one contract.
  */
 export const SUPPORTED_LABEL_GUIDES = Object.freeze([
   {
     id: 'transport-identification',
     labelType: LABEL_TYPES.SSCC_ONLY,
+    sampleLayout: PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
     category: 'Standard transport identification',
     title: 'Track one pallet, carton, or parcel',
     summary:
@@ -31,6 +32,7 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
   {
     id: 'identical-contents',
     labelType: LABEL_TYPES.HOMOGENEOUS_UNIT,
+    sampleLayout: PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
     category: 'One-product pallet or shipping unit',
     title: 'Ship multiple identical cases or items',
     summary:
@@ -54,6 +56,7 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
   {
     id: 'basic-sscc',
     labelType: LABEL_TYPES.SSCC_BASIC,
+    sampleLayout: PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE,
     category: 'Minimal SSCC identification',
     title: 'Create a basic SSCC label',
     summary:

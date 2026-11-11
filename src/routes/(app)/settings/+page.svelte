@@ -100,7 +100,8 @@
         Company profile and GS1 license
       </h2>
       <p class="mt-2 text-sm text-muted-foreground">
-        Configure the GS1 Company Prefix used to allocate SSCCs for your logistic labels.
+        Configure your company allocation details before creating a real label. Every SSCC requires
+        a GS1 Company Prefix licensed to your organization.
       </p>
     </div>
 
@@ -138,7 +139,7 @@
             inputmode="numeric"
             bind:value={$form.gs1_company_prefix}
             class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="1234567"
+            placeholder="Your licensed prefix"
             maxlength="12"
             required
           />
@@ -146,8 +147,8 @@
             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.gs1_company_prefix}</p>
           {/if}
           <p class="mt-1 text-xs text-subtle-foreground">
-            Use the numeric prefix licensed to your organization by a GS1 Member Organisation. Do
-            not invent a prefix.
+            Find this on your organization's GS1 license or with its GS1 Member Organisation. This
+            licensed prefix is required for every real SSCC; do not invent or substitute one.
           </p>
         </div>
 

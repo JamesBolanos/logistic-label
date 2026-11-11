@@ -5,7 +5,8 @@
       items: [
         'User account information, including email, username, and authentication data',
         'Business data you submit, such as labels, documents, and label metadata',
-        'Usage data, including page navigation, controlled workflow outcomes, and product interactions'
+        'Usage data, including page navigation, controlled workflow outcomes, and product interactions',
+        'If you use the public request form, the contact details and message you choose to submit'
       ]
     },
     {
@@ -13,6 +14,8 @@
       items: [
         'Provide, maintain, and improve the label generation service',
         'Authenticate users and protect account access',
+        'Reply to suggestions and tailored-project inquiries you submit',
+        'Temporarily use the source IP address to limit automated or repeated form submissions',
         'Improve the application and user experience',
         'Meet legal, security, and compliance obligations'
       ]
@@ -30,7 +33,7 @@
       items: [
         'We do not sell or rent personal or business data',
         'Service providers may process data for hosting, authentication, security email delivery, maintenance, or compliance',
-        'The transactional email provider processes the recipient address and delivery metadata when you request a password reset',
+        'The transactional email provider processes password-reset messages and public request messages, including the reply address and message details',
         'Data may be disclosed where required by law or to protect users and the service'
       ]
     },
@@ -45,7 +48,9 @@
     {
       title: 'Data Retention',
       items: [
-        'Data is retained only as long as needed for the purposes outlined here',
+        'Public request details are sent by email and are not saved in the application; the email provider may retain messages under its own policies',
+        'The source IP used for request throttling is held temporarily in server memory and is not included in the request email',
+        'Other data is retained only as long as needed for the purposes outlined here',
         'Retention may be extended where required by law',
         'Data is securely deleted when it is no longer needed'
       ]
@@ -79,7 +84,7 @@
             This page outlines how the GS1-128 Logistic Label Generator collects, uses, and protects
             user and business data.
           </p>
-          <p class="mt-3 text-sm text-subtle-foreground">Last updated: September 28, 2026</p>
+          <p class="mt-3 text-sm text-subtle-foreground">Last updated: November 11, 2026</p>
         </div>
 
         <div

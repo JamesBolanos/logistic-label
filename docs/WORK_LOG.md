@@ -2,6 +2,30 @@
 
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
 
+## 2026-11-11 — `FEEDBACK-001` — Make tailored requests clear and actionable
+
+- Result: clarified the tailored-project option and added a public, categorized suggestion/project form that sends plain-text requests through Resend without storing inquiry content in the app.
+- Decisions: send to `jbolanosdiaz@gmail.com`; use a honeypot and per-address throttling; track only controlled request categories; keep the showcase out of scope and the release note unpublished as a draft.
+- Material files: `docs/FEEDBACK_REQUESTS.md`, `src/routes/(public)/guide/+page.svelte`, `src/routes/(public)/guide/+page.server.js`, `src/lib/server/email/customRequest.js`, `src/lib/server/requests/customRequest.js`, `src/lib/validation/customRequest.js`, analytics and privacy references, and focused tests.
+- Validation: `npm run quality` passes (27 test files, 211 unit tests, no Svelte/TypeScript errors or warnings, database check, and production build); `npx playwright test tests/label-guide.spec.js` passes, including the 390 px overflow check, server-side invalid-input recovery, and retained form values after an aborted network request. No live request email was sent.
+- Status: Ready for developer review on `feature/general-improvements`; release pending.
+
+## 2026-11-11 — `DOC-003` — Consolidate feature release guidance
+
+- Result: consolidated the conflicting deployment guides and simplified the canonical guide to a solo-developer flow with automated PR gates, focused smoke tests, and guarded steps only for schema changes. Continued the documentation cleanup by removing the obsolete package snapshot, aligning supporting release guidance, and reducing feature-level detail in Architecture.
+- Decisions: complete user-facing docs and release notes before production; use Kanban Review for implemented work awaiting review/release; start the work-log entry at a meaningful implementation increment and update it with release evidence.
+- Material files: `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/HOW_TO_DEPLOY_A_NEW_FEATURE.md`, `docs/KANBAN.md`, `docs/PROFESSIONAL_DELIVERY_PLAN.md`, `docs/WORK_LOG.md`, and `docs/professional-delivery/PD-05_PREVIEW_ENVIRONMENT_RUNBOOK.md`.
+- Validation: `npm run quality` passes (26 test files, 199 unit tests, TypeScript checks with no errors or warnings, and Vercel build); targeted Prettier check, `git diff --check`, and local Markdown-link checks for six updated documents pass.
+- Next: developer review; no Git, migration, or deployment actions were executed.
+
+## 2026-11-11 — `UX-004` — Reduce first-use friction
+
+- Result: implemented the public label manual and three static samples matching the app's 4 × 6 transport, 4 × 6 identical-contents, and 4 × 3 basic SSCC outputs; clarified account and company-prefix prerequisites, replaced scannable-looking example values, and added CAPTCHA load-failure recovery.
+- Decisions: keep the public demo static and non-operational; preserve auth and CAPTCHA policy; do not add analytics/reporting or a What's New announcement.
+- Material files: `src/routes/(public)/+page.svelte`, `src/routes/(public)/guide/+page.svelte`, `src/lib/components/Guide/LabelDiagram.svelte`, `src/lib/labels/guide.js`, `src/lib/components/Auth/Captcha.svelte`, `src/routes/(app)/settings/+page.svelte`, `src/lib/components/Dashboard/OnboardingChecklist.svelte`, `tests/label-guide.spec.js`, `tests/unit/labelGuide.test.ts`, `docs/UX_FIRST_USE_IMPROVEMENTS.md`, `docs/KANBAN.md`, and `docs/WORK_PLAN.md`.
+- Validation: `npm run quality` passes (26 test files, 199 unit tests, no Svelte/TypeScript errors or warnings, database check, and production build); `npx playwright test tests/label-guide.spec.js` passes with the 4 × 6, 4 × 6, and 4 × 3 sample-layout assertions; a production-preview Playwright check confirms CAPTCHA load failure is recoverable while signup remains blocked until verification; the 390px guide viewport has no horizontal overflow.
+- Status: Ready for developer review on `feature/general-improvements`.
+
 ## 2026-11-09 — `PRODUCT-003` — Searchable GPC and country lookups
 
 - Result: added static GPC and ISO country lists, plus searchable datalist selectors for GPC and target market in the Saved Products form.

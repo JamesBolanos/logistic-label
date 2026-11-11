@@ -2,7 +2,7 @@
 
 This repository uses a lightweight pull-request workflow that is practical for a one-person product and still leaves a reviewable delivery record.
 
-For the staging-to-production sequence, guarded migration commands, release checks, and required documentation, follow [How to deploy a new feature](HOW_TO_DEPLOY_A_NEW_FEATURE.md).
+For the staging-to-production sequence, guarded migration commands, release checks, and required documentation, follow [How to deploy a new feature](docs/HOW_TO_DEPLOY_A_NEW_FEATURE.md).
 
 ## Local setup
 
