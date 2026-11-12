@@ -23,6 +23,11 @@
   let captchaVerified = $state(false);
   let captchaToken = $state('');
   let captchaKey = $state(0);
+  let captchaUnavailable = $state(false);
+
+  const CAPTCHA_REQUIRED_MESSAGE = 'Please complete the CAPTCHA verification.';
+  const CAPTCHA_RETRY_MESSAGE =
+    'CAPTCHA is not ready. Use the retry button in the CAPTCHA box, then complete verification.';
 
   async function handleResetRequest(event) {
     event.preventDefault();
@@ -36,7 +41,7 @@
     }
 
     if (!dev && !captchaVerified) {
-      formError = 'Please complete the captcha verification';
+      formError = captchaUnavailable ? CAPTCHA_RETRY_MESSAGE : CAPTCHA_REQUIRED_MESSAGE;
       recordFailure('password_reset_request', 'validation', startedAt);
       return;
     }
@@ -114,9 +119,11 @@
     }
   }
 
-  function onCaptchaVerify({ verified, token: verifiedToken }) {
+  function onCaptchaVerify({ verified, token: verifiedToken, error }) {
     captchaVerified = verified;
     captchaToken = verifiedToken;
+    captchaUnavailable = error;
+    if (!error && formError === CAPTCHA_RETRY_MESSAGE) formError = '';
   }
 
   function resetCaptcha() {

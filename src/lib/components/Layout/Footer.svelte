@@ -3,13 +3,8 @@
 
   const footerLinks = [
     { href: '/guide', label: 'Label Guide' },
-    { href: '/updates', label: "What's New" },
     { href: '/privacy', label: 'Privacy Policy' },
-    {
-      href: 'https://github.com/JamesBolanos/print-bridge/releases/latest',
-      label: 'Print Bridge',
-      external: true
-    }
+    { href: '/print-bridge', label: 'Print Bridge' }
   ];
 
   let showAdminLink = $derived(Boolean(page.data.isAnalyticsOwner));

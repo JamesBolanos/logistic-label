@@ -137,9 +137,8 @@
       <p class="mt-3 leading-7 text-muted-foreground">
         Every real logistic label needs an SSCC. Creating one requires a GS1 Company Prefix licensed
         to your organization; the app cannot create a valid SSCC without it. You can inspect the
-        examples below without signing in. Each static sample follows the app's single-label print
-        layout for its workflow, but uses non-scannable barcode placeholders and is not valid for
-        shipping.
+        examples below without signing in. These static samples follow the app's single-label print
+        layouts and use the sample data shown in Figure 4-1 of the GS1 Logistic Label Guideline.
       </p>
     </div>
 
@@ -159,54 +158,25 @@
     </ol>
 
     <div
-      class="mt-8 rounded-xl border border-amber-300 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/30"
+      class="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
     >
-      <h3 class="text-lg font-semibold text-foreground">Company details you will need</h3>
-      <ul class="mt-3 space-y-3 text-sm leading-6 text-muted-foreground">
+      <h3 class="text-base font-semibold text-foreground">Company details for a real SSCC</h3>
+      <ul class="mt-2 space-y-2 text-sm leading-6 text-muted-foreground">
         <li>
-          <strong class="text-foreground">Company name:</strong> shown in your company profile and applied
-          where appropriate to your labels.
+          <strong class="text-foreground">Company name:</strong> saved in your profile and used on labels
+          where appropriate.
         </li>
         <li>
-          <strong class="text-foreground">GS1 Company Prefix:</strong> use the numeric prefix licensed
-          to your organization by a GS1 Member Organisation. Do not invent a prefix. If you do not have
-          one, you cannot create a valid real SSCC yet. The prefix contributes to the SSCC but is not
-          printed as a separate field on these sample labels.
+          <strong class="text-foreground">GS1 Company Prefix:</strong> your organization's licensed prefix
+          is required to allocate a real SSCC and is not printed as a separate field on these samples.
         </li>
         <li>
-          <strong class="text-foreground">Extension digit and next serial reference:</strong>
-          together with your licensed prefix, these settings support SSCC allocation when you save a label.
+          <strong class="text-foreground">Extension digit and next serial reference:</strong> used with
+          your prefix to allocate an SSCC when you save a label.
         </li>
       </ul>
-      <p
-        class="mt-4 border-t border-amber-200 pt-4 text-sm leading-6 text-muted-foreground dark:border-amber-900"
-      >
-        Ship From, Ship To, and product or shipment details are entered later for the label you
-        choose. They are not company allocation settings.
-      </p>
-      <a
-        href="/signup"
-        class="mt-5 inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
-      >
-        Create a free account
-      </a>
     </div>
   </section>
-
-  <nav aria-label="Supported label choices" class="grid gap-4 md:grid-cols-2">
-    {#each SUPPORTED_LABEL_GUIDES as guide (guide.id)}
-      <a
-        href={`#${guide.id}`}
-        class="rounded-xl border border-blue-200 bg-surface p-5 shadow-sm hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-900 dark:hover:bg-blue-950/40"
-      >
-        <span class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400"
-          >{guide.category}</span
-        >
-        <span class="mt-2 block text-lg font-bold text-foreground">{guide.title}</span>
-        <span class="mt-2 block text-sm text-muted-foreground">{guide.summary}</span>
-      </a>
-    {/each}
-  </nav>
 
   {#each SUPPORTED_LABEL_GUIDES as guide (guide.id)}
     <article
@@ -368,12 +338,9 @@
         SSCC Labels → Print Bridge on your computer → Network printer
       </p>
       <p class="mt-3 text-sm leading-6 text-muted-foreground">
-        <a
-          href="https://github.com/JamesBolanos/print-bridge/releases/latest"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="font-medium text-blue-700 dark:text-blue-300 underline">Download Print Bridge</a
-        >, follow the
+        <a href="/print-bridge" class="font-medium text-blue-700 dark:text-blue-300 underline"
+          >Learn about Print Bridge</a
+        >, then follow the
         <a
           href="https://github.com/JamesBolanos/print-bridge/blob/main/DOCS/sscc-labels-setup.md"
           target="_blank"

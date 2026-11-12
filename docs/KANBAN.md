@@ -18,6 +18,15 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
+### `UX-004` — Reduce first-use friction
+
+- Need: visitors should understand the supported product before signup, and new users should know how to reach a first real label without guessing.
+- Outcome: improve the public home/guide entry, first-time setup guidance, recoverability of signup/CAPTCHA errors, and optional direct-print onboarding.
+- Acceptance: the public step-by-step guide embeds static PDFs produced by the same production renderer for transport (4 × 6), detailed identical contents (6 × 8), and basic SSCC (4 × 3), using the published Figure 4-1 sample identifiers and GS1-128 barcodes without an in-label demo banner; explains the licensed-prefix prerequisite and account-to-download workflow; and cannot allocate or save labels; authentication forms distinguish CAPTCHA load failure from incomplete verification and provide a clear retry without weakening security; the Print Bridge page explains the separate optional utility, browser → local bridge → network printer flow, compatible printer/setup requirements, and links to its repository, downloads, and setup guide; the footer and label guide link to the page; existing label, download, printing, and authentication behavior remains intact.
+- Scope: keep the guide/demo static, preserve authentication and CAPTCHA policy, and make no analytics/reporting, release-history announcement, database, or dependency changes.
+- Status: In progress; CAPTCHA failure/retry feedback is wired through sign-in, signup, and password-reset requests. Settings guidance and final regression verification remain.
+- Source: [First-use experience improvements](./UX_FIRST_USE_IMPROVEMENTS.md).
+
 ## Review
 
 ### `FEEDBACK-003` — Link the generator's tailored scenario to the request form
@@ -43,16 +52,6 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 - Source: [Tailored request requirements](./FEEDBACK_REQUESTS.md).
 
 Items are ordered. Start only the first item unless new evidence changes priority.
-
-### `UX-004` — Reduce first-use friction
-
-- Need: visitors should understand the supported product before signup, and new users should know how to reach a first real label without guessing.
-- Outcome: improve the public home/guide entry, first-time setup guidance, and recoverability of signup/CAPTCHA errors.
-- Acceptance: a public step-by-step guide includes static samples matching the app's single-label outputs (transport 4 × 6, identical contents 4 × 6, basic SSCC 4 × 3) and explains account creation, required company setup, shipment entry, preview/checks, and save/download; it clearly says real SSCC allocation requires the organization's licensed GS1 Company Prefix; samples use GTIN/SSCC placeholders, non-scannable barcodes, and “DEMO — NOT VALID FOR SHIPPING” marks; public visuals cannot allocate/save labels; CAPTCHA failure/retry is clear without weakening security; existing flows remain intact.
-- Scope: one feature branch, proposed name `feature/general-improvements`; no analytics/reporting changes, What's New announcement, database migration, or new dependency.
-- Difficulty: medium; roughly 2–4 focused engineering days. Public guide/demo work is localized; CAPTCHA script lifecycle and safe retry are the most technically delicate portion. See the linked brief for the slice-by-slice plan and estimate.
-- Status: Ready for developer review.
-- Source: [First-use experience improvements](./UX_FIRST_USE_IMPROVEMENTS.md).
 
 ### `DOC-003` — Reduce duplicated repository documentation
 

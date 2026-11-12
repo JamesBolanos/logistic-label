@@ -32,7 +32,7 @@ export const SUPPORTED_LABEL_GUIDES = Object.freeze([
   {
     id: 'identical-contents',
     labelType: LABEL_TYPES.HOMOGENEOUS_UNIT,
-    sampleLayout: PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
+    sampleLayout: PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE,
     category: 'One-product pallet or shipping unit',
     title: 'Ship multiple identical cases or items',
     summary:

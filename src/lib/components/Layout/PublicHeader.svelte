@@ -8,8 +8,7 @@
 
   const publicLinks = [
     { href: '/', label: 'Home' },
-    { href: '/guide', label: 'Label Guide' },
-    { href: '/updates', label: "What's New" }
+    { href: '/guide', label: 'Label Guide' }
   ];
 
   let isLoggedIn = $derived(Boolean(user));
@@ -69,13 +68,13 @@
           href="/login"
           class="hidden rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground sm:inline-flex"
         >
-          Login
+          Log in
         </a>
         <a
           href="/signup"
           class="hidden rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:inline-flex"
         >
-          Get started
+          Sign up
         </a>
       {/if}
 
@@ -136,13 +135,13 @@
               href="/login"
               class="rounded-md border border-border-default px-4 py-2 text-center text-sm font-medium text-muted-foreground hover:bg-surface-muted"
             >
-              Login
+              Log in
             </a>
             <a
               href="/signup"
               class="rounded-md bg-accent px-4 py-2 text-center text-sm font-semibold text-accent-foreground hover:bg-accent-hover"
             >
-              Get started
+              Sign up
             </a>
           {/if}
         </div>

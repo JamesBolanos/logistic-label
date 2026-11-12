@@ -6,7 +6,8 @@ test('public guide explains and links all supported labels', async ({ page }) =>
   await expect(
     page.getByRole('heading', { name: 'Which label fits your shipment?' })
   ).toBeVisible();
-  await expect(page.getByText('DEMO — NOT VALID FOR SHIPPING')).toHaveCount(3);
+  await expect(page.getByText('DEMO — NOT VALID FOR SHIPPING')).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Supported label choices' })).toHaveCount(0);
 
   const firstLabelGuide = page.locator('#first-label');
   await expect(
@@ -18,10 +19,10 @@ test('public guide explains and links all supported labels', async ({ page }) =>
   await expect(firstLabelGuide).toContainText(
     'The licensed prefix is required to allocate a real SSCC'
   );
-  await expect(firstLabelGuide).toContainText('The prefix contributes to the SSCC');
-  await expect(
-    firstLabelGuide.getByRole('link', { name: 'Create a free account' })
-  ).toHaveAttribute('href', '/signup');
+  await expect(firstLabelGuide).toContainText(
+    'is not printed as a separate field on these samples'
+  );
+  await expect(firstLabelGuide.getByRole('link', { name: 'Create a free account' })).toHaveCount(0);
 
   await expect(page.getByText('0 0614141 123456789 0')).toHaveCount(0);
   await expect(page.getByText('(00) 006141411234567890')).toHaveCount(0);
@@ -34,7 +35,10 @@ test('public guide explains and links all supported labels', async ({ page }) =>
   const transportSample = transportGuide.locator('[data-print-layout]');
   await expect(transportSample).toHaveAttribute('data-print-layout', '4x6_single');
   await expect(transportSample).toHaveAttribute('data-label-size', '4 × 6');
-  await expect(transportSample).toContainText('NON-SCANNABLE BARCODE');
+  await expect(transportSample).toHaveAttribute(
+    'src',
+    '/guide/samples/transport.pdf#toolbar=0&navpanes=0&scrollbar=0&view=Fit'
+  );
   await expect(transportGuide).toContainText('(00) SSCC-18');
   await expect(transportGuide.getByRole('link', { name: 'Create this label' })).toHaveAttribute(
     'href',
@@ -45,10 +49,12 @@ test('public guide explains and links all supported labels', async ({ page }) =>
     has: page.getByRole('heading', { name: 'Ship multiple identical cases or items' })
   });
   const identicalSample = identicalGuide.locator('[data-print-layout]');
-  await expect(identicalSample).toHaveAttribute('data-print-layout', '4x6_single');
-  await expect(identicalSample).toHaveAttribute('data-label-size', '4 × 6');
-  await expect(identicalSample.getByText('NON-SCANNABLE CONTENT BARCODE')).toBeVisible();
-  await expect(identicalSample.getByText('NON-SCANNABLE SSCC BARCODE')).toBeVisible();
+  await expect(identicalSample).toHaveAttribute('data-print-layout', '6x8_single');
+  await expect(identicalSample).toHaveAttribute('data-label-size', '6 × 8');
+  await expect(identicalSample).toHaveAttribute(
+    'src',
+    '/guide/samples/contents.pdf#toolbar=0&navpanes=0&scrollbar=0&view=Fit'
+  );
   await expect(identicalGuide).toContainText('(02) CONTENT + (37) COUNT');
   await expect(identicalGuide).toContainText('(00) SSCC-18 at the bottom');
   await expect(identicalGuide.getByRole('link', { name: 'Create this label' })).toHaveAttribute(
@@ -62,13 +68,28 @@ test('public guide explains and links all supported labels', async ({ page }) =>
   const basicSample = basicGuide.locator('[data-print-layout]');
   await expect(basicSample).toHaveAttribute('data-print-layout', '4x3_single');
   await expect(basicSample).toHaveAttribute('data-label-size', '4 × 3');
-  await expect(basicSample).toContainText('(00) [SSCC]');
-  await expect(basicSample).toContainText('NON-SCANNABLE BARCODE');
+  await expect(basicSample).toHaveAttribute(
+    'src',
+    '/guide/samples/basic.pdf#toolbar=0&navpanes=0&scrollbar=0&view=Fit'
+  );
   await expect(basicGuide).toContainText('(00) SSCC-18');
   await expect(basicGuide.getByRole('link', { name: 'Create this label' })).toHaveAttribute(
     'href',
     '/labels?type=sscc_basic'
   );
+
+  for (const [sample, expectedContent] of [
+    ['transport', ['GRAND SUPPLIER', 'COFFEE', '006141411234567890']],
+    ['contents', ['GRAND SUPPLIER', 'COFFEE', '00614141000418', '451214', '20']],
+    ['basic', ['006141411234567890']]
+  ]) {
+    const response = await page.request.get(`/guide/samples/${sample}.pdf`);
+    expect(response.headers()['content-type']).toContain('application/pdf');
+    expect(response.headers()['x-frame-options']).toBe('SAMEORIGIN');
+    const pdf = (await response.body()).toString('utf8');
+    expect(pdf.startsWith('%PDF')).toBe(true);
+    for (const value of expectedContent) expect(pdf).toContain(value);
+  }
 
   await expect(
     page.getByRole('heading', { name: 'Need something beyond the free generator?' })
@@ -116,10 +137,9 @@ test('public guide explains and links all supported labels', async ({ page }) =>
   await page.unroute('**/*');
 
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'Need a tailored project?' })).toHaveAttribute(
-    'href',
-    '/guide#custom-request'
-  );
+  await expect(
+    page.getByRole('link', { name: 'Discuss a tailored project', exact: true })
+  ).toHaveAttribute('href', '/guide#custom-request');
   await expect(
     page.getByRole('link', { name: 'Suggest or discuss a tailored project' })
   ).toHaveAttribute('href', '/guide#custom-request');

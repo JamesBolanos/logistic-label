@@ -20,7 +20,7 @@ describe('public supported-label guide', () => {
     });
     expect(getSupportedLabelGuide(LABEL_TYPES.HOMOGENEOUS_UNIT)).toMatchObject({
       generatorHref: '/labels?type=homogeneous_unit',
-      sampleLayout: PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE,
+      sampleLayout: PRINT_LAYOUTS.SIX_BY_EIGHT_SINGLE,
       barcodeSummary: expect.arrayContaining(['(02) CONTENT + (37) COUNT'])
     });
     expect(getSupportedLabelGuide(LABEL_TYPES.SSCC_BASIC)).toMatchObject({

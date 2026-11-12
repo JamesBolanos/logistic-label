@@ -2,11 +2,8 @@
 <script>
   import { page } from '$app/state';
   import { trackProductEvent } from '#lib/analytics/client.ts';
-  import WhatsNewPanel from '#lib/components/Updates/WhatsNewPanel.svelte';
-  import { getRecentPublishedReleases } from '#lib/content/releases.ts';
 
   let isLoggedIn = $derived(Boolean(page.data.user));
-  const recentUpdates = getRecentPublishedReleases(2);
 
   const features = [
     {
@@ -48,25 +45,29 @@
 </script>
 
 <svelte:head>
-  <title>SSCC Labels - Free GS1-128 Logistic Label Generator</title>
+  <title>GS1-128 Logistic & SSCC Label Generator</title>
   <meta
     name="description"
-    content="Generate GS1-128 and SSCC logistic labels for free, or request a tailored private solution for your formats and printer models."
+    content="Generate compliant GS1-128 and SSCC labels for pallet, transport, and homogeneous-content shipments. Download PDF or ZPL output and compare the supported workflows before you start."
   />
 </svelte:head>
 
 <div class="pb-16">
-  <!-- Hero Section -->
   <div class="bg-blue-600 rounded-lg shadow-lg overflow-hidden">
-    <div class="max-w-4xl mx-auto px-6 py-16 text-center text-white">
-      <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">SSCC Labels</h1>
-      <p class="mt-6 text-xl max-w-2xl mx-auto">
-        Choose from three supported label workflows and see how a real label is created, from
-        company setup to download.
+    <div class="max-w-5xl mx-auto px-6 py-16 text-center text-white">
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">
+        GS1-128 & SSCC labels
       </p>
-      <p class="mt-4 text-base text-blue-100 max-w-2xl mx-auto">
-        A real SSCC requires an account and your organization's GS1 Company Prefix. Explore the
-        static demo and step-by-step guide before you start.
+      <h1 class="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
+        Generate compliant labels in minutes.
+      </h1>
+      <p class="mt-6 text-xl max-w-3xl mx-auto">
+        Create PDF and ZPL logistics labels for pallets, transport units, and identical-content
+        shipments without guessing at the format.
+      </p>
+      <p class="mt-4 text-base text-blue-100 max-w-3xl mx-auto">
+        Try the public guide instantly. Real SSCC allocation requires a free account and your
+        organization’s licensed GS1 Company Prefix.
       </p>
       <div class="mt-10">
         <div class="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4">
@@ -95,22 +96,21 @@
             href="/guide"
             class="flex items-center justify-center px-6 py-3 border border-white text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:text-lg"
           >
-            View the demo and guide
+            View label guide
           </a>
+        </div>
+        <p class="mt-5 text-sm text-blue-100">
+          Need a custom format or private deployment?
           <a
             href="/guide#custom-request"
             onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'home_hero' })}
-            class="flex items-center justify-center px-6 py-3 border border-blue-100 text-base font-medium rounded-md text-white bg-transparent hover:bg-blue-700 md:text-lg"
+            class="font-semibold text-white underline decoration-blue-200 underline-offset-4 hover:text-blue-50"
           >
-            Need a tailored project?
+            Discuss a tailored project
           </a>
-        </div>
+        </p>
       </div>
     </div>
-  </div>
-
-  <div class="mt-16">
-    <WhatsNewPanel updates={recentUpdates} />
   </div>
 
   <!-- Features Section -->
