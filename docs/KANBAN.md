@@ -24,7 +24,7 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 - Outcome: improve the public home/guide entry, first-time setup guidance, recoverability of signup/CAPTCHA errors, and optional direct-print onboarding.
 - Acceptance: the public step-by-step guide embeds static PDFs produced by the same production renderer for transport (4 × 6), detailed identical contents (6 × 8), and basic SSCC (4 × 3), using the published Figure 4-1 sample identifiers and GS1-128 barcodes without an in-label demo banner; explains the licensed-prefix prerequisite and account-to-download workflow; and cannot allocate or save labels; authentication forms distinguish CAPTCHA load failure from incomplete verification and provide a clear retry without weakening security; the Print Bridge page explains the separate optional utility, browser → local bridge → network printer flow, compatible printer/setup requirements, and links to its repository, downloads, and setup guide; the footer and label guide link to the page; existing label, download, printing, and authentication behavior remains intact.
 - Scope: keep the guide/demo static, preserve authentication and CAPTCHA policy, and make no analytics/reporting, release-history announcement, database, or dependency changes.
-- Status: In progress; CAPTCHA failure/retry feedback is wired through sign-in, signup, and password-reset requests. Settings guidance and final regression verification remain.
+- Status: In progress; PR #67 is merged to staging, and the guide/PDF and CAPTCHA retry flows passed staging smoke checks. Settings guidance and final regression verification remain.
 - Source: [First-use experience improvements](./UX_FIRST_USE_IMPROVEMENTS.md).
 
 ## Review
