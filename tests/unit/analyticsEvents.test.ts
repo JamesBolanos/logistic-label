@@ -90,6 +90,9 @@ describe('analytics event contract', () => {
         placement: 'guide_email_fallback'
       })
     ).toEqual({ placement: 'guide_email_fallback' });
+    expect(
+      sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'label_generator' })
+    ).toEqual({ placement: 'label_generator' });
     expect(sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'unknown' })).toEqual(
       {}
     );

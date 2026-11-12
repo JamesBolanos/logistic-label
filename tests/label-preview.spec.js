@@ -139,11 +139,11 @@ test('signed-in user can generate both available shipping situations', async ({
     expect(legacyPdf).not.toContain('\\(37\\)');
 
     await expect(
-      page.getByRole('button', {
-        name: 'Follow a retailer or customer routing guide — Tailored solution',
+      page.getByRole('link', {
+        name: 'Follow a retailer or customer routing guide — Discuss a tailored project',
         exact: true
       })
-    ).toBeDisabled();
+    ).toHaveAttribute('href', '/guide?requestType=tailored_project#custom-request');
 
     await page
       .getByRole('button', {
