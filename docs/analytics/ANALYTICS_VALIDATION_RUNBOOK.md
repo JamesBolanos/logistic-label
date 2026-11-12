@@ -39,7 +39,7 @@ GA4 is intentionally disabled outside production, so perform this check on `sscc
 3. Confirm exactly one `page_view` appears for each visited path. Check `page_location`; do not accept duplicate page views for one navigation.
 4. Return to the home page and scroll until each visible update has crossed the panel threshold. Confirm one `release_update_viewed` per visible release during the browser session.
 5. Select one release link. Confirm one `release_cta_clicked` with the expected `release_id` and `feature_key`.
-6. Select each public **Contact Me** placement and cancel the email draft. Confirm `custom_contact_clicked` uses `home_hero` or `home_cta`; no email address, subject text, page content, or other free text may appear in the event.
+6. Select each public suggestion or tailored-project request placement. Confirm `custom_contact_clicked` contains only its controlled placement. The public form sends to the owner address; coordinate before submitting a live test request. Confirm `custom_request_submitted` contains only the controlled request category, with no email address, subject text, page content, or free text.
 7. Sign in with the configured owner account. The pre-authentication login action may already have been collected. After authenticated navigation, confirm no new application events or page views are sent to the GA property. In browser developer tools, requests to `google-analytics.com/g/collect` or `analytics.google.com/g/collect` should stop.
 
 Use GA4 Realtime for a broader delivery check after DebugView. Debug traffic may be excluded from ordinary reporting when a developer-traffic filter is configured.

@@ -61,20 +61,15 @@ Use the existing build cache unless the failure specifically indicates stale bui
 
 ## Schema Change Procedure
 
-For the complete feature/PR promotion flow, validation gates, documentation updates, and recovery steps, follow [How to deploy a new feature](../../HOW_TO_DEPLOY_A_NEW_FEATURE.md).
+Follow the [feature release guide](../HOW_TO_DEPLOY_A_NEW_FEATURE.md) for the canonical migration sequence, dispatch commands, and promotion order. In particular, complete a required production migration before merging the release PR; promote one-way from `feature` to `staging` to `master`, without merging `master` back into `staging`.
 
-1. Generate and review the committed Drizzle migration locally.
-2. Let GitHub Actions apply the migration and run E2E tests on its disposable Neon branch.
-3. Promote the reviewed commit to the `staging` Git branch and wait for its Vercel deployment.
-4. In GitHub, open **Actions → CI → Run workflow**, select the `staging` branch, choose `staging` as the database migration target, and run it. The guarded job uses the repository's Neon API credential to load the existing `staging` branch; it refuses to create a missing branch.
-5. Redeploy if needed and smoke-test `staging.sscc-labels.com`.
-6. From the same reviewed `staging` commit, run the workflow again with the `production` target and enter `APPLY_PRODUCTION_MIGRATIONS` in the confirmation field. The production GitHub project variable, exact confirmation, database environment, and Neon project identity must all agree before Drizzle connects.
-7. Verify the production migration completed before merging or promoting application code that requires the new schema.
-8. To bring the developer database up to date, run the workflow with the `dev` target from the `master` or `staging` Git branch. It loads the existing non-production `main` branch and applies the committed migrations; it refuses to create a missing branch.
+Environment-specific safeguards:
 
-Selecting `none` runs the ordinary manually dispatched quality workflow. Database migration jobs do not run on pushes or pull requests. The `dev` target needs no confirmation because it never reaches the production project; the `production` target always does. The existing database environment and Neon project-identity guards still apply to every target. Never print connection strings or commit pulled environment files.
-
-Use separate project-scoped GitHub Actions secrets: `NEON_API_KEY` for the non-production project and `NEON_PRODUCTION_API_KEY` for the production project. This keeps the E2E and staging credential unable to discover or modify production resources.
+- The guarded migration workflow targets existing Neon branches only; it refuses to create a missing branch.
+- `dev` targets the non-production `main` branch, `staging` targets the non-production `staging` branch, and `production` targets the separate production project.
+- Production migrations require the exact confirmation `APPLY_PRODUCTION_MIGRATIONS`, plus matching production project and database-environment identity.
+- Use separate project-scoped GitHub Actions secrets: `NEON_API_KEY` for the non-production project and `NEON_PRODUCTION_API_KEY` for production. The staging credential must not be able to discover or modify production resources.
+- Never print connection strings or commit pulled environment files. Do not use `drizzle-kit push` on shared staging or production.
 
 Do not let a pull-request preview apply migrations automatically to shared staging. If concurrent or incompatible schema versions must be reviewed, create one temporary Neon branch manually, use branch-specific Vercel variables, and delete the branch after the review.
 

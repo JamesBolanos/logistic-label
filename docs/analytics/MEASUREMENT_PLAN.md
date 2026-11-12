@@ -32,21 +32,22 @@ Measure whether people reach a useful logistic-label outcome, where workflows fa
 
 ## Event Contract
 
-| Event                     | Authoritative recording point                                               | Allowed context                              |
-| ------------------------- | --------------------------------------------------------------------------- | -------------------------------------------- |
-| `sign_up`                 | Better Auth user creation hook                                              | Authentication method                        |
-| `login`                   | Better Auth session creation hook                                           | Authentication method                        |
-| `company_settings_saved`  | Successful settings persistence                                             | First setup or update                        |
-| `product_saved`           | Successful saved-product persistence                                        | First product or update                      |
-| `product_selected`        | A saved product fills the label form                                        | None                                         |
-| `label_preview_succeeded` | Successful preview PDF response                                             | Label type, size, template version, duration |
-| `label_saved`             | Successful label insert                                                     | Label type, size, template version, duration |
-| `pdf_response_succeeded`  | Successful saved-label PDF response                                         | PDF format, new/history source, duration     |
-| `pdf_download_started`    | Browser triggers the file download                                          | PDF format and new/history source            |
-| `workflow_failed`         | Controlled server or browser failure boundary                               | Step, controlled category, duration          |
-| `custom_contact_clicked`  | Public home-page contact action                                             | Hero or final CTA placement                  |
-| `release_update_viewed`   | Published update reaches the viewport, once per release per browser session | Release ID, change category, feature key     |
-| `release_cta_clicked`     | Published update link is selected                                           | Release ID and feature key                   |
+| Event                      | Authoritative recording point                                               | Allowed context                                                    |
+| -------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `sign_up`                  | Better Auth user creation hook                                              | Authentication method                                              |
+| `login`                    | Better Auth session creation hook                                           | Authentication method                                              |
+| `company_settings_saved`   | Successful settings persistence                                             | First setup or update                                              |
+| `product_saved`            | Successful saved-product persistence                                        | First product or update                                            |
+| `product_selected`         | A saved product fills the label form                                        | None                                                               |
+| `label_preview_succeeded`  | Successful preview PDF response                                             | Label type, size, template version, duration                       |
+| `label_saved`              | Successful label insert                                                     | Label type, size, template version, duration                       |
+| `pdf_response_succeeded`   | Successful saved-label PDF response                                         | PDF format, new/history source, duration                           |
+| `pdf_download_started`     | Browser triggers the file download                                          | PDF format and new/history source                                  |
+| `workflow_failed`          | Controlled server or browser failure boundary                               | Step, controlled category, duration                                |
+| `custom_contact_clicked`   | Public suggestion or tailored-work request-path action                      | Home hero, home CTA, guide CTA, label generator, or email fallback |
+| `custom_request_submitted` | Email provider accepts a categorized public request                         | Controlled request category only                                   |
+| `release_update_viewed`    | Published update reaches the viewport, once per release per browser session | Release ID, change category, feature key                           |
+| `release_cta_clicked`      | Published update link is selected                                           | Release ID and feature key                                         |
 
 ## Privacy Boundary
 

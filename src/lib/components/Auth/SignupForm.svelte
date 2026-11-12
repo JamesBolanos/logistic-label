@@ -24,6 +24,11 @@
   let formSuccess = $state('');
   let captchaVerified = $state(false);
   let captchaToken = $state('');
+  let captchaUnavailable = $state(false);
+
+  const CAPTCHA_REQUIRED_MESSAGE = 'Please complete the CAPTCHA verification.';
+  const CAPTCHA_RETRY_MESSAGE =
+    'CAPTCHA is not ready. Use the retry button in the CAPTCHA box, then complete verification.';
 
   async function handleSubmit() {
     const startedAt = Date.now();
@@ -44,7 +49,7 @@
     }
 
     if (!dev && !captchaVerified) {
-      formError = 'Please complete the captcha verification';
+      formError = captchaUnavailable ? CAPTCHA_RETRY_MESSAGE : CAPTCHA_REQUIRED_MESSAGE;
       trackProductEvent('workflow_failed', {
         step: 'sign_up',
         error_category: 'validation',
@@ -124,9 +129,11 @@
     }
   }
 
-  function onCaptchaVerify({ verified, token }) {
+  function onCaptchaVerify({ verified, token, error }) {
     captchaVerified = verified;
     captchaToken = token;
+    captchaUnavailable = error;
+    if (!error && formError === CAPTCHA_RETRY_MESSAGE) formError = '';
   }
 
   function getDefaultName(emailAddress) {

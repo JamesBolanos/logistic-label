@@ -15,6 +15,30 @@ export interface ReleaseUpdate {
 
 export const releaseUpdates: readonly ReleaseUpdate[] = [
   {
+    id: '2026-11-11-authenticated-tailored-request',
+    publishedAt: '2026-11-11',
+    category: 'improvement',
+    status: 'draft',
+    title: 'Request tailored label help from the generator',
+    benefit:
+      'The customer-specific scenario links to the tailored-project form, with signed-in contact details and saved company name filled in for easy editing.',
+    featureKey: 'authenticated_tailored_request',
+    href: '/labels',
+    linkLabel: 'Open the label generator'
+  },
+  {
+    id: '2026-11-11-tailored-request-form',
+    publishedAt: '2026-11-11',
+    category: 'improvement',
+    status: 'draft',
+    title: 'A clearer way to request tailored work',
+    benefit:
+      'Visitors can suggest an improvement to the free tool or describe a customer-specific label, printer, or workflow requirement through the public guide.',
+    featureKey: 'tailored_request_form',
+    href: '/guide#custom-request',
+    linkLabel: 'Suggest an improvement or discuss a project'
+  },
+  {
     id: '2026-11-08-basic-sscc-batch-and-preview',
     publishedAt: '2026-11-08',
     category: 'new feature',

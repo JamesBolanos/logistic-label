@@ -12,13 +12,13 @@ The operational delivery foundation is established: reproducible local checks, G
 
 This sequence records the product strategy that shaped the backlog. Use the Kanban board to select current work. Detailed private usage snapshots belong in the git-ignored `usage_log/` folder.
 
-| Order | Workstream | Status | Outcome to verify |
-|---|---|---|---|
-| 1 | What's new panel | Delivered; analytics follows in priority 2 | Users can discover every released fix, improvement, and new feature |
-| 2 | Event checklist and statistics | Delivered; collect a usage baseline and review outcomes | See where users stop, which operations fail, and which released features they use |
-| 3 | Fixes | Needs completion and verification | Correct labels, reliable authentication/downloads, and isolated tests with cleanup |
-| 4 | Improvements | Planned; refine with feedback | Make existing workflows easier and prepare evidence for future decisions |
-| 5 | New features, including Excel export | Backlog; scope through analysis | Add capabilities that address a defined user or business need |
+| Order | Workstream                           | Status                                                  | Outcome to verify                                                                  |
+| ----- | ------------------------------------ | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 1     | What's new panel                     | Delivered; analytics follows in priority 2              | Users can discover every released fix, improvement, and new feature                |
+| 2     | Event checklist and statistics       | Delivered; collect a usage baseline and review outcomes | See where users stop, which operations fail, and which released features they use  |
+| 3     | Fixes                                | Needs completion and verification                       | Correct labels, reliable authentication/downloads, and isolated tests with cleanup |
+| 4     | Improvements                         | Planned; refine with feedback                           | Make existing workflows easier and prepare evidence for future decisions           |
+| 5     | New features, including Excel export | Backlog; scope through analysis                         | Add capabilities that address a defined user or business need                      |
 
 Follow this priority order. Business analysis and short feedback cycles apply throughout the work. The first panel release can ship before event tracking; instrument it in priority 2.
 
@@ -46,25 +46,25 @@ Use IIBA's Business Analysis Core Concept Model to frame substantial backlog ite
 
 Connect decisions across IIBA's three agile analysis horizons:
 
-| Horizon | Application to this repo |
-|---|---|
-| Strategy | Maintain a useful free tool that creates value for users and attracts tailored implementation work |
-| Initiative | Define the outcome and scope of each of the five priorities, using usage evidence and stakeholder feedback |
-| Delivery | Break the selected work into small stories, specify acceptance criteria, verify results, and learn from each release |
+| Horizon    | Application to this repo                                                                                             |
+| ---------- | -------------------------------------------------------------------------------------------------------------------- |
+| Strategy   | Maintain a useful free tool that creates value for users and attracts tailored implementation work                   |
+| Initiative | Define the outcome and scope of each of the five priorities, using usage evidence and stakeholder feedback           |
+| Delivery   | Break the selected work into small stories, specify acceptance criteria, verify results, and learn from each release |
 
 These horizons support continuous analysis rather than a separate preliminary project phase. [IIBA agile analysis guidance](https://www.iiba.org/business-analysis-blogs/what-is-agile-business-analysis-and-how-can-it-help-your-organization/)
 
 ### Backlog Item Template
 
-| Field | Record |
-|---|---|
-| ID, category, and status | A stable identifier; panel, tracking, fix, improvement, or new feature; current board state |
-| Need and evidence | The problem or opportunity and the observation, usage report, or user request supporting it |
-| Stakeholders and context | Who benefits and relevant workflow, printer, data, or operational constraints |
-| Expected value | The outcome to improve, baseline if available, and how success will be evaluated |
-| Scope and options | The proposed change, alternatives considered, boundaries, dependencies, and open questions |
-| Story and acceptance criteria | The user's goal and observable examples of success and failure; use Given/When/Then where helpful |
-| Delivery and follow-up | A small implementation slice, appropriate verification, release note, measurement, and feedback review |
+| Field                         | Record                                                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| ID, category, and status      | A stable identifier; panel, tracking, fix, improvement, or new feature; current board state            |
+| Need and evidence             | The problem or opportunity and the observation, usage report, or user request supporting it            |
+| Stakeholders and context      | Who benefits and relevant workflow, printer, data, or operational constraints                          |
+| Expected value                | The outcome to improve, baseline if available, and how success will be evaluated                       |
+| Scope and options             | The proposed change, alternatives considered, boundaries, dependencies, and open questions             |
+| Story and acceptance criteria | The user's goal and observable examples of success and failure; use Given/When/Then where helpful      |
+| Delivery and follow-up        | A small implementation slice, appropriate verification, release note, measurement, and feedback review |
 
 Keep private user evidence in `usage_log/` or other private records. Link a backlog ID to its implementation, verification evidence, release entry, and outcome review.
 
@@ -106,19 +106,19 @@ First deliverable: make every released fix, improvement, and new feature visible
 
 Event names below are proposed contracts. Establish one recording point per event and prevent duplicates before using them in reports.
 
-| Proposed event | Record when | Useful attributes |
-|---|---|---|
-| `sign_up`, `login` | Authentication succeeds | Sign-in method |
-| `company_settings_saved` | Company settings are successfully persisted | First setup or update |
-| `label_preview_succeeded` | The client receives the preview PDF successfully | Label type, size, template version, elapsed time |
-| `label_saved` | A new label is committed to the database | Label type, size, template version |
-| `pdf_response_succeeded` | The server generates and returns a successful PDF response | Format, elapsed time; not proof of receipt or printing |
-| `pdf_download_started` | The browser receives the PDF and triggers the download action | Format, new label or history re-download; not proof of a file saved to disk |
-| `workflow_failed` | A validation or operational step fails | Step, field name, controlled error category, elapsed time |
-| `custom_contact_clicked` | The user opens the custom-work contact action | Placement; a click is not a submitted inquiry |
-| `generate_lead` | A customization request is successfully saved | Request category, requested format or printer category |
-| `release_update_viewed` | A published update becomes visible, once per release per session | Release ID, change category, feature key |
-| `release_cta_clicked` | The user follows an update's feature or instruction link | Release ID, feature key |
+| Proposed event             | Record when                                                      | Useful attributes                                                           |
+| -------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `sign_up`, `login`         | Authentication succeeds                                          | Sign-in method                                                              |
+| `company_settings_saved`   | Company settings are successfully persisted                      | First setup or update                                                       |
+| `label_preview_succeeded`  | The client receives the preview PDF successfully                 | Label type, size, template version, elapsed time                            |
+| `label_saved`              | A new label is committed to the database                         | Label type, size, template version                                          |
+| `pdf_response_succeeded`   | The server generates and returns a successful PDF response       | Format, elapsed time; not proof of receipt or printing                      |
+| `pdf_download_started`     | The browser receives the PDF and triggers the download action    | Format, new label or history re-download; not proof of a file saved to disk |
+| `workflow_failed`          | A validation or operational step fails                           | Step, field name, controlled error category, elapsed time                   |
+| `custom_contact_clicked`   | The user opens the suggestion or tailored-work request path      | Placement; a click is not a submitted inquiry                               |
+| `custom_request_submitted` | The email provider accepts a categorized public request          | Controlled request category only; no contact details or free text           |
+| `release_update_viewed`    | A published update becomes visible, once per release per session | Release ID, change category, feature key                                    |
+| `release_cta_clicked`      | The user follows an update's feature or instruction link         | Release ID, feature key                                                     |
 
 - [x] Review the existing GA4 property and base tag, including page views during SvelteKit navigation and duplicate-event handling.
 - [x] Add success and failure events at the defined recording points. Standardize operation IDs where needed to distinguish retries from separate jobs.
@@ -131,16 +131,16 @@ Event names below are proposed contracts. Establish one recording point per even
 
 ### Owner Dashboard
 
-| Priority | Statistic | Decision supported | Source |
-|---|---|---|---|
-| First | New users and first-label completion | Is onboarding helping people reach value? | Existing database records; add PDF response tracking |
-| First | Signup → settings → preview → saved label → PDF fetched | At which step do users stop? | Database plus new events |
-| First | Time to first saved label / PDF fetched | Is the workflow too difficult or slow? | Timestamps plus new events |
-| First | Weekly/30-day creators, later-date creators, labels per user, and usage concentration | Is usefulness spreading to more users? | Existing label history |
-| First | Failed attempts, affected users, retry recovery, and operation duration | Which fixes remove the most friction? | New operational events |
-| Next | Acquisition source / landing page → first label / inquiry | Which channels attract suitable users? | GA4 attribution where available; preserve an unknown category |
-| Next | Feature requests by distinct users, size, format, and printer | What belongs in the free tool or a tailored project? | Categorized request records |
-| Next | Inquiries → qualified requirements → proposals → accepted projects | Is the free tool generating paid implementation work? | Application or lightweight sales records |
+| Priority | Statistic                                                                             | Decision supported                                    | Source                                                        |
+| -------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
+| First    | New users and first-label completion                                                  | Is onboarding helping people reach value?             | Existing database records; add PDF response tracking          |
+| First    | Signup → settings → preview → saved label → PDF fetched                               | At which step do users stop?                          | Database plus new events                                      |
+| First    | Time to first saved label / PDF fetched                                               | Is the workflow too difficult or slow?                | Timestamps plus new events                                    |
+| First    | Weekly/30-day creators, later-date creators, labels per user, and usage concentration | Is usefulness spreading to more users?                | Existing label history                                        |
+| First    | Failed attempts, affected users, retry recovery, and operation duration               | Which fixes remove the most friction?                 | New operational events                                        |
+| Next     | Acquisition source / landing page → first label / inquiry                             | Which channels attract suitable users?                | GA4 attribution where available; preserve an unknown category |
+| Next     | Feature requests by distinct users, size, format, and printer                         | What belongs in the free tool or a tailored project?  | Categorized request records                                   |
+| Next     | Inquiries → qualified requirements → proposals → accepted projects                    | Is the free tool generating paid implementation work? | Application or lightweight sales records                      |
 
 - [x] Build an owner-only statistics page with rolling 7/30-day filters and cohort exclusions; enforce owner access on the server.
 - [x] Start with six summary cards: new users, first-label users, weekly label creators, failed attempts, custom inquiries, and accepted projects. Show untracked metrics as unavailable rather than zero.
@@ -165,9 +165,10 @@ Event names below are proposed contracts. Establish one recording point per even
 ## 4. Improvements
 
 - [x] Guide new users through company setup, preview, and first-label creation with a dashboard checklist derived from existing settings, events, and saved labels.
+- First-use experience improvements (`UX-004`) are scoped in [`UX_FIRST_USE_IMPROVEMENTS.md`](./UX_FIRST_USE_IMPROVEMENTS.md). The scope covers the public product example, clearer homepage and setup guidance, and signup/CAPTCHA recovery; it intentionally excludes analytics work and a What's New announcement.
 - [ ] After saving a label, refresh history immediately. If the automatic PDF download fails, explain that the saved label can be downloaded from history without creating another SSCC.
 - [ ] Gather feedback from repeat creators, one-time creators, configured non-creators, and signup-only users; record the task, printer, required output, and obstacle.
-- [ ] Add a categorized feature/customization request path and distinguish general suggestions from concrete project requirements.
+- [x] Add a categorized feature/customization request path and distinguish general suggestions from concrete project requirements. Scope and implementation decisions are in [`FEEDBACK_REQUESTS.md`](./FEEDBACK_REQUESTS.md).
 - [ ] Validate a small saved-product list: product name, internal reference, and GTIN. Review shipment-specific values on each new label.
 - [ ] Distinguish reprinting an existing logistic unit from creating a new one with a fresh SSCC.
 - [ ] Preserve saved label data and template versions when products, company settings, or layouts change.

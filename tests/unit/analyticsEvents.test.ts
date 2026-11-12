@@ -85,9 +85,33 @@ describe('analytics event contract', () => {
     expect(
       sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'guide_cta' })
     ).toEqual({ placement: 'guide_cta' });
+    expect(
+      sanitizeAnalyticsParameters('custom_contact_clicked', {
+        placement: 'guide_email_fallback'
+      })
+    ).toEqual({ placement: 'guide_email_fallback' });
+    expect(
+      sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'label_generator' })
+    ).toEqual({ placement: 'label_generator' });
     expect(sanitizeAnalyticsParameters('custom_contact_clicked', { placement: 'unknown' })).toEqual(
       {}
     );
+  });
+
+  it('records request submissions with a controlled category only', () => {
+    expect(
+      sanitizeAnalyticsParameters('custom_request_submitted', {
+        request_type: 'tailored_project',
+        email: 'person@example.com',
+        name: 'Taylor',
+        message: 'Sensitive request details'
+      })
+    ).toEqual({ request_type: 'tailored_project' });
+    expect(
+      sanitizeAnalyticsParameters('custom_request_submitted', {
+        request_type: 'unknown'
+      })
+    ).toEqual({});
   });
 
   it('allows the saved-product events with controlled values only', () => {

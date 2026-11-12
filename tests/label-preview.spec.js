@@ -21,10 +21,9 @@ test('signed-in user can generate both available shipping situations', async ({
 
   try {
     await page.goto('/', { waitUntil: 'networkidle' });
-    const whatsNewPanel = page.getByRole('region', { name: "What's new" });
-    await expect(whatsNewPanel).toBeVisible();
-    await expect(whatsNewPanel.getByRole('listitem')).toHaveCount(2);
-    await page.getByRole('link', { name: 'View all updates' }).click();
+    await expect(page.getByRole('region', { name: "What's new" })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'View all updates' })).toHaveCount(0);
+    await page.goto('/updates');
     await expect(page).toHaveURL(/\/updates$/);
     await expect(page.getByRole('heading', { name: "What's new", exact: true })).toBeVisible();
     await expect(page.getByText('Generate several basic SSCC labels at once')).toBeVisible();
@@ -61,6 +60,10 @@ test('signed-in user can generate both available shipping situations', async ({
     const appNavigation = page.getByRole('navigation', { name: 'Application' });
     await expect(appNavigation.getByRole('link', { name: 'Label Generator' })).toBeVisible();
     await expect(appNavigation.getByRole('link', { name: 'Saved Labels' })).toBeVisible();
+    const whatsNewLink = appNavigation.getByRole('link', { name: "What's New" });
+    await expect(whatsNewLink).toHaveAttribute('href', '/updates');
+    await whatsNewLink.click();
+    await expect(page).toHaveURL(/\/updates$/);
 
     await page.goto('/dashboard');
     const onboardingChecklist = page.getByRole('region', {
@@ -139,11 +142,11 @@ test('signed-in user can generate both available shipping situations', async ({
     expect(legacyPdf).not.toContain('\\(37\\)');
 
     await expect(
-      page.getByRole('button', {
-        name: 'Follow a retailer or customer routing guide — Tailored solution',
+      page.getByRole('link', {
+        name: 'Follow a retailer or customer routing guide — Discuss a tailored project',
         exact: true
       })
-    ).toBeDisabled();
+    ).toHaveAttribute('href', '/guide?requestType=tailored_project#custom-request');
 
     await page
       .getByRole('button', {

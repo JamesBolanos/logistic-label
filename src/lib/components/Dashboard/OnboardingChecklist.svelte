@@ -10,7 +10,8 @@
     {
       id: 'settingsConfigured',
       title: 'Configure label settings',
-      description: 'Add your company name and GS1 Company Prefix for SSCC allocation.'
+      description:
+        'Add your company name and GS1-licensed prefix. A real SSCC cannot be allocated without the prefix.'
     },
     {
       id: 'previewCompleted',
