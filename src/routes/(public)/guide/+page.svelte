@@ -5,18 +5,24 @@
   import { SUPPORTED_LABEL_GUIDES } from '#lib/labels/guide.js';
   import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES } from '#lib/labels/scenarios.js';
 
-  let { form } = $props();
+  let { form, data } = $props();
   let submitting = $state(false);
   let submissionError = $state('');
-  const initialRequestValues = (() => form?.values || {})();
+  const initialRequestValues = (() => {
+    const defaults = data?.requestDefaults || {};
+    const submitted = form?.values || {};
+    return {
+      requestType: submitted.requestType ?? defaults.requestType ?? '',
+      name: submitted.name ?? defaults.name ?? '',
+      email: submitted.email ?? defaults.email ?? '',
+      company: submitted.company ?? defaults.company ?? '',
+      topic: submitted.topic ?? 'general',
+      message: submitted.message ?? '',
+      website: submitted.website ?? ''
+    };
+  })();
   let requestValues = $state({
-    requestType: initialRequestValues.requestType || '',
-    name: initialRequestValues.name || '',
-    email: initialRequestValues.email || '',
-    company: initialRequestValues.company || '',
-    topic: initialRequestValues.topic || 'general',
-    message: initialRequestValues.message || '',
-    website: initialRequestValues.website || ''
+    ...initialRequestValues
   });
 
   const requestTypes = [
@@ -442,6 +448,11 @@
         project. No account is needed. Your message and reply address will be sent by email and will
         not be saved in the application.
       </p>
+      {#if data?.companyPrefillWarning}
+        <p class="mt-3 text-sm text-amber-800 dark:text-amber-200" role="status">
+          {data.companyPrefillWarning}
+        </p>
+      {/if}
     </div>
 
     {#if submissionError}

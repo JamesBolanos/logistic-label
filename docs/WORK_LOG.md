@@ -2,6 +2,14 @@
 
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
 
+## 2026-11-11 — `FEEDBACK-003` — Link generator to tailored request
+
+- Result: changed the generator's tailored scenario to link to the existing request form and prefill editable contact details for signed-in users from their session and user-scoped settings.
+- Decisions: keep personal details out of URLs and analytics; omit the default company placeholder; make personalized guide responses private and non-cacheable; preserve anonymous submissions and all free workflows; reuse the existing email-only request path.
+- Material files: `docs/FEEDBACK_003_AUTHENTICATED_TAILORED_REQUEST.md`, `src/lib/components/Labels/LabelWorkflowSelector.svelte`, `src/routes/(public)/guide/+page.server.js`, `src/routes/(public)/guide/+page.svelte`, analytics contract and measurement documentation, and focused browser tests.
+- Validation: `npm run quality` passes (27 unit-test files, 211 tests, no Svelte/TypeScript warnings, database check, and production build); `npx playwright test tests/authenticated-tailored-request.spec.js tests/label-guide.spec.js tests/label-preview.spec.js` passes (3/3), including signed-in prefill, private/no-store headers, editable values, placeholder omission, and existing label workflows. The added cache-header assertion also passes in the focused authenticated test. No live request email was sent.
+- Status: Ready for developer review on `feature/authenticated-tailored-request-prefill`; staging deployment and production release remain pending.
+
 ## 2026-11-11 — `FEEDBACK-001` — Make tailored requests clear and actionable
 
 - Result: clarified the tailored-project option and added a public, categorized suggestion/project form that sends plain-text requests through Resend without storing inquiry content in the app.

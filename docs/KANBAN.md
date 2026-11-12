@@ -20,6 +20,18 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Review
 
+### `FEEDBACK-003` — Link the generator's tailored scenario to the request form
+
+- Need: signed-in users encounter the customer-specific implementation scenario in the generator but have no direct path to the tailored-request form and must re-enter their contact details.
+- Outcome: provide an accessible action from the tailored scenario to the existing form, prefilled from the signed-in user's account and saved company settings.
+- Acceptance: the action opens the form with tailored project selected; authenticated name/email and configured company are prefetched server-side and remain editable; no personal data enters the URL or analytics; anonymous form use and all three supported generator workflows remain unchanged; existing form failure recovery is preserved; focused browser coverage and `npm run quality` pass.
+- Scope: no new request pipeline, database storage, schema migration, or showcase; only the controlled request type may appear in the URL.
+- Evidence: `npm run quality` passes (27 unit-test files, 211 tests, no Svelte/TypeScript warnings, database check, and production build); focused Playwright coverage passes 3/3, including synthetic signed-in prefills, private/no-store response headers, editable values, placeholder-company omission, the request link, and existing label workflows. No live request email was sent.
+- Status: Ready for developer review on `feature/authenticated-tailored-request-prefill`; no staging deployment or production release has been performed for this follow-up.
+- Source: [Authenticated tailored-request shortcut](./FEEDBACK_003_AUTHENTICATED_TAILORED_REQUEST.md).
+
+## Ready
+
 ### `FEEDBACK-001` — Make tailored requests clear and actionable
 
 - Need: customer-specific requirements appear unavailable, and the general contact links do not help visitors explain what they need.
@@ -27,10 +39,8 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 - Acceptance: a public form validates and emails requests to `jbolanosdiaz@gmail.com` through the existing Resend integration; visitors receive clear success and retry feedback; spam protection and privacy disclosures are in place; analytics records successful submissions using controlled categories only; no inquiry content is persisted by the application; a draft release note is prepared for release; the screenshot showcase remains out of scope.
 - Decisions: email-only delivery to `jbolanosdiaz@gmail.com`; no private in-app inbox, database storage, or screenshot showcase.
 - Evidence: focused unit tests, request-event privacy tests, public guide browser checks including network-failure input retention and 390 px overflow, and `npm run quality` pass.
-- Status: Ready for developer review on `feature/general-improvements`; release note remains a draft.
+- Status: Staging flow tested; awaiting production promotion, with no pending implementation; release note remains a draft.
 - Source: [Tailored request requirements](./FEEDBACK_REQUESTS.md).
-
-## Ready
 
 Items are ordered. Start only the first item unless new evidence changes priority.
 
