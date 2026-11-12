@@ -6,9 +6,9 @@ This is a concise handoff log for meaningful work increments. It is not a chat t
 
 - Result: carried CAPTCHA load/display failure state into sign-in, signup, and password-reset request forms so submission guidance directs users to retry instead of implying they skipped the challenge; starting a retry clears the stale form error.
 - Decision: keep CAPTCHA verification required and preserve the existing server-side security policy.
-- Material files: `src/lib/components/Auth/Captcha.svelte`, `src/lib/components/Auth/LoginForm.svelte`, `src/lib/components/Auth/SignupForm.svelte`, `src/routes/(auth)/reset-password/+page.svelte`, and `docs/UX_FIRST_USE_IMPROVEMENTS.md`.
-- Validation: not run, per user preference for batching tests and linting.
-- Status: implementation ready for focused verification; broader `UX-004` remains in progress.
+- Material files: `src/lib/components/Auth/Captcha.svelte`, `src/lib/components/Auth/LoginForm.svelte`, `src/lib/components/Auth/SignupForm.svelte`, `src/routes/(auth)/reset-password/+page.svelte`, and the label-guide/auth browser tests.
+- Validation: `npm run quality` passes; focused guide, Print Bridge, and auth-error browser coverage passes (3/3). The PR's first E2E run found a stale homepage What's New assertion; updated the flow to check that the public home omits it and signed-in navigation links to `/updates`. CI rerun is pending.
+- Status: PR #67 targets staging; staging merge and smoke test remain pending. Broader `UX-004` remains in progress.
 
 ## 2026-11-11 — `UX-004` — Explain optional Print Bridge
 
