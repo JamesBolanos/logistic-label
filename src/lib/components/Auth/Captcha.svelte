@@ -45,6 +45,7 @@
     const attempt = ++loadAttempt;
     captchaError = '';
     captchaLoaded = false;
+    onverify({ verified: false, token: '', error: false });
 
     if (window.grecaptcha?.render) {
       captchaLoaded = true;
@@ -87,7 +88,7 @@
     scriptElement = null;
     captchaLoaded = false;
     captchaError = 'CAPTCHA could not be loaded. Check your connection and try again.';
-    onverify({ verified: false, token: '' });
+    onverify({ verified: false, token: '', error: true });
   }
 
   function clearLoadTimeout() {
@@ -109,27 +110,27 @@
 
     if (captchaId !== null) {
       window.grecaptcha.reset(captchaId);
-      onverify({ verified: false, token: '' });
+      onverify({ verified: false, token: '', error: false });
       return;
     }
 
     try {
       captchaId = window.grecaptcha.render(captchaContainer, {
         sitekey: siteKey,
-        callback: (token) => onverify({ verified: true, token }),
-        'expired-callback': () => onverify({ verified: false, token: '' })
+        callback: (token) => onverify({ verified: true, token, error: false }),
+        'expired-callback': () => onverify({ verified: false, token: '', error: false })
       });
     } catch {
       captchaLoaded = false;
       captchaError = 'CAPTCHA could not be displayed. Try loading it again.';
-      onverify({ verified: false, token: '' });
+      onverify({ verified: false, token: '', error: true });
     }
   }
 
   function retryCaptcha() {
     if (captchaLoaded && captchaId !== null && window.grecaptcha) {
       window.grecaptcha.reset(captchaId);
-      onverify({ verified: false, token: '' });
+      onverify({ verified: false, token: '', error: false });
       return;
     }
 
@@ -139,7 +140,7 @@
 
 <div class="space-y-2">
   <div class="flex items-center justify-between">
-    <span class="text-sm text-muted-foreground">Captcha verification</span>
+    <span class="text-sm text-muted-foreground">CAPTCHA verification</span>
     {#if captchaLoaded && captchaId !== null}
       <button
         type="button"
@@ -168,7 +169,7 @@
         </div>
       {/if}
     {:else}
-      <p class="text-sm text-red-600 dark:text-red-400 text-center">Captcha is not configured.</p>
+      <p class="text-sm text-red-600 dark:text-red-400 text-center">CAPTCHA is not configured.</p>
     {/if}
     {#if siteKey && !captchaLoaded && !captchaError}
       <p class="mt-2 text-xs text-subtle-foreground text-center" aria-live="polite">

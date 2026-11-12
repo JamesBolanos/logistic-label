@@ -20,7 +20,8 @@ export async function handle({ event, resolve }) {
   const resolveWithSecurityHeaders = async (event) => {
     const response = await resolve(event);
 
-    response.headers.set('X-Frame-Options', 'DENY');
+    const isGuideSamplePdf = /^\/guide\/samples\/[^/]+\.pdf$/.test(event.url.pathname);
+    response.headers.set('X-Frame-Options', isGuideSamplePdf ? 'SAMEORIGIN' : 'DENY');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
     response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
