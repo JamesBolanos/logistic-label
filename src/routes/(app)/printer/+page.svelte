@@ -1,21 +1,18 @@
 <script>
   import PrintBridgeSettings from '#lib/components/Labels/PrintBridgeSettings.svelte';
+  import { m } from '#lib/paraglide/messages.js';
 </script>
 
 <svelte:head>
-  <title>Printer Config - GS1-128 Logistic Label Generator</title>
-  <meta
-    name="description"
-    content="Configure the print bridge and LAN printer used to send saved labels to a network printer."
-  />
+  <title>{m.printer_title()} - GS1-128 Logistic Label Generator</title>
+  <meta name="description" content={m.printer_meta()} />
 </svelte:head>
 
 <div class="mx-auto max-w-3xl space-y-6">
   <div>
-    <h1 class="text-2xl font-bold text-foreground">Printer Config</h1>
+    <h1 class="text-2xl font-bold text-foreground">{m.printer_heading()}</h1>
     <p class="mt-2 text-sm text-muted-foreground">
-      Configure the print bridge and the network printer that receives saved labels sent from the
-      Saved Labels page.
+      {m.printer_desc()}
     </p>
   </div>
 

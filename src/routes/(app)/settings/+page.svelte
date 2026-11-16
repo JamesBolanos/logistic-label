@@ -1,5 +1,7 @@
 <script>
   import { page } from '$app/state';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { superForm } from 'sveltekit-superforms';
   import AccountPreferences from '#lib/components/Settings/AccountPreferences.svelte';
   import { trackProductEvent } from '#lib/analytics/client.ts';
@@ -16,7 +18,7 @@
   const { form, errors, message, enhance, submitting } = superForm(data.form, {
     onUpdated({ form }) {
       if (form.valid && form.message === undefined && form.data) {
-        statusMessage = 'Label settings saved.';
+        statusMessage = m.settings_saved();
         trackProductEvent('company_settings_saved', {
           setup_type: isConfigured ? 'update' : 'first_setup'
         });
@@ -40,7 +42,7 @@
       });
     },
     onError({ result }) {
-      formError = result.error?.message || 'Failed to save settings';
+      formError = result.error?.message || m.settings_failed_save();
       trackProductEvent('workflow_failed', {
         step: 'settings_save',
         error_category: result.status ? classifyHttpFailure(result.status) : 'network'
@@ -50,19 +52,15 @@
 </script>
 
 <svelte:head>
-  <title>Settings - GS1-128 Logistic Label Generator</title>
-  <meta
-    name="description"
-    content="Manage your account preferences and configure the GS1 Company Prefix and company profile used on your logistic labels."
-  />
+  <title>{m.settings_title()} - GS1-128 Logistic Label Generator</title>
+  <meta name="description" content={m.settings_meta()} />
 </svelte:head>
 
 <div class="mx-auto max-w-3xl space-y-6">
   <div>
-    <h1 class="text-2xl font-bold text-foreground">Settings</h1>
+    <h1 class="text-2xl font-bold text-foreground">{m.settings_heading()}</h1>
     <p class="mt-2 text-sm text-muted-foreground">
-      Manage your account preferences and the company profile and GS1 license details used on your
-      logistic labels.
+      {m.settings_desc()}
     </p>
   </div>
 
@@ -81,7 +79,7 @@
     >
       <p>{statusMessage}</p>
       <a
-        href="/labels"
+        href={localizeHref('/labels')}
         class="mt-2 inline-flex font-semibold text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200"
       >
         Continue to choose a shipping situation →
@@ -97,18 +95,17 @@
   >
     <div>
       <h2 id="label-settings-heading" class="text-xl font-semibold text-foreground">
-        Company profile and GS1 license
+        {m.settings_company_profile()}
       </h2>
       <p class="mt-2 text-sm text-muted-foreground">
-        Configure your company allocation details before creating a real label. Every SSCC requires
-        a GS1 Company Prefix licensed to your organization.
+        {m.settings_company_desc()}
       </p>
     </div>
 
     <form method="POST" action="?/saveSettings" use:enhance class="space-y-6">
       <div>
         <label for="company_name" class="mb-1 block text-sm font-medium text-muted-foreground">
-          Company Name
+          {m.settings_company_name()}
         </label>
         <input
           id="company_name"
@@ -130,7 +127,7 @@
             for="gs1_company_prefix"
             class="mb-1 block text-sm font-medium text-muted-foreground"
           >
-            GS1 Company Prefix
+            {m.settings_gs1_prefix()}
           </label>
           <input
             id="gs1_company_prefix"
@@ -139,7 +136,7 @@
             inputmode="numeric"
             bind:value={$form.gs1_company_prefix}
             class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Your licensed prefix"
+            placeholder={m.settings_prefix_placeholder()}
             maxlength="12"
             required
           />
@@ -154,7 +151,7 @@
 
         <div>
           <label for="extension_digit" class="mb-1 block text-sm font-medium text-muted-foreground">
-            Extension Digit
+            {m.settings_extension_digit()}
           </label>
           <input
             id="extension_digit"
@@ -170,7 +167,7 @@
             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.extension_digit}</p>
           {/if}
           <p class="mt-1 text-xs text-subtle-foreground">
-            This digit expands SSCC capacity. It does not identify a packaging level.
+            {m.settings_extension_help()}
           </p>
         </div>
       </div>
@@ -180,7 +177,7 @@
           for="next_serial_reference"
           class="mb-1 block text-sm font-medium text-muted-foreground"
         >
-          Next Serial Reference
+          {m.settings_next_serial()}
         </label>
         <input
           id="next_serial_reference"
@@ -198,8 +195,7 @@
           </p>
         {/if}
         <p class="mt-1 text-xs text-subtle-foreground">
-          The application tries this number next when saving a label, then advances the sequence.
-          Change it only when coordinating an existing numbering sequence.
+          {m.settings_next_serial_help()}
         </p>
       </div>
 
@@ -209,7 +205,7 @@
           disabled={$submitting}
           class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
         >
-          {$submitting ? 'Saving...' : 'Save Settings'}
+          {$submitting ? m.settings_saving() : m.settings_save()}
         </button>
       </div>
     </form>

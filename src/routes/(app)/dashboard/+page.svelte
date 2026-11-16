@@ -1,6 +1,8 @@
 <!-- src/routes/dashboard/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
+  import { m } from '#lib/paraglide/messages.js';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
   import OnboardingChecklist from '#lib/components/Dashboard/OnboardingChecklist.svelte';
   import { trackProductEvent } from '#lib/analytics/client.ts';
   import { getLabelTypeName, getPackagingLevelName, LABEL_TYPES } from '#lib/labels/workflows.js';
@@ -30,10 +32,10 @@
 
     try {
       // Get dashboard stats
-      const response = await fetch('/api/dashboard');
+      const response = await fetch(localizeHref('/api/dashboard'));
 
       if (!response.ok) {
-        throw new Error('Failed to load dashboard data');
+        throw new Error(m.dashboard_failed_load());
       }
 
       const data = await response.json();
@@ -42,7 +44,7 @@
       onboarding = data.onboarding;
     } catch (err) {
       console.error('Dashboard error:', err);
-      error = err.message || 'Error loading dashboard data';
+      error = err.message || m.dashboard_error_loading();
     } finally {
       isLoading = false;
     }
@@ -50,19 +52,19 @@
 
   // Format date for display
   function formatDate(dateString) {
-    if (!dateString) return 'Never';
+    if (!dateString) return m.dashboard_never();
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   }
 </script>
 
 <svelte:head>
-  <title>Dashboard - GS1-128 Logistic Label Generator</title>
-  <meta name="description" content="Dashboard for GS1-128 Logistic Label Generator." />
+  <title>{m.dashboard_title()} - GS1-128 Logistic Label Generator</title>
+  <meta name="description" content={m.dashboard_meta()} />
 </svelte:head>
 
 <div class="space-y-6">
-  <h1 class="text-2xl font-bold text-foreground">Dashboard</h1>
+  <h1 class="text-2xl font-bold text-foreground">{m.dashboard_title()}</h1>
 
   {#if isLoading}
     <div class="flex justify-center items-center h-64">
@@ -72,12 +74,12 @@
     <div
       class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-4 rounded-md"
     >
-      <p>Error: {error}</p>
+      <p>{m.dashboard_error_prefix()} {error}</p>
       <button
         onclick={() => window.location.reload()}
         class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
-        Try again
+        {m.dashboard_try_again()}
       </button>
     </div>
   {:else}
@@ -89,7 +91,7 @@
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Saved Labels -->
       <a
-        href="/labels/history"
+        href={localizeHref('/labels/history')}
         class="block bg-surface overflow-hidden shadow rounded-lg transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <div class="px-4 py-5 sm:p-6">
@@ -111,7 +113,9 @@
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
-              <dt class="text-sm font-medium text-subtle-foreground truncate">Saved Labels</dt>
+              <dt class="text-sm font-medium text-subtle-foreground truncate">
+                {m.dashboard_saved_labels()}
+              </dt>
               <dd class="flex items-baseline">
                 <div class="text-2xl font-semibold text-foreground">
                   {stats.totalLabels}
@@ -143,7 +147,9 @@
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
-              <dt class="text-sm font-medium text-subtle-foreground truncate">Labels Today</dt>
+              <dt class="text-sm font-medium text-subtle-foreground truncate">
+                {m.dashboard_labels_today()}
+              </dt>
               <dd class="flex items-baseline">
                 <div class="text-2xl font-semibold text-foreground">
                   {stats.labelsToday}
@@ -156,7 +162,7 @@
 
       <!-- Products -->
       <a
-        href="/products"
+        href={localizeHref('/products')}
         class="bg-surface overflow-hidden shadow rounded-lg transition-colors hover:bg-surface-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div class="px-4 py-5 sm:p-6">
@@ -178,7 +184,9 @@
               </svg>
             </div>
             <div class="ml-5 w-0 flex-1">
-              <dt class="text-sm font-medium text-subtle-foreground truncate">Products</dt>
+              <dt class="text-sm font-medium text-subtle-foreground truncate">
+                {m.dashboard_products()}
+              </dt>
               <dd class="flex items-baseline">
                 <div class="text-2xl font-semibold text-foreground">
                   {stats.savedProducts}
@@ -211,7 +219,7 @@
             </div>
             <div class="ml-5 w-0 flex-1">
               <dt class="text-sm font-medium text-subtle-foreground truncate">
-                Last Label Created
+                {m.dashboard_last_label_created()}
               </dt>
               <dd class="flex items-baseline">
                 <div class="text-sm font-semibold text-foreground">
@@ -226,10 +234,10 @@
 
     <!-- Quick Actions -->
     <div class="bg-surface shadow rounded-lg p-6">
-      <h2 class="text-lg font-medium text-foreground mb-4">Quick Actions</h2>
+      <h2 class="text-lg font-medium text-foreground mb-4">{m.dashboard_quick_actions()}</h2>
       <div class="flex flex-wrap gap-4">
         <a
-          href="/labels/create"
+          href={localizeHref('/labels/create')}
           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500"
         >
           <svg
@@ -244,11 +252,11 @@
               clip-rule="evenodd"
             />
           </svg>
-          Create New Label
+          {m.dashboard_create_new_label()}
         </a>
 
         <a
-          href="/labels/history"
+          href={localizeHref('/labels/history')}
           class="inline-flex items-center px-4 py-2 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500"
         >
           <svg
@@ -263,11 +271,11 @@
               clip-rule="evenodd"
             />
           </svg>
-          View Saved Labels
+          {m.dashboard_view_saved_labels()}
         </a>
 
         <a
-          href="/products"
+          href={localizeHref('/products')}
           class="inline-flex items-center px-4 py-2 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500"
         >
           <svg
@@ -280,11 +288,11 @@
               d="M10 2 2 6.5 10 11l8-4.5L10 2Zm-6.5 8.2 6.5 3.7 6.5-3.7.9.5-7.4 4.2-7.4-4.2.9-.5Zm0 3.5 6.5 3.7 6.5-3.7.9.5L10 18.5l-7.4-4.2.9-.5Z"
             />
           </svg>
-          Manage Products
+          {m.dashboard_manage_products()}
         </a>
 
         <a
-          href="/printer"
+          href={localizeHref('/printer')}
           class="inline-flex items-center px-4 py-2 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500"
         >
           <svg
@@ -297,7 +305,7 @@
               d="M6 2h8v3H6V2Zm-2 4h12a2 2 0 0 1 2 2v5h-3v5H5v-5H2V8a2 2 0 0 1 2-2Zm3 9h6v3H7v-3Z"
             />
           </svg>
-          Printer Config
+          {m.dashboard_printer_config()}
         </a>
       </div>
     </div>
@@ -305,13 +313,13 @@
     <!-- Recent Activity -->
     <div class="bg-surface shadow rounded-lg">
       <div class="px-4 py-5 sm:px-6">
-        <h2 class="text-lg font-medium text-foreground">Recent Activity</h2>
-        <p class="mt-1 text-sm text-subtle-foreground">Your most recently created labels.</p>
+        <h2 class="text-lg font-medium text-foreground">{m.dashboard_recent_activity()}</h2>
+        <p class="mt-1 text-sm text-subtle-foreground">{m.dashboard_recent_labels_desc()}</p>
       </div>
 
       {#if recentLabels.length === 0}
         <div class="px-4 py-5 sm:px-6 text-center text-subtle-foreground">
-          <p>No labels created yet. Start by creating your first label.</p>
+          <p>{m.dashboard_no_labels()}</p>
         </div>
       {:else}
         <div class="px-4 py-5 sm:p-6">
@@ -348,17 +356,20 @@
                       <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                         <div>
                           <p class="text-sm text-subtle-foreground">
-                            Created <span class="font-medium text-foreground"
-                              >{getLabelTypeName(label.label_type)}</span
+                            {m.dashboard_created()}
+                            <span class="font-medium text-foreground"
+                              >{getLabelTypeName(label.label_type, getLocale())}</span
                             >
                             {#if label.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT}
-                              for {label.quantity}
-                              {getPackagingLevelName(label.packaging_level, label.quantity)} with GTIN
+                              {m.dashboard_for()}
+                              {label.quantity}
+                              {getPackagingLevelName(label.packaging_level, label.quantity)}
+                              {m.dashboard_with_gtin()}
                               {label.gtin}
                             {:else if label.label_type === LABEL_TYPES.SSCC_ONLY}
-                              with SSCC {label.sscc}
+                              {m.dashboard_with_sscc()} {label.sscc}
                             {:else if label.gtin}
-                              for GTIN {label.gtin}
+                              {m.dashboard_for()} GTIN {label.gtin}
                             {/if}
                           </p>
                         </div>
@@ -374,10 +385,10 @@
           </div>
           <div class="mt-6">
             <a
-              href="/labels/history"
+              href={localizeHref('/labels/history')}
               class="w-full flex justify-center items-center px-4 py-2 border border-border-strong shadow-sm text-sm font-medium rounded-md text-muted-foreground bg-surface hover:bg-surface-muted"
             >
-              View all
+              {m.dashboard_view_all()}
             </a>
           </div>
         </div>

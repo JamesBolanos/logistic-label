@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { printSavedLabel } from '#lib/printing/print-bridge-client.ts';
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
@@ -32,13 +34,9 @@
     printError = '';
     try {
       const result = await printSavedLabel(id);
-      printMessage =
-        result === 'virtual'
-          ? 'Captured by the bridge in Virtual mode. No physical label was printed.'
-          : 'Sent to the printer. Check the physical label before sending another copy.';
+      printMessage = result === 'virtual' ? m.history_captured_virtual() : m.history_sent_printer();
     } catch (error) {
-      printError =
-        error.message || 'Unable to send the label. Check the printer before trying again.';
+      printError = error.message || m.history_unable_send();
     } finally {
       printingId = null;
     }
@@ -54,10 +52,10 @@
       const params = new URLSearchParams({ page, limit: 10 });
       if (search) params.append('search', search);
 
-      const response = await fetch(`/api/labels/list?${params.toString()}`);
+      const response = await fetch(localizeHref(`/api/labels/list?${params.toString()}`));
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch labels');
+        throw new Error(errorData.message || m.history_failed_fetch());
       }
 
       const data = await response.json();
@@ -66,7 +64,7 @@
       totalPages = data.pagination.pages;
     } catch (err) {
       console.error('Error fetching labels:', err);
-      error = err.message || 'Error loading labels';
+      error = err.message || m.history_error_loading();
       labels = [];
     } finally {
       isLoading = false;
@@ -107,7 +105,7 @@
 
     try {
       const response = await fetch(
-        `/api/${format}/download/${id}${format === 'zpl' ? `?dpi=${dpi}` : ''}`,
+        localizeHref(`/api/${format}/download/${id}${format === 'zpl' ? `?dpi=${dpi}` : ''}`),
         {
           headers: {
             'X-Operation-ID': createOperationId(),
@@ -118,8 +116,8 @@
       responseStatus = response.status;
 
       if (!response.ok) {
-        const message = format === 'zpl' ? await response.text() : 'Failed to download PDF';
-        throw new Error(message || 'Failed to download label');
+        const message = format === 'zpl' ? await response.text() : m.history_download_pdf_failed();
+        throw new Error(message || m.history_download_label_failed());
       }
 
       const blob = await response.blob();
@@ -148,7 +146,7 @@
           error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
           duration_ms: Date.now() - startedAt
         });
-      downloadError = err.message || 'Failed to download label';
+      downloadError = err.message || m.history_download_label_failed();
     } finally {
       downloadingId = null;
     }
@@ -158,16 +156,16 @@
 <div class="rounded-lg bg-surface p-6 shadow-md">
   <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h3 class="text-xl font-bold">Saved labels</h3>
+      <h3 class="text-xl font-bold">{m.history_title()}</h3>
       <p class="mt-1 text-sm text-subtle-foreground">
-        Existing records keep their original label version.
+        {m.history_subtitle()}
       </p>
     </div>
     <div class="flex max-w-md flex-1">
       <input
         type="text"
         bind:value={searchTerm}
-        placeholder="Search by SSCC, GTIN, or lot..."
+        placeholder={m.history_search_placeholder()}
         class="min-w-0 grow rounded-l-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         onkeyup={(event) => event.key === 'Enter' && handleSearch()}
       />
@@ -176,14 +174,14 @@
         onclick={handleSearch}
         class="rounded-r-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
       >
-        Search
+        {m.history_search()}
       </button>
     </div>
   </div>
 
   <div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
     <label for="zpl-resolution" class="font-medium text-muted-foreground"
-      >ZPL printer resolution</label
+      >{m.history_zpl_resolution()}</label
     >
     <select
       id="zpl-resolution"
@@ -195,7 +193,7 @@
       <option value="300">300 dpi (12 dots/mm)</option>
       <option value="600">600 dpi (24 dots/mm)</option>
     </select>
-    <p class="text-subtle-foreground">Match your ZPL printer. Downloads reuse the saved SSCC.</p>
+    <p class="text-subtle-foreground">{m.history_match_printer()}</p>
   </div>
 
   {#if downloadError}
@@ -208,10 +206,11 @@
   {/if}
 
   <p class="mb-4 text-sm text-muted-foreground">
-    Print via bridge uses the printer and resolution saved in <a
-      href="/printer"
-      class="font-medium text-blue-700 dark:text-blue-300 underline">Printer Config</a
-    >. Sending again prints another copy of the same label.
+    {m.history_print_via_bridge()}
+    <a
+      href={localizeHref('/printer')}
+      class="font-medium text-blue-700 dark:text-blue-300 underline">{m.history_printer_config()}</a
+    >. {m.history_sending_another()}
   </p>
   {#if printError}<p role="alert" class="mb-4 text-sm text-red-700 dark:text-red-300">
       {printError}
@@ -234,12 +233,12 @@
         onclick={() => fetchLabels(currentPage, searchTerm)}
         class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
-        Try again
+        {m.history_try_again()}
       </button>
     </div>
   {:else if labels.length === 0}
     <div class="rounded-md bg-surface-muted p-8 text-center text-subtle-foreground">
-      No labels found. Create a label to see it here.
+      {m.history_no_labels_found()}
     </div>
   {:else}
     <div class="overflow-x-auto">
@@ -249,22 +248,22 @@
             <th
               class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              SSCC / Type
+              {m.history_table_sscc_type()}
             </th>
             <th
               class="w-full px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              Details
+              {m.history_table_details()}
             </th>
             <th
               class="whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              Created
+              {m.history_table_created()}
             </th>
             <th
               class="whitespace-nowrap px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-subtle-foreground"
             >
-              Actions
+              {m.history_table_actions()}
             </th>
           </tr>
         </thead>
@@ -283,22 +282,22 @@
                         ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
                         : 'bg-surface-muted text-muted-foreground'}"
                   >
-                    {getLabelTypeName(label.label_type)}
+                    {getLabelTypeName(label.label_type, getLocale())}
                   </span>
                 </div>
               </td>
               <td class="px-4 py-4 text-sm text-muted-foreground">
                 {#if label.label_type === LABEL_TYPES.HOMOGENEOUS_UNIT}
                   {#if label.ship_to}
-                    <div>Ship to: {label.ship_to}</div>
+                    <div>{m.history_ship_to()} {label.ship_to}</div>
                   {/if}
                   <div>
                     {label.quantity}
                     {getPackagingLevelName(label.packaging_level, label.quantity)}
                   </div>
-                  <div class="mt-1 font-mono text-xs">GTIN {label.gtin}</div>
+                  <div class="mt-1 font-mono text-xs">{m.history_gtin()} {label.gtin}</div>
                   {#if label.lot_number}
-                    <div class="mt-1 text-xs">Lot: {label.lot_number}</div>
+                    <div class="mt-1 text-xs">{m.history_lot()} {label.lot_number}</div>
                   {/if}
                   {#if label.date_ai && label.date_value}
                     <div class="mt-1 text-xs">
@@ -314,10 +313,11 @@
                   </div>
                 {:else if label.label_type === LABEL_TYPES.SSCC_ONLY || label.label_type === LABEL_TYPES.MIXED_LOGISTIC_UNIT}
                   {#if label.ship_to}
-                    <div>Ship to: {label.ship_to}</div>
+                    <div>{m.history_ship_to()} {label.ship_to}</div>
                     {#if label.transport_count}
                       <div class="mt-1 text-xs">
-                        Count: {label.transport_count}
+                        {m.history_count()}
+                        {label.transport_count}
                         &nbsp;{getTransportCountTypeName(
                           label.transport_count_type,
                           label.transport_count
@@ -325,7 +325,7 @@
                       </div>
                     {/if}
                   {:else}
-                    <div>Logistic unit identifier; contents are not encoded</div>
+                    <div>{m.history_logistic_unit()}</div>
                   {/if}
                   <div class="mt-1 text-xs">
                     {getPrintLayoutName(
@@ -335,8 +335,11 @@
                     )}
                   </div>
                 {:else}
-                  <div>GTIN {label.gtin || 'Unavailable'}</div>
-                  {#if label.lot_number}<div class="mt-1 text-xs">Lot {label.lot_number}</div>{/if}
+                  <div>{m.history_gtin()} {label.gtin || m.history_unavailable()}</div>
+                  {#if label.lot_number}<div class="mt-1 text-xs">
+                      {m.history_lot()}
+                      {label.lot_number}
+                    </div>{/if}
                 {/if}
               </td>
               <td class="whitespace-nowrap px-4 py-4 text-sm text-subtle-foreground">
@@ -353,7 +356,7 @@
                     disabled={downloadingId !== null || printingId !== null}
                     class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
                   >
-                    Download PDF
+                    {m.history_download_pdf()}
                   </button>
                   <button
                     type="button"
@@ -361,7 +364,7 @@
                     disabled={downloadingId !== null || printingId !== null}
                     class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
                   >
-                    Download ZPL
+                    {m.history_download_zpl()}
                   </button>
                   <button
                     type="button"
@@ -369,10 +372,14 @@
                     disabled={downloadingId !== null || printingId !== null}
                     class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
                   >
-                    {printingId === label.id ? 'Sending...' : 'Print via bridge'}
+                    {printingId === label.id
+                      ? m.history_sending()
+                      : m.history_print_via_bridge_button()}
                   </button>
                   {#if downloadingId === label.id}
-                    <span role="status" class="text-xs text-subtle-foreground">Downloading...</span>
+                    <span role="status" class="text-xs text-subtle-foreground"
+                      >{m.history_downloading()}</span
+                    >
                   {/if}
                 </div>
               </td>
@@ -384,7 +391,9 @@
 
     {#if totalPages > 1}
       <div class="mt-4 flex items-center justify-between border-t border-border-default px-2 py-3">
-        <p class="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</p>
+        <p class="text-sm text-muted-foreground">
+          {m.history_page_of({ current: currentPage, total: totalPages })}
+        </p>
         <div class="flex gap-2">
           <button
             type="button"

@@ -58,6 +58,16 @@ describe('custom request validation and email', () => {
     expect(message).not.toHaveProperty('html');
   });
 
+  it('localizes custom request email headings and categories to Spanish', () => {
+    const message = createCustomRequestEmail({ ...validRequest, locale: 'es' });
+
+    expect(message.subject).toBe('Nueva consulta sobre proyecto a medida');
+    expect(message.text).toContain('Tipo de solicitud: Consulta sobre proyecto a medida');
+    expect(message.text).toContain('Tema: Flujo de trabajo de impresión');
+    expect(message.text).toContain('Correo para responder: taylor@example.com');
+    expect(message.text).toContain(validRequest.message);
+  });
+
   it('sends request details only to the configured owner address', async () => {
     expect(CUSTOM_REQUEST_TO).toBe('jbolanosdiaz@gmail.com');
     const requests: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
@@ -143,6 +153,20 @@ describe('public request processing', () => {
         email: 'taylor@example.com',
         message: validRequest.message
       })
+    );
+  });
+
+  it('passes the initiating page locale to the generated email', async () => {
+    const sendEmail = vi.fn().mockResolvedValue(undefined);
+    await processCustomRequest({
+      values: validRequest,
+      clientAddress: 'test-spanish-locale',
+      locale: 'es',
+      sendEmail
+    });
+
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ locale: 'es', requestType: 'tailored_project' })
     );
   });
 

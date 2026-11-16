@@ -1,6 +1,8 @@
 <script>
   import { onMount } from 'svelte';
   import { page } from '$app/state';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import LabelWorkflowSelector from '#lib/components/Labels/LabelWorkflowSelector.svelte';
   import LabelForm from '#lib/components/Labels/LabelForm.svelte';
   import LabelPreview from '#lib/components/Labels/LabelPreview.svelte';
@@ -27,6 +29,11 @@
   let settings = $state(null);
   let settingsError = $state(null);
   let products = $state([]);
+  let locale = $derived(getLocale());
+
+  function localize(path) {
+    return localizeHref(path, { locale });
+  }
 
   onMount(() => {
     loadSettings();
@@ -35,16 +42,16 @@
 
   async function loadSettings() {
     try {
-      const response = await fetch('/api/settings');
+      const response = await fetch(localize('/api/settings'));
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to load label settings');
+        throw new Error(data.message || m.labels_failed_settings());
       }
 
       settings = data.settings;
     } catch (err) {
-      settingsError = err.message || 'Failed to load label settings';
+      settingsError = err.message || m.labels_failed_settings();
     }
   }
 
@@ -52,7 +59,7 @@
   // label creation, so it stays silent and the form keeps manual GTIN entry.
   async function loadProducts() {
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch(localize('/api/products'));
       if (!response.ok) return;
       const data = await response.json();
       products = data.products || [];
@@ -98,7 +105,7 @@
     success = null;
 
     try {
-      const response = await fetch('/api/pdf/generate', {
+      const response = await fetch(localize('/api/pdf/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +117,7 @@
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to generate label');
+        throw new Error(errorData.message || m.labels_failed_generate());
       }
 
       const data = await response.json();
@@ -127,11 +134,11 @@
 
       workflowStep = 'pdf_response';
       const pdfStartedAt = Date.now();
-      const downloadUrl =
+      const downloadPath =
         generatedCount > 1
           ? `/api/pdf/download-batch?ids=${generatedLabelIds.join(',')}`
           : `/api/pdf/download/${generatedLabelId}`;
-      const pdfResponse = await fetch(downloadUrl, {
+      const pdfResponse = await fetch(localize(downloadPath), {
         headers: {
           'X-Operation-ID': createOperationId(),
           'X-Download-Source': 'new_label'
@@ -140,7 +147,7 @@
       responseStatus = pdfResponse.status;
 
       if (!pdfResponse.ok) {
-        throw new Error('Label was saved, but the PDF download failed');
+        throw new Error(m.labels_pdf_download_failed());
       }
 
       const blob = await pdfResponse.blob();
@@ -167,11 +174,10 @@
         source: 'new_label'
       });
 
-      success =
-        'Label generated successfully and saved to history. See Saved Labels to download or reprint it.';
+      success = m.labels_saved_success();
     } catch (err) {
       console.error('PDF generation error:', err);
-      error = err.message || 'Error generating label';
+      error = err.message || m.labels_error_generating();
       trackProductEvent('workflow_failed', {
         step: workflowStep,
         error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
@@ -184,19 +190,15 @@
 </script>
 
 <svelte:head>
-  <title>Shipping Label Solutions - GS1-128 Logistic Label Generator</title>
-  <meta
-    name="description"
-    content="Choose the shipping situation that fits your operation and generate a guided GS1-128 PDF label."
-  />
+  <title>{m.labels_page_title()} - GS1-128 Logistic Label Generator</title>
+  <meta name="description" content={m.labels_page_meta()} />
 </svelte:head>
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold text-foreground">Choose the label that fits your shipment</h1>
+    <h1 class="text-2xl font-bold text-foreground">{m.labels_heading()}</h1>
     <p class="mt-2 text-sm text-muted-foreground">
-      Start with the business situation. We will show what the label identifies, what information
-      you need, and what its barcodes communicate.
+      {m.labels_desc()}
     </p>
   </div>
 
@@ -210,12 +212,12 @@
     <div
       class="rounded-md border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/40 p-4 text-yellow-800 dark:text-yellow-200"
     >
-      Configure your GS1 Company Prefix in
+      {m.labels_configure_prefix()}
       <a
-        href="/settings"
+        href={localize('/settings')}
         class="font-medium text-blue-600 hover:text-blue-500 dark:hover:text-blue-400">Settings</a
       >
-      before previewing or generating labels.
+      {m.labels_configure_before()}
     </div>
   {/if}
 
@@ -265,7 +267,7 @@
               disabled={isGenerating}
               class="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
             >
-              {isGenerating ? 'Generating PDF...' : 'Generate and save label'}
+              {isGenerating ? m.labels_generating_pdf() : m.labels_generate_save()}
             </button>
           </div>
         {/if}
@@ -274,12 +276,12 @@
   {/if}
 
   <div class="mt-12 rounded-lg border border-border-default bg-surface p-6 text-center shadow">
-    <h2 class="text-xl font-bold text-foreground">Label saved</h2>
+    <h2 class="text-xl font-bold text-foreground">{m.labels_saved_section()}</h2>
     <p class="mt-2 text-sm text-muted-foreground">
       Your saved labels, PDF/ZPL downloads, and printing live on the Saved Labels page.
     </p>
     <a
-      href="/labels/history"
+      href={localize('/labels/history')}
       class="mt-4 inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
     >
       Open Saved Labels

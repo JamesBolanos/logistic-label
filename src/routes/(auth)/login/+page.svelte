@@ -2,6 +2,7 @@
 <script>
   import { page } from '$app/state';
   import LoginForm from '#lib/components/Auth/LoginForm.svelte';
+  import { m } from '#lib/paraglide/messages.js';
   import { getGoogleAuthErrorMessage } from '#lib/auth/googleAuthErrors.ts';
 
   // Check for return URL and expired token notification
@@ -11,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <title>Login - GS1-128 Logistic Label Generator</title>
+  <title>{m.auth_login_title()} - GS1-128 Logistic Label Generator</title>
   <meta name="description" content="Sign in to your GS1-128 Logistic Label Generator account." />
 </svelte:head>
 
@@ -20,7 +21,7 @@
     <div
       class="mb-6 p-4 bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-400 text-yellow-700 dark:text-yellow-200 rounded-md"
     >
-      Your session has expired. Please sign in again.
+      {m.auth_session_expired()}
     </div>
   {/if}
 

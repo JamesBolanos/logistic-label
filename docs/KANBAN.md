@@ -1,6 +1,6 @@
 # Product Kanban
 
-Last reviewed: 2026-11-11 (America/Managua)
+Last reviewed: 2026-11-12 (America/Managua)
 
 This is the only current source for work status and priority. Detailed requirements remain in the linked plans and runbooks, but their checklists do not determine what is active.
 
@@ -18,14 +18,14 @@ Product goal: maintain a useful free GS1 logistic-label tool that helps users co
 
 ## Work in Progress
 
-### `UX-004` — Reduce first-use friction
+### `LOCALIZATION-001` — Add Spanish localization
 
-- Need: visitors should understand the supported product before signup, and new users should know how to reach a first real label without guessing.
-- Outcome: improve the public home/guide entry, first-time setup guidance, recoverability of signup/CAPTCHA errors, and optional direct-print onboarding.
-- Acceptance: the public step-by-step guide embeds static PDFs produced by the same production renderer for transport (4 × 6), detailed identical contents (6 × 8), and basic SSCC (4 × 3), using the published Figure 4-1 sample identifiers and GS1-128 barcodes without an in-label demo banner; explains the licensed-prefix prerequisite and account-to-download workflow; and cannot allocate or save labels; authentication forms distinguish CAPTCHA load failure from incomplete verification and provide a clear retry without weakening security; the Print Bridge page explains the separate optional utility, browser → local bridge → network printer flow, compatible printer/setup requirements, and links to its repository, downloads, and setup guide; the footer and label guide link to the page; existing label, download, printing, and authentication behavior remains intact.
-- Scope: keep the guide/demo static, preserve authentication and CAPTCHA policy, and make no analytics/reporting, release-history announcement, database, or dependency changes.
-- Status: In progress; PR #67 is merged to staging, and the guide/PDF and CAPTCHA retry flows passed staging smoke checks. Settings guidance and final regression verification remain.
-- Source: [First-use experience improvements](./UX_FIRST_USE_IMPROVEMENTS.md).
+- Need: Spanish-speaking users need to understand and use the app, including generating labels whose human-readable content is in Spanish.
+- Outcome: keep English as the default and add Spanish across the application with an EN/ES switch in the top-right navigation, language-aware URLs, and in-app translations.
+- Acceptance: Paraglide.js is integrated with SvelteKit for English and Spanish; unprefixed requests resolve the saved language choice before `Accept-Language` (including regional `es-*` tags) and redirect to `/es/` when Spanish is selected; only the EN/ES switch updates the long-lived first-party preference cookie; the switch preserves equivalent routes or falls back to the Spanish home; translations are bundled in-app; document language, localized SEO, and generated emails use the appropriate language, with emails following the initiating page/form; saved labels retain their creation language and rendering/template version so reprints preserve the same visible wording/layout, user values, and barcode/GS1 data regardless of current app language (file bytes need not match); legacy labels default to English; PDF/ZPL accents, fonts, and layout are verified; tests cover localization and regression behavior.
+- Scope: English and neutral Latin American Spanish across public, authentication, and signed-in application experiences, including all app-generated emails and PDF/ZPL label wording. Only the language switch updates the remembered preference; `/es/` is a temporary Spanish override and English remains unprefixed. Persist label locale and preserve versioned rendering for faithful reprints; existing labels without locale remain English. Reprints preserve visible label and barcode/data content, not necessarily file bytes. Translate emails using the initiating page/form language. The product owner reviews Spanish translations before release. Translate product-authored content, not user-provided shipment/company/product values or GS1 data; use in-app message catalogs.
+- Tools: Paraglide.js SvelteKit integration (`npx sv add paraglide="languageTags:en,es"`); existing SvelteKit hooks/routing, `Intl` locale formatting, Vitest, and Playwright; focused PDF/ZPL text, accent/font, and representative-layout checks. No external runtime translation or geolocation service is planned.
+- Status: In progress; implementing locale routing/preferences and the shared message foundation first. Requirements: [Localization](./LOCALIZATION.md).
 
 ## Review
 
@@ -123,6 +123,13 @@ Items are ordered. Start only the first item unless new evidence changes priorit
 | `AUTH-001`      | Apple OAuth and email verification                                           | No demonstrated user need yet                       | Repeated user/customer need or contractual requirement        |
 
 ## Accomplished
+
+### `UX-004` — Reduce first-use friction
+
+- Outcome: improved public first-use guidance, static production-renderer label samples, first-label setup guidance, CAPTCHA recovery, and optional Print Bridge onboarding.
+- Acceptance evidence: `npm run quality` and focused Playwright checks passed; production-preview verification confirmed the guide layouts, mobile overflow behavior, and CAPTCHA recovery without bypassing verification.
+- Release evidence: production deployment confirmed by the developer on 2026-11-12.
+- Source: [First-use experience improvements](./UX_FIRST_USE_IMPROVEMENTS.md).
 
 ### `UX-003` — Dedicated product and printer pages with validated settings
 

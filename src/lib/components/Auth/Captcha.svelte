@@ -3,6 +3,7 @@
   import { dev } from '$app/env';
   import { PUBLIC_RECAPTCHA_SITE_KEY } from '$app/env/public';
   import { onMount } from 'svelte';
+  import { m } from '#lib/paraglide/messages.js';
 
   const RECAPTCHA_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 
@@ -87,7 +88,7 @@
     scriptElement?.remove();
     scriptElement = null;
     captchaLoaded = false;
-    captchaError = 'CAPTCHA could not be loaded. Check your connection and try again.';
+    captchaError = m.captcha_load_error();
     onverify({ verified: false, token: '', error: true });
   }
 
@@ -122,7 +123,7 @@
       });
     } catch {
       captchaLoaded = false;
-      captchaError = 'CAPTCHA could not be displayed. Try loading it again.';
+      captchaError = m.captcha_display_error();
       onverify({ verified: false, token: '', error: true });
     }
   }
@@ -140,15 +141,15 @@
 
 <div class="space-y-2">
   <div class="flex items-center justify-between">
-    <span class="text-sm text-muted-foreground">CAPTCHA verification</span>
+    <span class="text-sm text-muted-foreground">{m.captcha_verification()}</span>
     {#if captchaLoaded && captchaId !== null}
       <button
         type="button"
         class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
         onclick={retryCaptcha}
-        aria-label="Refresh captcha challenge"
+        aria-label={m.captcha_refresh_aria()}
       >
-        Refresh challenge
+        {m.captcha_refresh()}
       </button>
     {/if}
   </div>
@@ -164,16 +165,16 @@
             class="mt-2 text-sm font-medium text-blue-600 underline dark:text-blue-400"
             onclick={retryCaptcha}
           >
-            Try loading CAPTCHA again
+            {m.captcha_try_again()}
           </button>
         </div>
       {/if}
     {:else}
-      <p class="text-sm text-red-600 dark:text-red-400 text-center">CAPTCHA is not configured.</p>
+      <p class="text-sm text-red-600 dark:text-red-400 text-center">{m.captcha_not_configured()}</p>
     {/if}
     {#if siteKey && !captchaLoaded && !captchaError}
       <p class="mt-2 text-xs text-subtle-foreground text-center" aria-live="polite">
-        Loading CAPTCHA verification...
+        {m.captcha_loading()}
       </p>
     {/if}
   </div>

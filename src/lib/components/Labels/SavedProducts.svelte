@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
   import { validateGTIN } from '#lib/utils/gs1Utils.js';
@@ -7,8 +9,7 @@
   import { GPC_CODES } from '#lib/data/gpcCodes.js';
 
   const GTIN_PATTERN = /^(?:\d{8}|\d{12}|\d{13}|\d{14})$/;
-  const GTIN_WARNING =
-    'This number does not pass the GS1 check digit. You can still save it as reference data, but labels require a valid GTIN.';
+  const GTIN_WARNING = m.saved_products_not_valid_gtin_warning();
 
   let products = $state([]);
   let isLoading = $state(true);
@@ -110,16 +111,16 @@
     listError = '';
 
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch(localizeHref('/api/products'));
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to load products');
+        throw new Error(data.message || m.saved_products_failed_load());
       }
 
       products = data.products || [];
     } catch (error) {
-      listError = error.message || 'Failed to load products';
+      listError = error.message || m.saved_products_failed_load();
     } finally {
       isLoading = false;
     }
@@ -133,7 +134,7 @@
     formError = '';
 
     try {
-      const response = await fetch('/api/products', {
+      const response = await fetch(localizeHref('/api/products'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +153,7 @@
 
       if (!response.ok) {
         errors = data.errors || {};
-        throw new Error(data.message || 'Failed to save product');
+        throw new Error(data.message || m.saved_products_failed_save());
       }
 
       products = [data.product, ...products];
@@ -169,7 +170,7 @@
       };
       trackProductEvent('product_saved', { setup_type: data.setupType });
     } catch (error) {
-      formError = error.message || 'Failed to save product';
+      formError = error.message || m.saved_products_failed_save();
       trackProductEvent('workflow_failed', {
         step: 'product_save',
         error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
@@ -221,7 +222,7 @@
     formError = '';
 
     try {
-      const response = await fetch(`/api/products/${product.id}`, {
+      const response = await fetch(localizeHref(`/api/products/${product.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +241,7 @@
 
       if (!response.ok) {
         editErrors = data.errors || {};
-        throw new Error(data.message || 'Failed to update product');
+        throw new Error(data.message || m.saved_products_failed_update());
       }
 
       products = products.map((item) => (item.id === product.id ? data.product : item));
@@ -248,7 +249,7 @@
       trackProductEvent('product_saved', { setup_type: 'update' });
       formError = '';
     } catch (error) {
-      formError = error.message || 'Failed to update product';
+      formError = error.message || m.saved_products_failed_update();
       trackProductEvent('workflow_failed', {
         step: 'product_save',
         error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
@@ -270,20 +271,20 @@
     isDeleting = true;
 
     try {
-      const response = await fetch(`/api/products/${product.id}`, {
+      const response = await fetch(localizeHref(`/api/products/${product.id}`), {
         method: 'DELETE',
         headers: { 'X-Operation-ID': createOperationId() }
       });
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete product');
+        throw new Error(data.message || m.saved_products_failed_delete());
       }
 
       products = products.filter((item) => item.id !== product.id);
       if (editingId === product.id) cancelEdit();
     } catch (error) {
-      formError = error.message || 'Failed to delete product';
+      formError = error.message || m.saved_products_failed_delete();
     } finally {
       confirmDeleteId = null;
       isDeleting = false;
@@ -297,11 +298,10 @@
 >
   <div>
     <h2 id="saved-products-heading" class="text-xl font-semibold text-foreground">
-      Saved products
+      {m.saved_products_heading()}
     </h2>
     <p class="mt-2 text-sm text-muted-foreground">
-      Save the products you ship often. When creating a label, select one to fill its GTIN. Shipment
-      details such as lot, date, count, and addresses stay on each label.
+      {m.saved_products_desc()}
     </p>
   </div>
 
@@ -329,7 +329,7 @@
     {/if}
 
     {#if products.length === 0}
-      <p class="text-sm text-subtle-foreground">No saved products yet. Add your first one below.</p>
+      <p class="text-sm text-subtle-foreground">{m.saved_products_none()}</p>
     {:else}
       <ul class="divide-y divide-border-default rounded-md border border-border-default">
         {#each products as product (product.id)}
@@ -441,7 +441,10 @@
                   </div>
                   <div>
                     <span class="mb-1 block text-sm font-medium text-muted-foreground">
-                      Net Content <span class="font-normal text-subtle-foreground">(optional)</span>
+                      {m.saved_products_net_content()}
+                      <span class="font-normal text-subtle-foreground"
+                        >{m.saved_products_optional()}</span
+                      >
                     </span>
                     <div class="grid grid-cols-[1fr_auto] gap-2 sm:max-w-md">
                       <input
@@ -509,7 +512,10 @@
                       for="edit_image_url_{product.id}"
                       class="mb-1 block text-sm font-medium text-muted-foreground"
                     >
-                      Image URL <span class="font-normal text-subtle-foreground">(optional)</span>
+                      {m.saved_products_image_url()}
+                      <span class="font-normal text-subtle-foreground"
+                        >{m.saved_products_optional()}</span
+                      >
                     </label>
                     <input
                       id="edit_image_url_{product.id}"
@@ -552,7 +558,7 @@
                       type="text"
                       list="edit-country-options-{product.id}"
                       bind:value={editCountrySearch}
-                      placeholder="Search country or ISO code"
+                      placeholder={m.saved_products_search_country_placeholder()}
                       autocomplete="off"
                       class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -576,7 +582,7 @@
                     disabled={editSaving}
                     class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
                   >
-                    {editSaving ? 'Saving...' : 'Save changes'}
+                    {editSaving ? m.saved_products_saving() : m.saved_products_save_changes()}
                   </button>
                   <button
                     type="button"
@@ -662,7 +668,7 @@
                       onclick={() => (confirmDeleteId = null)}
                       class="inline-flex items-center justify-center rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
                     >
-                      Cancel
+                      {m.saved_products_cancel()}
                     </button>
                   {:else}
                     <button
@@ -688,7 +694,7 @@
       }}
       class="space-y-3 border-t border-border-default pt-4"
     >
-      <h3 class="text-sm font-semibold text-foreground">Add a product</h3>
+      <h3 class="text-sm font-semibold text-foreground">{m.saved_products_add()}</h3>
       <div class="space-y-3">
         <div class="grid gap-3 sm:grid-cols-2">
           <div>
@@ -868,7 +874,7 @@
             type="text"
             list="country-options"
             bind:value={countrySearch}
-            placeholder="Search country or ISO code"
+            placeholder={m.saved_products_search_country_placeholder()}
             autocomplete="off"
             class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -892,7 +898,7 @@
           disabled={isSaving}
           class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
         >
-          {isSaving ? 'Saving...' : 'Save product'}
+          {isSaving ? m.saved_products_saving() : m.saved_products_save_product()}
         </button>
       </div>
     </form>

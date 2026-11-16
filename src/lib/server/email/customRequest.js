@@ -24,21 +24,65 @@ const TOPIC_LABELS = {
  *   name: string,
  *   email: string,
  *   company: string,
- *   message: string
+ *   message: string,
+ *   locale?: 'en' | 'es'
  * }} request
  */
 export function createCustomRequestEmail(request) {
   const isProject = request.requestType === 'tailored_project';
+  const isSpanish = request.locale === 'es';
+  const requestTypeLabels = isSpanish
+    ? {
+        improvement: 'Sugerencia sobre la herramienta pública',
+        tailored_project: 'Consulta sobre proyecto a medida'
+      }
+    : REQUEST_TYPE_LABELS;
+  const topicLabels = isSpanish
+    ? {
+        general: 'General o no estoy seguro',
+        routing_guide: 'Guía de enrutamiento del cliente o minorista',
+        label_format: 'Tamaño o formato de etiqueta',
+        printer_workflow: 'Flujo de trabajo de impresión',
+        integration: 'Integración de datos o sistemas',
+        other: 'Otro'
+      }
+    : TOPIC_LABELS;
+  const labels = isSpanish
+    ? {
+        requestType: 'Tipo de solicitud',
+        topic: 'Tema',
+        name: 'Nombre',
+        company: 'Empresa',
+        replyEmail: 'Correo para responder',
+        notProvided: 'No indicado',
+        details: 'Detalles de la solicitud'
+      }
+    : {
+        requestType: 'Request type',
+        topic: 'Topic',
+        name: 'Name',
+        company: 'Company',
+        replyEmail: 'Reply email',
+        notProvided: 'Not provided',
+        details: 'Request details'
+      };
+
   return {
-    subject: isProject ? 'New tailored project inquiry' : 'New public tool suggestion',
+    subject: isSpanish
+      ? isProject
+        ? 'Nueva consulta sobre proyecto a medida'
+        : 'Nueva sugerencia sobre la herramienta pública'
+      : isProject
+        ? 'New tailored project inquiry'
+        : 'New public tool suggestion',
     text: [
-      `Request type: ${REQUEST_TYPE_LABELS[request.requestType]}`,
-      `Topic: ${TOPIC_LABELS[request.topic]}`,
-      `Name: ${request.name || 'Not provided'}`,
-      `Company: ${request.company || 'Not provided'}`,
-      `Reply email: ${request.email}`,
+      `${labels.requestType}: ${requestTypeLabels[request.requestType]}`,
+      `${labels.topic}: ${topicLabels[request.topic]}`,
+      `${labels.name}: ${request.name || labels.notProvided}`,
+      `${labels.company}: ${request.company || labels.notProvided}`,
+      `${labels.replyEmail}: ${request.email}`,
       '',
-      'Request details:',
+      `${labels.details}:`,
       request.message
     ].join('\n')
   };

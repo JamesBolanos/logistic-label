@@ -1,6 +1,7 @@
 <!-- src/lib/components/Auth/SignupForm.svelte -->
 <script>
   import { goto } from '$app/navigation';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
   import { validateRegistrationForm } from '#lib/validation/formValidation.js';
   import Captcha from './Captcha.svelte';
 
@@ -44,7 +45,7 @@
     errors = {};
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch(localizeHref('/api/auth/signup'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -70,7 +71,7 @@
 
       // Redirect to login after a short delay
       setTimeout(() => {
-        goto('/login');
+        goto(localizeHref('/login'));
       }, 2000);
     } catch (error) {
       console.error('Registration error:', error);
@@ -237,7 +238,7 @@
     <p class="text-sm text-muted-foreground">
       Already have an account?
       <a
-        href="/login"
+        href={localizeHref('/login')}
         class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
         Sign in

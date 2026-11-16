@@ -92,6 +92,13 @@
       "when": 1794184726491,
       "tag": "0012_daffy_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794541646009,
+      "tag": "0013_slim_strong_guy",
+      "breakpoints": true
     }
   ]
 }

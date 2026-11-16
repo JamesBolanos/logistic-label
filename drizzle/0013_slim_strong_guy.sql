@@ -1,0 +1,2 @@
+ALTER TABLE "logistic_label" ADD COLUMN "rendering_version" varchar(30) DEFAULT 'v1' NOT NULL;--> statement-breakpoint
+ALTER TABLE "logistic_label" ADD COLUMN "locale" varchar(5) DEFAULT 'en' NOT NULL;

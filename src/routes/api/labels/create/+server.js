@@ -2,6 +2,7 @@
 import { json } from '@sveltejs/kit';
 import { createLabel } from '#lib/server/db/labels.js';
 import { validateGuidedLabelBarcodeFit } from '#lib/server/pdf/labelGenerator.js';
+import { LABEL_RENDERING_VERSIONS } from '#lib/labels/workflows.js';
 import { validateLabelForm, sanitizeLabelForm } from '#lib/server/validation/formValidation.js';
 import { pdfRateLimiter } from '#lib/server/auth/ratelimit.js';
 import {
@@ -63,11 +64,16 @@ export async function POST({ request, locals }) {
 
     // Sanitize form data
     const sanitizedData = sanitizeLabelForm(labelData);
+    const labelCreationData = {
+      ...sanitizedData,
+      locale: locals.locale ?? 'en',
+      rendering_version: LABEL_RENDERING_VERSIONS.LOCALIZED
+    };
 
-    validateGuidedLabelBarcodeFit(sanitizedData);
+    validateGuidedLabelBarcodeFit(labelCreationData);
 
     // Create label in database
-    const label = await createLabel(sanitizedData, user.id, { operationId, startedAt });
+    const label = await createLabel(labelCreationData, user.id, { operationId, startedAt });
 
     return json({
       success: true,
@@ -76,6 +82,8 @@ export async function POST({ request, locals }) {
         id: label.id,
         label_type: label.label_type,
         template_version: label.template_version,
+        rendering_version: label.rendering_version,
+        locale: label.locale,
         print_layout: label.print_layout,
         gtin: label.gtin,
         packaging_level: label.packaging_level,

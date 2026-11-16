@@ -1,4 +1,6 @@
 <script>
+  import { localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { validateLabelForm } from '#lib/validation/formValidation.js';
   import { trackProductEvent } from '#lib/analytics/client.ts';
   import { getAvailableScenarioForLabelType } from '#lib/labels/scenarios.js';
@@ -76,7 +78,7 @@
       onsubmit?.({ ...formData });
     } catch (error) {
       console.error('Form submission error:', error);
-      formError = 'An unexpected error occurred. Please try again.';
+      formError = m.label_form_unexpected();
     } finally {
       isLoading = false;
     }
@@ -106,10 +108,10 @@
 >
   <div>
     <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
-      Step 2 of 3
+      {m.label_form_step2()}
     </p>
     <h2 class="mt-1 text-xl font-bold text-foreground">
-      {selectedScenario?.title || 'Create a logistic label'}
+      {selectedScenario?.title || m.label_form_create()}
     </h2>
   </div>
 
@@ -128,8 +130,8 @@
       >
         <h3 class="font-semibold text-blue-950">
           {labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT
-            ? 'Identify a mixed pallet or carton'
-            : 'Identify and route one shipping unit'}
+            ? m.label_form_identify_mixed()
+            : m.label_form_identify_one()}
         </h3>
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
           {labelType === LABEL_TYPES.MIXED_LOGISTIC_UNIT
@@ -139,7 +141,8 @@
       </div>
 
       <fieldset class="space-y-4 rounded-md border border-border-default p-4">
-        <legend class="px-1 text-sm font-medium text-muted-foreground">Transport information</legend
+        <legend class="px-1 text-sm font-medium text-muted-foreground"
+          >{m.label_form_transport_info()}</legend
         >
 
         <!-- These fields are human-readable. Only the SSCC is encoded in the barcode. -->
@@ -155,12 +158,12 @@
               maxlength="160"
               required
               class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Company and origin address"></textarea>
+              placeholder={m.label_form_ship_from_placeholder()}></textarea>
             {#if errors.ship_from}
               <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ship_from}</p>
             {/if}
             <p class="mt-1 text-xs text-subtle-foreground">
-              Put the company name on the first line, followed by the origin address.
+              {m.label_form_ship_from_help()}
             </p>
           </div>
 
@@ -175,12 +178,12 @@
               maxlength="160"
               required
               class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Customer and physical delivery address"></textarea>
+              placeholder={m.label_form_ship_to_placeholder()}></textarea>
             {#if errors.ship_to}
               <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ship_to}</p>
             {/if}
             <p class="mt-1 text-xs text-subtle-foreground">
-              Put the destination name on the first line, followed by its physical address.
+              {m.label_form_ship_to_help()}
             </p>
           </div>
         </div>
@@ -240,11 +243,11 @@
                 class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <select
-                aria-label="Gross Weight unit"
+                aria-label={m.label_form_gross_weight_unit_aria()}
                 bind:value={formData.gross_weight_unit}
                 class="w-full rounded-md border border-border-strong px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Unit</option>
+                <option value="">{m.label_form_unit()}</option>
                 {#each TRANSPORT_WEIGHT_UNITS as unit (unit.value)}
                   <option value={unit.value}>{unit.label}</option>
                 {/each}
@@ -275,11 +278,11 @@
                 class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <select
-                aria-label="Count type"
+                aria-label={m.label_form_count_type_aria()}
                 bind:value={formData.transport_count_type}
                 class="w-full rounded-md border border-border-strong px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Type</option>
+                <option value="">{m.label_form_count_type_placeholder()}</option>
                 {#each TRANSPORT_COUNT_TYPES as type (type.value)}
                   <option value={type.value}>{type.label}</option>
                 {/each}
@@ -302,7 +305,9 @@
       </fieldset>
 
       <fieldset>
-        <legend class="mb-2 text-sm font-medium text-muted-foreground">Print layout</legend>
+        <legend class="mb-2 text-sm font-medium text-muted-foreground"
+          >{m.label_form_print_layout()}</legend
+        >
         <div class="grid gap-3">
           {#each SSCC_PRINT_LAYOUT_OPTIONS as layout (layout.value)}
             <label
@@ -337,7 +342,7 @@
       <div
         class="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-4"
       >
-        <h3 class="font-semibold text-blue-950">Create a basic SSCC label</h3>
+        <h3 class="font-semibold text-blue-950">{m.label_form_create_basic()}</h3>
         <p class="mt-2 text-sm text-blue-900 dark:text-blue-200">
           The label prints only the SSCC number and its GS1-128 barcode. Transport details are not
           printed or encoded.
@@ -366,7 +371,9 @@
       </div>
 
       <fieldset>
-        <legend class="mb-2 text-sm font-medium text-muted-foreground">Print layout</legend>
+        <legend class="mb-2 text-sm font-medium text-muted-foreground"
+          >{m.label_form_print_layout()}</legend
+        >
         <div class="grid gap-3">
           {#each BASIC_SSCC_PRINT_LAYOUT_OPTIONS as layout (layout.value)}
             <label
@@ -412,7 +419,8 @@
       </div>
 
       <fieldset class="space-y-4 rounded-md border border-border-default p-4">
-        <legend class="px-1 text-sm font-medium text-muted-foreground">Transport information</legend
+        <legend class="px-1 text-sm font-medium text-muted-foreground"
+          >{m.label_form_transport_info()}</legend
         >
 
         <!-- These fields help people route the unit; they are printed but are not GS1 barcode data. -->
@@ -428,7 +436,7 @@
               maxlength="160"
               required
               class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Company and origin address"></textarea>
+              placeholder={m.label_form_ship_from_placeholder()}></textarea>
             {#if errors.ship_from}
               <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ship_from}</p>
             {/if}
@@ -445,7 +453,7 @@
               maxlength="160"
               required
               class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Customer and physical delivery address"></textarea>
+              placeholder={m.label_form_ship_to_placeholder()}></textarea>
             {#if errors.ship_to}
               <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ship_to}</p>
             {/if}
@@ -506,11 +514,11 @@
               class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <select
-              aria-label="Gross Weight unit"
+              aria-label={m.label_form_gross_weight_unit_aria()}
               bind:value={formData.gross_weight_unit}
               class="w-full rounded-md border border-border-strong px-2 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Unit</option>
+              <option value="">{m.label_form_unit()}</option>
               {#each TRANSPORT_WEIGHT_UNITS as unit (unit.value)}
                 <option value={unit.value}>{unit.label}</option>
               {/each}
@@ -539,7 +547,7 @@
             onchange={applySelectedProduct}
             class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Enter a GTIN manually</option>
+            <option value="">{m.label_form_enter_gtin_manually()}</option>
             {#each products as product (product.id)}
               <option value={String(product.id)}>
                 {product.name}{product.internal_reference ? ` — ${product.internal_reference}` : ''}
@@ -555,9 +563,9 @@
         <p class="text-xs text-subtle-foreground">
           Save the products you ship often in
           <a
-            href="/settings"
+            href={localizeHref('/settings')}
             class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
-            >Settings</a
+            >{m.label_form_settings_link()}</a
           >
           to fill their GTINs here.
         </p>
@@ -596,7 +604,7 @@
           class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
-          <option value="">Select the contained trade item level</option>
+          <option value="">{m.label_form_select_level()}</option>
           {#each PACKAGING_LEVELS as level (level.value)}
             <option value={level.value}>{level.label}</option>
           {/each}
@@ -666,7 +674,7 @@
               }}
               class="w-full rounded-md border border-border-strong px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">No date</option>
+              <option value="">{m.label_form_no_date()}</option>
               {#each HOMOGENEOUS_DATE_OPTIONS as option (option.value)}
                 <option value={option.value}>{option.label} — AI ({option.value})</option>
               {/each}
@@ -701,7 +709,9 @@
       </fieldset>
 
       <fieldset>
-        <legend class="mb-2 text-sm font-medium text-muted-foreground">Print layout</legend>
+        <legend class="mb-2 text-sm font-medium text-muted-foreground"
+          >{m.label_form_print_layout()}</legend
+        >
         <div class="grid gap-3">
           {#each HOMOGENEOUS_PRINT_LAYOUT_OPTIONS as layout (layout.value)}
             <label
@@ -741,7 +751,7 @@
       class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
       disabled={isLoading}
     >
-      {isLoading ? 'Preparing...' : 'Review label'}
+      {isLoading ? m.label_form_preparing() : m.label_form_review_label()}
     </button>
   </div>
 </form>

@@ -2,7 +2,7 @@
 import { json } from '@sveltejs/kit';
 import { createLabel } from '#lib/server/db/labels.js';
 import { validateGuidedLabelBarcodeFit } from '#lib/server/pdf/labelGenerator.js';
-import { LABEL_TYPES } from '#lib/labels/workflows.js';
+import { LABEL_RENDERING_VERSIONS, LABEL_TYPES } from '#lib/labels/workflows.js';
 import { validateLabelForm, sanitizeLabelForm } from '#lib/server/validation/formValidation.js';
 import { pdfRateLimiter } from '#lib/server/auth/ratelimit.js';
 import {
@@ -64,19 +64,24 @@ export async function POST({ request, locals }) {
 
     // Sanitize form data
     const sanitizedData = sanitizeLabelForm(labelData);
+    const labelCreationData = {
+      ...sanitizedData,
+      locale: locals.locale ?? 'en',
+      rendering_version: LABEL_RENDERING_VERSIONS.LOCALIZED
+    };
 
-    validateGuidedLabelBarcodeFit(sanitizedData);
+    validateGuidedLabelBarcodeFit(labelCreationData);
 
     const labelCount =
-      sanitizedData.label_type === LABEL_TYPES.SSCC_BASIC
-        ? Math.min(10, Math.max(1, Number(sanitizedData.label_count) || 1))
+      labelCreationData.label_type === LABEL_TYPES.SSCC_BASIC
+        ? Math.min(10, Math.max(1, Number(labelCreationData.label_count) || 1))
         : 1;
 
     // Create one label per requested SSCC. Each call allocates and advances the
     // configured serial reference, so labels in a batch never share an SSCC.
     const labels = [];
     for (let index = 0; index < labelCount; index += 1) {
-      const label = await createLabel(sanitizedData, user.id, { operationId, startedAt });
+      const label = await createLabel(labelCreationData, user.id, { operationId, startedAt });
       labels.push(label);
     }
 

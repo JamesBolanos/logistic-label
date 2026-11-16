@@ -128,6 +128,22 @@ describe('ZPL export', () => {
     expect(zpl).not.toContain('\u0001');
   });
 
+  it('renders Spanish labels with UTF-8 accents and unchanged GS1 payloads', () => {
+    const zpl = generateLogisticLabelZPL({
+      ...transport,
+      rendering_version: 'v2',
+      locale: 'es',
+      ship_from: 'Café Ñandú',
+      ship_to: 'Destino'
+    });
+
+    expect(zpl).toContain('^FDORIGEN^FS');
+    expect(zpl).toContain('^FDDESTINO^FS');
+    expect(zpl).toContain('Caf_C3_A9 _C3_91and_C3_BA');
+    expect(zpl).toContain('^FD(00)012345670000000015^FS');
+    expect(zpl).not.toContain('^FDSHIP FROM^FS');
+  });
+
   it('rejects content that cannot preserve barcode dimensions', () => {
     expect(() =>
       generateLogisticLabelZPL({ ...homogeneous, lot_number: 'ABCDEFGHIJKLMNOPQRST' })

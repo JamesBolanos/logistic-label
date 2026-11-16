@@ -2,6 +2,7 @@
 <script>
   import { goto } from '$app/navigation';
   import { dev } from '$app/env';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
   import { authClient } from '#lib/auth-client.js';
   import { trackProductEvent } from '#lib/analytics/client.ts';
   import {
@@ -10,6 +11,7 @@
   } from '#lib/auth/googleAuthErrors.ts';
   import { validateRegistrationForm } from '#lib/validation/formValidation.js';
   import Captcha from './Captcha.svelte';
+  import { m } from '#lib/paraglide/messages.js';
 
   let { initialError = '' } = $props();
 
@@ -26,9 +28,8 @@
   let captchaToken = $state('');
   let captchaUnavailable = $state(false);
 
-  const CAPTCHA_REQUIRED_MESSAGE = 'Please complete the CAPTCHA verification.';
-  const CAPTCHA_RETRY_MESSAGE =
-    'CAPTCHA is not ready. Use the retry button in the CAPTCHA box, then complete verification.';
+  const CAPTCHA_REQUIRED_MESSAGE = m.auth_captcha_required();
+  const CAPTCHA_RETRY_MESSAGE = m.auth_captcha_retry();
 
   async function handleSubmit() {
     const startedAt = Date.now();
@@ -68,12 +69,12 @@
         email,
         password,
         name: getDefaultName(email),
-        callbackURL: '/dashboard',
+        callbackURL: localizeHref('/dashboard'),
         captchaToken
       });
 
       if (error) {
-        formError = error.message || 'Registration failed. Please try again.';
+        formError = error.message || m.auth_registration_failed();
         trackProductEvent('workflow_failed', {
           step: 'sign_up',
           error_category: 'validation',
@@ -87,9 +88,9 @@
       formSuccess = 'Account created successfully! Redirecting...';
       // Authentication changes the session cookie outside SvelteKit's load tracking.
       // Reload layout data so the navbar shows the new user on the first dashboard visit.
-      setTimeout(() => goto('/dashboard', { refreshAll: true }), 1000);
+      setTimeout(() => goto(localizeHref('/dashboard'), { refreshAll: true }), 1000);
     } catch {
-      formError = 'An unexpected error occurred. Please try again.';
+      formError = m.auth_unexpected_error();
       trackProductEvent('workflow_failed', {
         step: 'sign_up',
         error_category: 'network',
@@ -106,8 +107,8 @@
     try {
       const { error } = await authClient.signIn.social({
         provider: 'google',
-        callbackURL: '/dashboard?authMethod=google',
-        errorCallbackURL: getGoogleAuthErrorCallbackURL('/signup')
+        callbackURL: localizeHref('/dashboard?authMethod=google'),
+        errorCallbackURL: localizeHref(getGoogleAuthErrorCallbackURL('/signup'))
       });
 
       if (error) {
@@ -137,12 +138,12 @@
   }
 
   function getDefaultName(emailAddress) {
-    return emailAddress.split('@')[0] || 'User';
+    return emailAddress.split('@')[0] || m.auth_default_user();
   }
 </script>
 
 <div class="w-full max-w-md mx-auto p-6 bg-surface rounded-lg shadow-md">
-  <h2 class="text-2xl font-bold mb-6 text-center">Create an Account</h2>
+  <h2 class="text-2xl font-bold mb-6 text-center">{m.auth_create_account_title()}</h2>
 
   {#if displayedError}
     <div
@@ -166,7 +167,7 @@
     disabled={isSocialLoading || isLoading}
     class="mb-6 w-full flex justify-center py-2 px-4 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500 disabled:opacity-50"
   >
-    {isSocialLoading ? 'Opening Google...' : 'Continue with Google'}
+    {isSocialLoading ? m.auth_opening_google() : m.auth_continue_google()}
   </button>
 
   <div class="relative mb-6">
@@ -174,7 +175,7 @@
       <div class="w-full border-t border-border-default"></div>
     </div>
     <div class="relative flex justify-center text-sm">
-      <span class="bg-surface px-2 text-subtle-foreground">or create with email</span>
+      <span class="bg-surface px-2 text-subtle-foreground">{m.auth_or_create_email()}</span>
     </div>
   </div>
 
@@ -187,7 +188,7 @@
   >
     <div>
       <label for="email" class="block text-sm font-medium text-muted-foreground mb-1">
-        Email Address
+        {m.auth_email_address()}
       </label>
       <input
         type="email"
@@ -204,7 +205,7 @@
 
     <div>
       <label for="password" class="block text-sm font-medium text-muted-foreground mb-1">
-        Password
+        {m.auth_password()}
       </label>
       <input
         type="password"
@@ -218,13 +219,13 @@
         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>
       {/if}
       <p class="mt-1 text-xs text-subtle-foreground">
-        Password must be at least 8 characters and include uppercase, lowercase, and numbers.
+        {m.auth_password_hint()}
       </p>
     </div>
 
     <div>
       <label for="password_confirm" class="block text-sm font-medium text-muted-foreground mb-1">
-        Confirm Password
+        {m.auth_confirm_password()}
       </label>
       <input
         type="password"
@@ -266,9 +267,9 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          Creating account...
+          {m.auth_creating_account()}
         {:else}
-          Create Account
+          {m.auth_create_account_button()}
         {/if}
       </button>
     </div>
@@ -276,12 +277,12 @@
 
   <div class="mt-6 text-center">
     <p class="text-sm text-muted-foreground">
-      Already have an account?
+      {m.auth_already_have_account()}
       <a
-        href="/login"
+        href={localizeHref('/login')}
         class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
-        Sign in
+        {m.auth_sign_in()}
       </a>
     </p>
   </div>

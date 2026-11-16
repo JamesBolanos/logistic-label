@@ -14,6 +14,11 @@ export const TEMPLATE_VERSIONS = Object.freeze({
   SSCC_BASIC: 'v5'
 });
 
+export const LABEL_RENDERING_VERSIONS = Object.freeze({
+  LEGACY: 'v1',
+  LOCALIZED: 'v2'
+});
+
 export const PRINT_LAYOUTS = Object.freeze({
   FOUR_BY_SIX_SINGLE: '4x6_single',
   FOUR_BY_SIX_TWO_UP: '4x6_two_up',
@@ -129,7 +134,11 @@ const transportWeightUnits = new Set(TRANSPORT_WEIGHT_UNITS.map((unit) => unit.v
 const transportCountTypes = new Set(TRANSPORT_COUNT_TYPES.map((type) => type.value));
 /** @type {Set<string>} */
 const supportedPrintLayouts = new Set(
-  [...SSCC_PRINT_LAYOUT_OPTIONS, ...BASIC_SSCC_PRINT_LAYOUT_OPTIONS, ...HOMOGENEOUS_PRINT_LAYOUT_OPTIONS]
+  [
+    ...SSCC_PRINT_LAYOUT_OPTIONS,
+    ...BASIC_SSCC_PRINT_LAYOUT_OPTIONS,
+    ...HOMOGENEOUS_PRINT_LAYOUT_OPTIONS
+  ]
     .filter((layout) => layout.available)
     .map((layout) => layout.value)
 );
@@ -206,14 +215,19 @@ export function getLabelSizeForPrintLayout(value) {
 }
 
 /** @param {unknown} value */
-export function getLabelTypeName(value) {
+export function getLabelTypeName(value, locale = 'en') {
+  const isSpanish = String(locale).startsWith('es');
   // These compact names appear in history and dashboards. The technical values
   // above remain unchanged because they are stored with every saved label.
-  if (value === LABEL_TYPES.SSCC_BASIC) return 'Basic SSCC label';
-  if (value === LABEL_TYPES.SSCC_ONLY) return 'Transport unit tracking';
-  if (value === LABEL_TYPES.HOMOGENEOUS_UNIT) return 'Identical contents';
-  if (value === LABEL_TYPES.MIXED_LOGISTIC_UNIT) return 'Mixed logistic unit';
-  return 'Legacy label';
+  if (value === LABEL_TYPES.SSCC_BASIC)
+    return isSpanish ? 'Etiqueta SSCC básica' : 'Basic SSCC label';
+  if (value === LABEL_TYPES.SSCC_ONLY)
+    return isSpanish ? 'Seguimiento de unidad de transporte' : 'Transport unit tracking';
+  if (value === LABEL_TYPES.HOMOGENEOUS_UNIT)
+    return isSpanish ? 'Contenidos idénticos' : 'Identical contents';
+  if (value === LABEL_TYPES.MIXED_LOGISTIC_UNIT)
+    return isSpanish ? 'Unidad logística mixta' : 'Mixed logistic unit';
+  return isSpanish ? 'Etiqueta heredada' : 'Legacy label';
 }
 
 /** @param {unknown} value */

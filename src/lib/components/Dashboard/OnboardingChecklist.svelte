@@ -1,27 +1,28 @@
 <script>
+  import { m } from '#lib/paraglide/messages.js';
+
   let { progress } = $props();
 
   const definitions = [
     {
       id: 'accountCreated',
-      title: 'Account created',
-      description: 'Your private label workspace is ready.'
+      title: m.onboarding_account_created(),
+      description: m.onboarding_account_created_desc()
     },
     {
       id: 'settingsConfigured',
-      title: 'Configure label settings',
-      description:
-        'Add your company name and GS1-licensed prefix. A real SSCC cannot be allocated without the prefix.'
+      title: m.onboarding_configure_settings(),
+      description: m.onboarding_configure_settings_desc()
     },
     {
       id: 'previewCompleted',
-      title: 'Review a label preview',
-      description: 'Choose a shipping situation and review the PDF and automated checks.'
+      title: m.onboarding_review_preview(),
+      description: m.onboarding_review_preview_desc()
     },
     {
       id: 'firstLabelSaved',
-      title: 'Save your first label',
-      description: 'Reserve its SSCC and save the record to your label history.'
+      title: m.onboarding_save_first_label(),
+      description: m.onboarding_save_first_label_desc()
     }
   ];
 
@@ -45,18 +46,17 @@
   >
     <div>
       <p class="text-sm font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
-        Getting started
+        {m.onboarding_getting_started()}
       </p>
       <h2 id="first-label-onboarding-heading" class="mt-1 text-xl font-bold text-foreground">
-        Create your first logistic label
+        {m.onboarding_first_label()}
       </h2>
       <p class="mt-2 max-w-2xl text-sm text-muted-foreground">
-        Complete these steps once. The generator will guide the label details for your shipping
-        situation.
+        {m.onboarding_first_label_desc()}
       </p>
     </div>
     <p class="mt-3 text-sm font-medium text-blue-800 dark:text-blue-300 sm:mt-1">
-      {progress.completedCount} of {progress.totalSteps} complete
+      {m.onboarding_progress({ completed: progress.completedCount, total: progress.totalSteps })}
     </p>
   </div>
 
@@ -64,7 +64,7 @@
     <div
       class="h-2 overflow-hidden rounded-full bg-surface-strong"
       role="progressbar"
-      aria-label="First label setup progress"
+      aria-label={m.onboarding_first_label_progress()}
       aria-valuemin="0"
       aria-valuemax={progress.totalSteps}
       aria-valuenow={progress.completedCount}
@@ -91,7 +91,7 @@
                 <span
                   class="rounded-full bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-300"
                 >
-                  Next
+                  {m.onboarding_next()}
                 </span>
               {/if}
             </div>

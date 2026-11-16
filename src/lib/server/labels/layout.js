@@ -22,6 +22,72 @@ const MINIMUM_BAR_HEIGHT_MM = 31.75;
 const QUIET_ZONE_MODULES = 10;
 const TARGET_X_DIMENSION_POINTS = (TARGET_X_DIMENSION_MM / MILLIMETERS_PER_INCH) * POINTS_PER_INCH;
 const MINIMUM_BAR_HEIGHT_POINTS = (MINIMUM_BAR_HEIGHT_MM / MILLIMETERS_PER_INCH) * POINTS_PER_INCH;
+const SPANISH_LABEL_TERMS = Object.freeze({
+  'SHIP FROM': 'ORIGEN',
+  'SHIP TO': 'DESTINO',
+  'PO NUMBER': 'ORDEN DE COMPRA',
+  CARRIER: 'TRANSPORTISTA',
+  'GROSS WEIGHT': 'PESO BRUTO',
+  COUNT: 'CANTIDAD',
+  CONTENT: 'CONTENIDO',
+  'BATCH/LOT': 'LOTE',
+  'PROD DATE': 'FECHA PROD.',
+  'PACK DATE': 'FECHA EMP.',
+  'BEST BEFORE': 'CONSUMIR ANTES DEL',
+  'SELL BY': 'VENDER ANTES DEL',
+  EXPIRY: 'CADUCIDAD',
+  DATE: 'FECHA',
+  WEIGHT: 'PESO',
+  QTY: 'CANT.',
+  LOT: 'LOTE',
+  'COMPANY NAME': 'NOMBRE DE LA EMPRESA'
+});
+
+const SPANISH_PACKAGING_NAMES = Object.freeze({
+  case: ['cajas', 'caja'],
+  carton: ['cajas', 'caja'],
+  pack: ['paquetes', 'paquete'],
+  tray: ['bandejas', 'bandeja'],
+  bag: ['bolsas', 'bolsa'],
+  drum: ['tambores', 'tambor'],
+  each: ['unidades', 'unidad'],
+  other: ['otros artículos', 'otro artículo']
+});
+
+const SPANISH_TRANSPORT_COUNT_NAMES = Object.freeze({
+  cartons: ['cajas', 'caja'],
+  cases: ['cajas', 'caja'],
+  pallets: ['pallets', 'pallet'],
+  parcels: ['paquetes', 'paquete'],
+  packages: ['bultos', 'bulto'],
+  pieces: ['piezas', 'pieza']
+});
+
+function getLabelLocale(labelData) {
+  return labelData.rendering_version === 'v2' && labelData.locale === 'es' ? 'es-419' : 'en-US';
+}
+
+function createLabelContent(labelData) {
+  const content = [];
+  Object.defineProperty(content, 'locale', {
+    value: getLabelLocale(labelData),
+    enumerable: false
+  });
+  Object.defineProperty(content, 'renderingVersion', {
+    value: labelData.rendering_version ?? 'v1',
+    enumerable: false
+  });
+  return content;
+}
+
+function translateLabelText(content, text) {
+  return content.locale === 'es-419' ? (SPANISH_LABEL_TERMS[text] ?? text) : text;
+}
+
+function getCompanyName(labelData, options, content) {
+  const companyName = options.company_name || labelData.company_name;
+  return companyName || translateLabelText(content, 'COMPANY NAME');
+}
 
 export function generateLogisticLabelLayout(labelData, options = {}) {
   if (
@@ -61,7 +127,7 @@ export function generateLogisticLabelLayout(labelData, options = {}) {
 function generateTransportLabelLayout(labelData) {
   const elements = buildGs1Elements(labelData);
   const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
-  const content = [];
+  const content = createLabelContent(labelData);
 
   // The 4 × 6 layout uses GS1's transport/customer/supplier reading order:
   // routing fields first, logistic measures second, and the SSCC barcode last.
@@ -125,7 +191,7 @@ function drawTransportLabel(content, labelData, elements, originY, compact) {
     drawLargeInfoField(content, 'GROSS WEIGHT', grossWeight, 18, 120, 206, 181, 15);
     drawLargeInfoField(content, 'COUNT', count, 150, 120, 206, 181, 15);
 
-    drawCenteredText(content, 'SSCC', PAGE_WIDTH / 2, 154, 8, true);
+    drawCenteredText(content, translateLabelText(content, 'SSCC'), PAGE_WIDTH / 2, 154, 8, true);
     drawCenteredText(content, labelData.sscc, PAGE_WIDTH / 2, 138, 13, true);
     drawCompliantBarcode(content, elements, 40, PAGE_WIDTH);
     drawCenteredText(content, humanReadable(elements), PAGE_WIDTH / 2, 25, 9);
@@ -174,15 +240,19 @@ function drawTransportLabel(content, labelData, elements, originY, compact) {
 
 function formatGrossWeight(labelData) {
   if (labelData.gross_weight == null || !labelData.gross_weight_unit) return '-';
-  return `${Number(labelData.gross_weight).toLocaleString('en-US')} ${labelData.gross_weight_unit}`;
+  return `${Number(labelData.gross_weight).toLocaleString(getLabelLocale(labelData))} ${labelData.gross_weight_unit}`;
 }
 
 function formatTransportCount(labelData) {
   if (labelData.transport_count == null || !labelData.transport_count_type) return '-';
-  return `${Number(labelData.transport_count).toLocaleString('en-US')} ${getTransportCountTypeName(
-    labelData.transport_count_type,
-    labelData.transport_count
-  )}`;
+  const count = labelData.transport_count;
+  const countName =
+    getLabelLocale(labelData) === 'es-419'
+      ? SPANISH_TRANSPORT_COUNT_NAMES[labelData.transport_count_type]?.[
+          Number(count) === 1 ? 1 : 0
+        ] || 'bultos'
+      : getTransportCountTypeName(labelData.transport_count_type, count);
+  return `${Number(count).toLocaleString(getLabelLocale(labelData))} ${countName}`;
 }
 
 function generateStructuredHomogeneousLabelLayout(labelData) {
@@ -190,7 +260,7 @@ function generateStructuredHomogeneousLabelLayout(labelData) {
   const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
   validateGuidedLabelBarcodeFit(labelData, elements);
 
-  const content = [];
+  const content = createLabelContent(labelData);
   if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
     drawStructuredHomogeneousFourBySix(content, labelData, elements);
     return createLayout(content, PAGE_WIDTH, PAGE_HEIGHT);
@@ -220,7 +290,16 @@ function drawStructuredHomogeneousFourBySix(content, labelData, elements) {
   drawAddressBlock(content, 'SHIP TO', labelData.ship_to, 150, 120, 408);
 
   drawLine(content, left, 322, right, 322, 0.8);
-  drawWrappedLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 252, 344, 331, 13);
+  drawWrappedLargeInfoField(
+    content,
+    'PO NUMBER',
+    labelData.purchase_order || '-',
+    18,
+    252,
+    344,
+    331,
+    13
+  );
 
   drawLine(content, left, 286, right, 286, 0.8);
   drawLine(content, 190, 286, 190, 322, 0.8);
@@ -259,7 +338,16 @@ function drawStructuredHomogeneousSixByEight(content, labelData, elements) {
 
   drawLine(content, left, 452, right, 452, 0.8);
   drawLine(content, middle, 452, middle, 494, 0.8);
-  drawWrappedLargeInfoField(content, 'PO NUMBER', labelData.purchase_order || '-', 18, 186, 484, 468, 15);
+  drawWrappedLargeInfoField(
+    content,
+    'PO NUMBER',
+    labelData.purchase_order || '-',
+    18,
+    186,
+    484,
+    468,
+    15
+  );
   drawLargeInfoField(content, 'CARRIER', labelData.carrier || '-', 222, 186, 486, 468, 15);
 
   drawLine(content, left, 410, right, 410, 0.8);
@@ -309,10 +397,13 @@ function getSSCCElements(elements) {
 }
 
 function formatHomogeneousCount(labelData) {
-  return `${Number(labelData.quantity).toLocaleString('en-US')} ${getPackagingLevelPrintName(
-    labelData.packaging_level,
-    labelData.quantity
-  )}`;
+  const count = labelData.quantity;
+  const countName =
+    getLabelLocale(labelData) === 'es-419'
+      ? SPANISH_PACKAGING_NAMES[labelData.packaging_level]?.[Number(count) === 1 ? 1 : 0] ||
+        'artículos'
+      : getPackagingLevelPrintName(labelData.packaging_level, count);
+  return `${Number(count).toLocaleString(getLabelLocale(labelData))} ${countName}`;
 }
 
 function generateGuidedLabelLayout(labelData, options) {
@@ -323,11 +414,11 @@ function generateGuidedLabelLayout(labelData, options) {
     return generateSSCCOnlyLayout(labelData, options, elements);
   }
 
-  const content = [];
+  const content = createLabelContent(labelData);
 
   drawCenteredText(
     content,
-    options.company_name || labelData.company_name || 'COMPANY NAME',
+    getCompanyName(labelData, options, content),
     PAGE_WIDTH / 2,
     410,
     15,
@@ -344,8 +435,8 @@ function generateGuidedLabelLayout(labelData, options) {
 
 function generateSSCCOnlyLayout(labelData, options, elements) {
   const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
-  const companyName = options.company_name || labelData.company_name || 'COMPANY NAME';
-  const content = [];
+  const content = createLabelContent(labelData);
+  const companyName = getCompanyName(labelData, options, content);
 
   if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_SINGLE) {
     drawSSCCSingleLabel(content, labelData, elements, companyName);
@@ -394,10 +485,17 @@ function drawCompactSSCCLabel(content, labelData, elements, companyName, originY
 }
 
 function drawBasicSSCCCompactLabel(content, labelData, elements, originY) {
-  drawOutlineRect(content, MARGIN, originY + 4, PAGE_WIDTH - MARGIN * 2, COMPACT_PAGE_HEIGHT - 8, 1.2);
+  drawOutlineRect(
+    content,
+    MARGIN,
+    originY + 4,
+    PAGE_WIDTH - MARGIN * 2,
+    COMPACT_PAGE_HEIGHT - 8,
+    1.2
+  );
   drawLine(content, MARGIN, originY + 145, PAGE_WIDTH - MARGIN, originY + 145, 0.8);
 
-  drawText(content, 'SSCC', MARGIN + 4, originY + 188, 10, true);
+  drawText(content, translateLabelText(content, 'SSCC'), MARGIN + 4, originY + 188, 10, true);
   drawCenteredText(content, String(labelData.sscc ?? ''), PAGE_WIDTH / 2, originY + 165, 16, true);
 
   drawCompliantBarcode(content, elements, originY + 42, PAGE_WIDTH);
@@ -408,13 +506,13 @@ function generateBasicSSCCLabelLayout(labelData, options, elements = buildGs1Ele
   const printLayout = labelData.print_layout || DEFAULT_PRINT_LAYOUT;
 
   if (printLayout === PRINT_LAYOUTS.FOUR_BY_THREE_SINGLE) {
-    const content = [];
+    const content = createLabelContent(labelData);
     drawBasicSSCCCompactLabel(content, labelData, elements, 0);
     return createLayout(content, PAGE_WIDTH, COMPACT_PAGE_HEIGHT);
   }
 
   if (printLayout === PRINT_LAYOUTS.FOUR_BY_SIX_TWO_UP) {
-    const content = [];
+    const content = createLabelContent(labelData);
     drawBasicSSCCCompactLabel(content, labelData, elements, COMPACT_PAGE_HEIGHT);
     drawBasicSSCCCompactLabel(content, labelData, elements, 0);
     drawCutGuide(content, COMPACT_PAGE_HEIGHT, PAGE_WIDTH);
@@ -519,9 +617,9 @@ export function validateGuidedLabelBarcodeFit(labelData, elements = buildGs1Elem
 
 function generateLegacyLabelLayout(labelData, options = {}) {
   const elements = buildGs1Elements(labelData);
-  const content = [];
+  const content = createLabelContent(labelData);
 
-  const companyName = options.company_name || labelData.company_name || 'COMPANY NAME';
+  const companyName = getCompanyName(labelData, options, content);
   drawText(
     content,
     companyName,
@@ -539,7 +637,7 @@ function generateLegacyLabelLayout(labelData, options = {}) {
   drawInfoField(
     content,
     'PROD DATE',
-    formatDisplayDate(labelData.production_date),
+    formatDisplayDate(labelData.production_date, getLabelLocale(labelData)),
     MARGIN,
     288,
     11
@@ -609,19 +707,28 @@ function orderedElements(elements, aiOrder) {
 }
 
 function drawText(content, text, x, y, size = 10, bold = false) {
-  content.push({ type: 'text', text: String(text ?? ''), x, y, size, bold });
+  content.push({
+    type: 'text',
+    text: String(text ?? ''),
+    x,
+    y,
+    size,
+    bold,
+    renderingVersion: content.renderingVersion
+  });
 }
 
 function drawInfoField(content, label, value, x, labelY, valueSize = 11) {
-  drawText(content, label, x, labelY, 8, true);
+  drawText(content, translateLabelText(content, label), x, labelY, 8, true);
   drawText(content, value, x, labelY - 16, valueSize, true);
 }
 
 function drawInfoFieldFitted(content, label, value, x, width, labelY) {
-  const labelSize = fitTextSize(label, width, 7, 5);
+  const labelText = translateLabelText(content, label);
+  const labelSize = fitTextSize(labelText, width, 7, 5);
   const valueText = String(value ?? '');
   const valueSize = fitTextSize(valueText, width, 10, 6);
-  drawText(content, truncateTextToWidth(label, width, labelSize), x, labelY, labelSize, true);
+  drawText(content, truncateTextToWidth(labelText, width, labelSize), x, labelY, labelSize, true);
   drawText(
     content,
     truncateTextToWidth(valueText, width, valueSize, true),
@@ -632,8 +739,20 @@ function drawInfoFieldFitted(content, label, value, x, width, labelY) {
   );
 }
 
-function drawLargeInfoField(content, label, value, x, width, labelY, valueY, preferredSize, minimumSize = 8) {
-  drawText(content, label, x, labelY, 8, true);
+function drawLargeInfoField(
+  content,
+  label,
+  value,
+  x,
+  width,
+  labelY,
+  valueY,
+  preferredSize,
+  minimumSize = 8
+) {
+  const labelText = translateLabelText(content, label);
+  const labelSize = content.locale === 'es-419' ? fitTextSize(labelText, width, 8, 5) : 8;
+  drawText(content, labelText, x, labelY, labelSize, true);
   const valueText = String(value ?? '');
   const valueSize = fitTextSize(valueText, width, preferredSize, minimumSize);
   drawText(
@@ -657,7 +776,9 @@ function drawWrappedLargeInfoField(
   preferredSize,
   maxLines = 2
 ) {
-  drawText(content, label, x, labelY, 8, true);
+  const labelText = translateLabelText(content, label);
+  const labelSize = content.locale === 'es-419' ? fitTextSize(labelText, width, 8, 5) : 8;
+  drawText(content, labelText, x, labelY, labelSize, true);
   const valueText = String(value ?? '');
   let size = fitTextSize(valueText, width, preferredSize, 8);
   if (estimateTextWidth(valueText, size, true) <= width) {
@@ -699,7 +820,9 @@ function drawWrappedLargeInfoField(
 }
 
 function drawAddressBlock(content, label, value, x, width, labelY) {
-  drawText(content, label, x, labelY, 8, true);
+  const labelText = translateLabelText(content, label);
+  const labelSize = content.locale === 'es-419' ? fitTextSize(labelText, width, 8, 5) : 8;
+  drawText(content, labelText, x, labelY, labelSize, true);
   const addressLines = getAddressLines(value, width, 4);
   addressLines.forEach((line, index) => {
     const isCompanyLine = index === 0;
@@ -789,7 +912,7 @@ function truncateTextToWidth(text, width, size, bold = false) {
 function drawCenteredInfoField(content, label, value, centerX, labelY, valueY, valueSize = 11) {
   const text = String(value ?? '');
   const valueX = centerX - estimateTextWidth(text, valueSize, true) / 2;
-  drawText(content, label, valueX, labelY, 8);
+  drawText(content, translateLabelText(content, label), valueX, labelY, 8);
   drawCenteredText(content, text, centerX, valueY, valueSize, true);
 }
 
@@ -828,16 +951,16 @@ const HELVETICA_BOLD_WIDTHS = {
   '-': 333,
   '.': 278,
   '/': 278,
-  '0': 556,
-  '1': 556,
-  '2': 556,
-  '3': 556,
-  '4': 556,
-  '5': 556,
-  '6': 556,
-  '7': 556,
-  '8': 556,
-  '9': 556,
+  0: 556,
+  1: 556,
+  2: 556,
+  3: 556,
+  4: 556,
+  5: 556,
+  6: 556,
+  7: 556,
+  8: 556,
+  9: 556,
   ':': 333,
   ';': 333,
   '<': 584,
@@ -944,8 +1067,8 @@ function round(value) {
     .replace(/\.?0+$/, '');
 }
 
-function formatDisplayDate(value) {
+function formatDisplayDate(value, locale) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-US', { timeZone: 'UTC' });
+  return date.toLocaleDateString(locale, { timeZone: 'UTC' });
 }

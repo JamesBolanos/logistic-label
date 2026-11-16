@@ -37,7 +37,7 @@ export async function load({ locals, setHeaders, url }) {
 }
 
 export const actions = {
-  submitRequest: async ({ request, getClientAddress }) => {
+  submitRequest: async ({ request, getClientAddress, locals }) => {
     let formData;
     try {
       formData = await request.formData();
@@ -47,7 +47,8 @@ export const actions = {
 
     const result = await processCustomRequest({
       values: Object.fromEntries(formData),
-      clientAddress: getClientAddress()
+      clientAddress: getClientAddress(),
+      locale: locals.locale ?? 'en'
     });
 
     return result.status === 200 ? result.data : fail(result.status, result.data);

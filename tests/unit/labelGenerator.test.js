@@ -36,6 +36,52 @@ describe('guided label PDF rendering', () => {
     expect(content).not.toContain('\\(02\\)');
   });
 
+  it('renders Spanish labels with WinAnsi accents without changing GS1 barcode content', async () => {
+    const pdf = await generateLogisticLabelPDF({
+      label_type: 'sscc_only',
+      template_version: 'v3',
+      rendering_version: 'v2',
+      locale: 'es',
+      print_layout: '4x6_single',
+      sscc: '012345670000000015',
+      ship_from: 'Café Ñandú',
+      ship_to: 'Destino',
+      purchase_order: 'PO-100',
+      carrier: 'Example Freight',
+      gross_weight: 540.5,
+      gross_weight_unit: 'kg',
+      transport_count: 1,
+      transport_count_type: 'cartons'
+    });
+
+    const content = pdf.toString('utf8');
+    expect(content).toContain('ORIGEN');
+    expect(content).toContain('DESTINO');
+    expect(content).toContain('ORDEN DE COMPRA');
+    expect(content).toContain('Caf\\351 \\321and\\372');
+    expect(content).toContain('1 caja');
+    expect(content).toContain('/Encoding /WinAnsiEncoding');
+    expect(content).toContain('\\(00\\)012345670000000015');
+  });
+
+  it('keeps legacy label wording in English even when an old record has no rendering version', async () => {
+    const pdf = await generateLogisticLabelPDF({
+      label_type: 'sscc_only',
+      template_version: 'v3',
+      rendering_version: 'v1',
+      locale: 'es',
+      print_layout: '4x6_single',
+      sscc: '012345670000000015',
+      ship_from: 'Origen',
+      ship_to: 'Destino'
+    });
+
+    const content = pdf.toString('utf8');
+    expect(content).toContain('SHIP FROM');
+    expect(content).toContain('SHIP TO');
+    expect(content).not.toContain('ORIGEN');
+  });
+
   it('renders the basic SSCC-only label without company or transport fields', async () => {
     const pdf = await generateLogisticLabelPDF({
       label_type: 'sscc_only',

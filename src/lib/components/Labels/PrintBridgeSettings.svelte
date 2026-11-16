@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import {
     defaultPrintSettings,
     sanitizePrintSettings,
@@ -20,8 +22,8 @@
     busy = true;
     errorMessage = '';
     try {
-      const response = await fetch('/api/settings', { cache: 'no-store' });
-      if (!response.ok) throw new Error('Unable to load printer settings.');
+      const response = await fetch(localizeHref('/api/settings'), { cache: 'no-store' });
+      if (!response.ok) throw new Error(m.print_settings_unable_load());
       const { settings } = await response.json();
       form = Object.fromEntries(
         Object.entries(defaultPrintSettings).map(([key, fallback]) => [
@@ -31,7 +33,7 @@
       );
       loaded = true;
     } catch (error) {
-      errorMessage = error.message || 'Unable to load printer settings.';
+      errorMessage = error.message || m.print_settings_unable_load();
     } finally {
       busy = false;
     }
@@ -51,7 +53,7 @@
         statusMessage =
           'Bridge is reachable. This checks the bridge only; no label was sent to the printer.';
       } else {
-        const response = await fetch('/api/settings', {
+        const response = await fetch(localizeHref('/api/settings'), {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(settings)
@@ -59,13 +61,13 @@
         const data = await response.json();
         if (!response.ok) {
           errors = data.errors || {};
-          throw new Error(data.message || 'Unable to save printer settings.');
+          throw new Error(data.message || m.print_settings_unable_save());
         }
         form = settings;
-        statusMessage = 'Printer settings saved.';
+        statusMessage = m.print_settings_saved();
       }
     } catch (error) {
-      errorMessage = error.message || 'Unable to complete this action.';
+      errorMessage = error.message || m.print_settings_unable_complete();
     } finally {
       busy = false;
     }
@@ -76,11 +78,11 @@
   aria-labelledby="printer-settings-heading"
   class="space-y-4 rounded-lg border border-border-default bg-surface p-6 shadow"
 >
-  <h2 id="printer-settings-heading" class="text-xl font-semibold text-foreground">LAN printer</h2>
+  <h2 id="printer-settings-heading" class="text-xl font-semibold text-foreground">
+    {m.print_settings_lan_printer()}
+  </h2>
   <p class="text-sm leading-6 text-muted-foreground">
-    When you choose Print via bridge, your browser sends the saved label to Print Bridge running on
-    this computer. The bridge then sends it over your local network to your ZPL-compatible printer.
-    Keep the bridge open while printing.
+    {m.print_settings_desc()}
   </p>
   <p
     class="rounded-md bg-blue-50 dark:bg-blue-950/40 px-3 py-2 text-sm font-medium text-blue-900 dark:text-blue-200"
@@ -104,9 +106,7 @@
     > covers installation, configuration, and your first label.
   </p>
   <p class="text-sm text-muted-foreground">
-    These printer settings are saved to your account and used on every computer where you sign in.
-    The bridge address identifies this computer; the printer address identifies the printer on your
-    network.
+    {m.print_settings_saved_account()}
   </p>
   {#if errorMessage}<p role="alert" class="text-sm text-red-700 dark:text-red-300">
       {errorMessage}
@@ -121,7 +121,7 @@
       disabled={busy}
       class="text-sm font-medium text-blue-700 dark:text-blue-300 disabled:opacity-50"
     >
-      {busy ? 'Loading printer settings...' : 'Reload printer settings'}
+      {busy ? m.print_settings_loading() : m.print_settings_load_button()}
     </button>
   {:else}
     <form
@@ -135,15 +135,16 @@
           <div>
             <label
               for="print_bridge_host"
-              class="mb-1 block text-sm font-medium text-muted-foreground">Bridge address</label
+              class="mb-1 block text-sm font-medium text-muted-foreground"
+              >{m.print_settings_bridge_address()}</label
             >
             <select
               id="print_bridge_host"
               bind:value={form.print_bridge_host}
               class="w-full rounded-md border border-border-strong px-3 py-2"
             >
-              <option value="127.0.0.1">127.0.0.1 (this computer)</option>
-              <option value="localhost">localhost (this computer)</option>
+              <option value="127.0.0.1">{m.print_settings_127()}</option>
+              <option value="localhost">{m.print_settings_localhost()}</option>
             </select>
             {#if errors.print_bridge_host}<p class="text-sm text-red-600 dark:text-red-400">
                 {errors.print_bridge_host}
@@ -152,7 +153,8 @@
           <div>
             <label
               for="print_bridge_port"
-              class="mb-1 block text-sm font-medium text-muted-foreground">Bridge HTTP port</label
+              class="mb-1 block text-sm font-medium text-muted-foreground"
+              >{m.print_settings_bridge_port()}</label
             >
             <input
               id="print_bridge_port"
@@ -236,16 +238,16 @@
             type="button"
             onclick={() => runAction(true)}
             class="rounded-md border border-border-strong px-4 py-2 text-sm font-medium hover:bg-surface-muted"
-            >Test bridge connection</button
+            >{m.print_settings_test_connection()}</button
           >
           <button
             type="submit"
             class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >Save printer settings</button
+            >{m.print_settings_save()}</button
           >
         </div>
         <p class="text-xs text-subtle-foreground">
-          Test uses the values shown above. Save them before printing from Saved labels.
+          {m.print_settings_test_uses_values()}
         </p>
       </fieldset>
     </form>

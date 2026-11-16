@@ -1,8 +1,16 @@
 <script>
-  import { formatReleaseDate, getPublishedReleases } from '#lib/content/releases.ts';
+  import {
+    formatReleaseDate,
+    getPublishedReleases,
+    localizeRelease,
+    releaseCategoryLabel
+  } from '#lib/content/releases.ts';
+  import { getLocale } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { observeReleaseUpdate, trackProductEvent } from '#lib/analytics/client.ts';
 
-  const updates = getPublishedReleases();
+  const locale = getLocale();
+  const updates = getPublishedReleases().map((update) => localizeRelease(update, locale));
 
   function categoryClass(category) {
     if (category === 'fix')
@@ -14,22 +22,18 @@
 </script>
 
 <svelte:head>
-  <title>What's New - GS1-128 Logistic Label Generator</title>
-  <meta
-    name="description"
-    content="Released fixes, improvements, and new features in the GS1-128 Logistic Label Generator."
-  />
+  <title>{m.updates_title()} - GS1-128 Logistic Label Generator</title>
+  <meta name="description" content={m.updates_meta()} />
 </svelte:head>
 
 <div class="mx-auto max-w-4xl space-y-8">
   <header>
     <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
-      Release history
+      {m.updates_release_history()}
     </p>
-    <h1 class="mt-2 text-3xl font-bold tracking-tight text-foreground">What's new</h1>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight text-foreground">{m.updates_heading()}</h1>
     <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-      Review the fixes, improvements, and new features that are available in the application.
-      Planned work remains in the product backlog until it is released.
+      {m.updates_desc()}
     </p>
   </header>
 
@@ -37,7 +41,7 @@
     <section
       class="rounded-lg border border-border-default bg-surface p-6 text-sm text-muted-foreground shadow"
     >
-      No updates have been published yet.
+      {m.updates_none()}
     </section>
   {:else}
     <ol class="space-y-5">
@@ -50,10 +54,10 @@
             <span
               class={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${categoryClass(update.category)}`}
             >
-              {update.category}
+              {releaseCategoryLabel(update.category, locale)}
             </span>
             <time class="text-sm text-subtle-foreground" datetime={update.publishedAt}>
-              {formatReleaseDate(update.publishedAt)}
+              {formatReleaseDate(update.publishedAt, locale)}
             </time>
           </div>
           <h2 class="mt-4 text-xl font-semibold text-foreground">{update.title}</h2>

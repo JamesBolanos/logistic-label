@@ -6,12 +6,14 @@ import { validateCustomRequest } from '#lib/validation/customRequest.js';
  * @param {{
  *   values: Record<string, unknown>,
  *   clientAddress: string,
+ *   locale?: 'en' | 'es',
  *   sendEmail?: typeof sendCustomRequestEmail
  * }} request
  */
 export async function processCustomRequest({
   values: inputValues,
   clientAddress,
+  locale = 'en',
   sendEmail = sendCustomRequestEmail
 }) {
   const validation = validateCustomRequest(inputValues);
@@ -53,7 +55,7 @@ export async function processCustomRequest({
   }
 
   try {
-    await sendEmail(validatedValues);
+    await sendEmail({ ...validatedValues, locale });
     return {
       status: 200,
       data: { success: true, requestType: validatedValues.requestType }

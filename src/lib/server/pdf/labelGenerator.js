@@ -7,7 +7,15 @@ function renderLayoutToContent(layout) {
   for (const item of layout.content) {
     switch (item.type) {
       case 'text':
-        drawText(content, item.text, item.x, item.y, item.size, item.bold);
+        drawText(
+          content,
+          item.text,
+          item.x,
+          item.y,
+          item.size,
+          item.bold,
+          item.renderingVersion === 'v2'
+        );
         break;
       case 'barcode': {
         const modules = getBarcodeModules(item.elements);
@@ -73,9 +81,12 @@ export async function generateMultipleLogisticLabels(labelDataArray, options = {
   return createPdf(pages);
 }
 
-function drawText(content, text, x, y, size = 10, bold = false) {
+function drawText(content, text, x, y, size = 10, bold = false, useWinAnsi = false) {
   content.push(
-    `BT /${bold ? 'F2' : 'F1'} ${size} Tf ${x} ${y} Td (${escapePdf(String(text ?? ''))}) Tj ET`
+    `BT /${bold ? 'F2' : 'F1'} ${size} Tf ${x} ${y} Td (${escapePdf(
+      String(text ?? ''),
+      useWinAnsi
+    )}) Tj ET`
   );
 }
 
@@ -137,8 +148,10 @@ function createPdf(pages) {
       `<< /Length ${Buffer.byteLength(page.content, 'utf8')} >>\nstream\n${page.content}\nendstream`;
   }
 
-  objects[2 + 2 * pageCount] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
-  objects[3 + 2 * pageCount] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>';
+  objects[2 + 2 * pageCount] =
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objects[3 + 2 * pageCount] =
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
 
   let pdf = '%PDF-1.4\n';
   const offsets = [0];
@@ -159,8 +172,62 @@ function createPdf(pages) {
   return Buffer.from(pdf, 'utf8');
 }
 
-function escapePdf(value) {
-  return value.replaceAll('\\', '\\\\').replaceAll('(', '\\(').replaceAll(')', '\\)');
+const WIN_ANSI_SPECIAL_CHARACTERS = new Map([
+  ['€', 0x80],
+  ['‚', 0x82],
+  ['ƒ', 0x83],
+  ['„', 0x84],
+  ['…', 0x85],
+  ['†', 0x86],
+  ['‡', 0x87],
+  ['ˆ', 0x88],
+  ['‰', 0x89],
+  ['Š', 0x8a],
+  ['‹', 0x8b],
+  ['Œ', 0x8c],
+  ['Ž', 0x8e],
+  ['‘', 0x91],
+  ['’', 0x92],
+  ['“', 0x93],
+  ['”', 0x94],
+  ['•', 0x95],
+  ['–', 0x96],
+  ['—', 0x97],
+  ['˜', 0x98],
+  ['™', 0x99],
+  ['š', 0x9a],
+  ['›', 0x9b],
+  ['œ', 0x9c],
+  ['ž', 0x9e],
+  ['Ÿ', 0x9f]
+]);
+
+function escapePdf(value, useWinAnsi = false) {
+  if (!useWinAnsi) {
+    return value.replaceAll('\\', '\\\\').replaceAll('(', '\\(').replaceAll(')', '\\)');
+  }
+
+  return Array.from(value, (character) => {
+    const codePoint = character.codePointAt(0);
+    const byte =
+      codePoint <= 0x7f || (codePoint >= 0xa0 && codePoint <= 0xff)
+        ? codePoint
+        : WIN_ANSI_SPECIAL_CHARACTERS.get(character);
+
+    if (byte === undefined) {
+      throw new Error(
+        `The PDF label font cannot render the character ${JSON.stringify(character)}.`
+      );
+    }
+
+    if (byte === 0x5c || byte === 0x28 || byte === 0x29) {
+      return `\\${String.fromCharCode(byte)}`;
+    }
+    if (byte < 0x20 || byte > 0x7e) {
+      return `\\${byte.toString(8).padStart(3, '0')}`;
+    }
+    return String.fromCharCode(byte);
+  }).join('');
 }
 
 function round(value) {

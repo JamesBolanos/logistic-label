@@ -1,9 +1,16 @@
 <script>
   import { enhance } from '$app/forms';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import LabelDiagram from '#lib/components/Guide/LabelDiagram.svelte';
   import { trackProductEvent } from '#lib/analytics/client.ts';
-  import { SUPPORTED_LABEL_GUIDES } from '#lib/labels/guide.js';
-  import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES } from '#lib/labels/scenarios.js';
+  import { SUPPORTED_LABEL_GUIDES, localizeGuide } from '#lib/labels/guide.js';
+  import { getLocale } from '#lib/paraglide/runtime.js';
+  import {
+    LABEL_SCENARIOS,
+    LABEL_SCENARIO_STATUSES,
+    localizeScenario
+  } from '#lib/labels/scenarios.js';
 
   let { form, data } = $props();
   let submitting = $state(false);
@@ -28,23 +35,23 @@
   const requestTypes = [
     {
       value: 'improvement',
-      title: 'Suggest an improvement',
-      description: 'Share an idea for the free generator or its public guide.'
+      title: m.guide_request_suggest(),
+      description: m.guide_request_suggest_desc()
     },
     {
       value: 'tailored_project',
-      title: 'Discuss a tailored project',
-      description: 'Describe a customer, printer, label, or workflow requirement.'
+      title: m.guide_request_discuss(),
+      description: m.guide_request_discuss_desc()
     }
   ];
 
   const requestTopics = [
-    { value: 'general', label: 'General or not sure yet' },
-    { value: 'routing_guide', label: 'Customer or retailer routing guide' },
-    { value: 'label_format', label: 'Label size or format' },
-    { value: 'printer_workflow', label: 'Printer workflow' },
-    { value: 'integration', label: 'Data or system integration' },
-    { value: 'other', label: 'Other' }
+    { value: 'general', label: m.guide_request_general() },
+    { value: 'routing_guide', label: m.guide_request_routing() },
+    { value: 'label_format', label: m.guide_request_label_format() },
+    { value: 'printer_workflow', label: m.guide_request_printer() },
+    { value: 'integration', label: m.guide_request_integration() },
+    { value: 'other', label: m.guide_request_other() }
   ];
 
   const firstLabelSteps = [
@@ -75,17 +82,47 @@
     }
   ];
 
+  const firstLabelStepsEs = [
+    {
+      title: 'Crea tu cuenta gratuita',
+      description:
+        'Tu cuenta te da un espacio privado para la configuración de la empresa y las etiquetas guardadas.'
+    },
+    {
+      title: 'Configura tu empresa',
+      description:
+        'Ingresa el nombre de tu empresa, el prefijo de empresa GS1 licenciado, el dígito de extensión y la siguiente referencia de serie. El prefijo licenciado es obligatorio para asignar un SSCC real; nunca inventes uno.'
+    },
+    {
+      title: 'Elige una etiqueta e ingresa los detalles del envío',
+      description:
+        'Elige el flujo compatible que coincida con la unidad logística. Agrega Origen/Destino y los detalles de producto, cantidad, lote o fecha requeridos.'
+    },
+    {
+      title: 'Revisa la vista previa y las verificaciones',
+      description:
+        'Verifica el diseño de la etiqueta y los resultados automáticos de preflight GS1 antes de guardar. La vista previa no reserva un nuevo SSCC.'
+    },
+    {
+      title: 'Guarda y luego descarga',
+      description:
+        'Guardar asigna y reserva el SSCC usando la configuración de tu empresa. Descarga la etiqueta guardada como PDF o ZPL compatible.'
+    }
+  ];
+  const locale = getLocale();
+  const firstLabelStepsLocalized = locale.startsWith('es') ? firstLabelStepsEs : firstLabelSteps;
+
   const laterScenarios = LABEL_SCENARIOS.filter(
     (scenario) => scenario.status !== LABEL_SCENARIO_STATUSES.AVAILABLE
-  );
+  ).map((scenario) => localizeScenario(scenario, locale));
+  const supportedGuides = SUPPORTED_LABEL_GUIDES.map((guide) => localizeGuide(guide, locale));
 
   function enhanceRequest() {
     submitting = true;
     return async ({ result, update }) => {
       if (result.type === 'error') {
         submitting = false;
-        submissionError =
-          'We could not confirm your request was sent. Please try again or contact me directly.';
+        submissionError = m.guide_request_error();
         return;
       }
 
@@ -103,22 +140,18 @@
 </script>
 
 <svelte:head>
-  <title>Supported Logistic Labels - SSCC Labels</title>
-  <meta
-    name="description"
-    content="Compare supported GS1-128 logistic labels, their data, barcodes, and sizes. Learn how to download PDF or ZPL files and select your printer resolution."
-  />
+  <title>{m.guide_title()} - SSCC Labels</title>
+  <meta name="description" content={m.guide_supported_label_guide_meta()} />
 </svelte:head>
 
 <div class="space-y-12 pb-12">
   <header class="rounded-2xl bg-blue-700 px-6 py-12 text-center text-white shadow-lg sm:px-10">
     <p class="text-sm font-semibold uppercase tracking-wider text-blue-100">
-      Supported label guide
+      {m.guide_supported_label_guide()}
     </p>
-    <h1 class="mt-3 text-3xl font-bold sm:text-4xl">Which label fits your shipment?</h1>
+    <h1 class="mt-3 text-3xl font-bold sm:text-4xl">{m.guide_which_label()}</h1>
     <p class="mx-auto mt-4 max-w-3xl text-lg text-blue-100">
-      The free generator supports three label workflows. Compare their static label samples, then
-      follow the steps from company setup to saving a real label.
+      {m.guide_intro2()}
     </p>
   </header>
 
@@ -127,23 +160,20 @@
     aria-labelledby="first-label-heading"
     class="rounded-2xl border border-blue-200 bg-surface p-6 shadow-md dark:border-blue-900 sm:p-8"
   >
-    <div class="max-w-3xl">
+    <div class="max-w-4xl">
       <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
-        Step-by-step manual
+        {m.guide_step_by_step()}
       </p>
       <h2 id="first-label-heading" class="mt-2 text-2xl font-bold text-foreground">
-        Set up your company before creating a real SSCC
+        {m.guide_setup_company()}
       </h2>
       <p class="mt-3 leading-7 text-muted-foreground">
-        Every real logistic label needs an SSCC. Creating one requires a GS1 Company Prefix licensed
-        to your organization; the app cannot create a valid SSCC without it. You can inspect the
-        examples below without signing in. These static samples follow the app's single-label print
-        layouts and use the sample data shown in Figure 4-1 of the GS1 Logistic Label Guideline.
+        {m.guide_setup_desc()}
       </p>
     </div>
 
     <ol class="mt-7 grid gap-4 md:grid-cols-2">
-      {#each firstLabelSteps as step, index (step.title)}
+      {#each firstLabelStepsLocalized as step, index (step.title)}
         <li class="flex gap-4 rounded-lg border border-border-default bg-surface-muted p-4">
           <span
             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white"
@@ -160,25 +190,18 @@
     <div
       class="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
     >
-      <h3 class="text-base font-semibold text-foreground">Company details for a real SSCC</h3>
+      <h3 class="text-base font-semibold text-foreground">{m.guide_important_notes()}</h3>
       <ul class="mt-2 space-y-2 text-sm leading-6 text-muted-foreground">
         <li>
-          <strong class="text-foreground">Company name:</strong> saved in your profile and used on labels
-          where appropriate.
-        </li>
-        <li>
-          <strong class="text-foreground">GS1 Company Prefix:</strong> your organization's licensed prefix
-          is required to allocate a real SSCC and is not printed as a separate field on these samples.
-        </li>
-        <li>
-          <strong class="text-foreground">Extension digit and next serial reference:</strong> used with
-          your prefix to allocate an SSCC when you save a label.
+          <strong class="text-foreground">{m.guide_gs1_prefix_label()}</strong>
+          {m.guide_gs1_prefix_desc()}
         </li>
       </ul>
+      <p class="mt-3 text-sm leading-6 text-muted-foreground">{m.guide_baseline_rules()}</p>
     </div>
   </section>
 
-  {#each SUPPORTED_LABEL_GUIDES as guide (guide.id)}
+  {#each supportedGuides as guide (guide.id)}
     <article
       id={guide.id}
       class="scroll-mt-24 rounded-2xl border border-border-default bg-surface p-6 shadow-md sm:p-8"
@@ -194,7 +217,7 @@
           <div class="mt-7 grid gap-6 md:grid-cols-2">
             <section aria-labelledby={`${guide.id}-use`}>
               <h3 id={`${guide.id}-use`} class="font-semibold text-green-800 dark:text-green-300">
-                Use this label when
+                {m.guide_use_this_label_when()}
               </h3>
               <ul class="mt-2 space-y-2 text-sm text-muted-foreground">
                 {#each guide.useWhen as item (item)}
@@ -208,7 +231,7 @@
 
             <section aria-labelledby={`${guide.id}-avoid`}>
               <h3 id={`${guide.id}-avoid`} class="font-semibold text-amber-800 dark:text-amber-300">
-                Choose another solution when
+                {m.guide_choose_another()}
               </h3>
               <ul class="mt-2 space-y-2 text-sm text-muted-foreground">
                 {#each guide.avoidWhen as item (item)}
@@ -223,15 +246,15 @@
 
           <div class="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <section>
-              <h3 class="font-semibold text-foreground">Information</h3>
+              <h3 class="font-semibold text-foreground">{m.guide_information()}</h3>
               <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-subtle-foreground">
-                Required
+                {m.guide_required()}
               </p>
               <ul class="mt-1 space-y-1 text-sm text-muted-foreground">
                 {#each guide.requiredData as item (item)}<li>{item}</li>{/each}
               </ul>
               <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-subtle-foreground">
-                Optional
+                {m.guide_optional()}
               </p>
               <ul class="mt-1 space-y-1 text-sm text-muted-foreground">
                 {#each guide.optionalData as item (item)}<li>{item}</li>{/each}
@@ -239,14 +262,14 @@
             </section>
 
             <section>
-              <h3 class="font-semibold text-foreground">Encoded barcodes</h3>
+              <h3 class="font-semibold text-foreground">{m.guide_encoded_barcodes()}</h3>
               <ul class="mt-2 space-y-2 text-sm text-muted-foreground">
                 {#each guide.barcodeSummary as item (item)}<li>{item}</li>{/each}
               </ul>
             </section>
 
             <section>
-              <h3 class="font-semibold text-foreground">Available PDF and ZPL layouts</h3>
+              <h3 class="font-semibold text-foreground">{m.guide_available_layouts()}</h3>
               <ul class="mt-2 space-y-2 text-sm text-muted-foreground">
                 {#each guide.sizes as item (item)}<li>{item}</li>{/each}
               </ul>
@@ -257,7 +280,7 @@
             href={guide.generatorHref}
             class="mt-8 inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
           >
-            Create this label
+            {m.guide_create_this_label()}
           </a>
         </div>
 
@@ -272,18 +295,16 @@
     aria-labelledby="saved-products-heading"
   >
     <h2 id="saved-products-heading" class="text-2xl font-bold text-foreground">
-      Ship the same products often?
+      {m.guide_ship_same_products()}
     </h2>
     <p class="mt-3 max-w-3xl text-muted-foreground">
-      Save your products with their GTINs in Settings, then select one when creating an
-      identical-contents label to fill its GTIN. Shipment details such as lot, date, count, and
-      addresses stay on each label.
+      {m.guide_ship_same_desc()}
     </p>
     <a
-      href="/settings"
+      href={localizeHref('/settings')}
       class="mt-6 inline-flex rounded-md bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
     >
-      Manage saved products
+      {m.guide_manage_saved_products()}
     </a>
   </section>
 
@@ -293,71 +314,63 @@
     aria-labelledby="download-formats-heading"
   >
     <h2 id="download-formats-heading" class="text-2xl font-bold text-foreground">
-      Download and print your label
+      {m.guide_download_print()}
     </h2>
     <p class="mt-3 max-w-3xl text-muted-foreground">
-      All three supported label workflows are available as PDF and ZPL. Downloads keep the saved
-      label's layout, information, and SSCC, so downloading another format does not create a new
-      SSCC.
+      {m.guide_download_print_desc()}
     </p>
     <div class="mt-6 grid gap-6 md:grid-cols-2">
       <div>
-        <h3 class="font-semibold text-foreground">PDF for viewing and printing</h3>
+        <h3 class="font-semibold text-foreground">{m.guide_pdf()}</h3>
         <p class="mt-2 text-sm leading-6 text-muted-foreground">
-          A PDF downloads automatically when you generate and save a label. You can download it
-          again from Saved labels. Print at 100% scale on matching label stock to preserve barcode
-          dimensions.
+          {m.guide_pdf_desc2()}
         </p>
       </div>
       <div>
-        <h3 class="font-semibold text-foreground">ZPL for compatible thermal printers</h3>
+        <h3 class="font-semibold text-foreground">{m.guide_zpl()}</h3>
         <ol class="mt-2 list-decimal space-y-2 pl-5 text-sm leading-6 text-muted-foreground">
-          <li>Generate and save your label, or use an existing record in Saved labels.</li>
-          <li>
-            Set ZPL printer resolution to match your printer: 203, 300, or 600 dpi. Check your
-            printer settings if you are unsure.
-          </li>
-          <li>
-            Click Download ZPL, then send the downloaded .zpl file using your printer software.
-          </li>
+          <li>{m.guide_zpl_step1()}</li>
+          <li>{m.guide_zpl_step2()}</li>
+          <li>{m.guide_zpl_step3()}</li>
         </ol>
       </div>
     </div>
     <p class="mt-5 text-sm text-muted-foreground">
-      Use media and a printer wide enough for the selected layout. A 6 × 8 label requires a six-inch
-      print width. The two-copy layout places both copies on one 4 × 6 sheet.
+      {m.guide_zpl_media()}
     </p>
     <div class="mt-6 border-t border-blue-200 dark:border-blue-900 pt-6">
-      <h3 class="font-semibold text-foreground">Print directly over your local network</h3>
+      <h3 class="font-semibold text-foreground">{m.guide_print_network()}</h3>
       <p class="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-        With Print Bridge running on your computer, choose Print via bridge in Saved labels. Your
-        browser sends the saved label to the bridge, which forwards it to your ZPL-compatible
-        network printer. The same saved SSCC is reused each time you send a copy.
+        {m.guide_print_network_desc()}
       </p>
       <p class="mt-3 text-sm font-medium text-blue-900 dark:text-blue-200">
-        SSCC Labels → Print Bridge on your computer → Network printer
+        {m.guide_print_network()}
       </p>
       <p class="mt-3 text-sm leading-6 text-muted-foreground">
-        <a href="/print-bridge" class="font-medium text-blue-700 dark:text-blue-300 underline"
-          >Learn about Print Bridge</a
+        <a
+          href={localizeHref('/print-bridge')}
+          class="font-medium text-blue-700 dark:text-blue-300 underline"
+          >{m.guide_learn_print_bridge()}</a
         >, then follow the
         <a
           href="https://github.com/JamesBolanos/print-bridge/blob/main/DOCS/sscc-labels-setup.md"
           target="_blank"
           rel="noopener noreferrer"
-          class="font-medium text-blue-700 dark:text-blue-300 underline">setup guide</a
+          class="font-medium text-blue-700 dark:text-blue-300 underline"
+          >{m.guide_setup_guide_link()}</a
         >, then save your printer address and resolution in
-        <a href="/settings" class="font-medium text-blue-700 dark:text-blue-300 underline"
-          >Settings</a
-        >. Test bridge connection checks that the bridge is reachable; check your first physical
-        label too.
+        <a
+          href={localizeHref('/settings')}
+          class="font-medium text-blue-700 dark:text-blue-300 underline"
+          >{m.guide_settings_link()}</a
+        >. {m.guide_test_bridge()}
       </p>
     </div>
     <a
-      href="/labels/history"
+      href={localizeHref('/labels/history')}
       class="mt-6 inline-flex rounded-md bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
     >
-      Open saved labels
+      {m.guide_open_saved_labels()}
     </a>
   </section>
 
@@ -366,17 +379,16 @@
     aria-labelledby="later-scenarios-heading"
   >
     <h2 id="later-scenarios-heading" class="text-2xl font-bold text-foreground">
-      Need something beyond the free generator?
+      {m.guide_beyond_free()}
     </h2>
     <p class="mt-3 max-w-3xl text-muted-foreground">
-      The three free workflows cover common logistic-label needs. If a customer requirement needs a
-      different layout, printer workflow, or integration, we can discuss a tailored project.
+      {m.guide_beyond_free_desc()}
     </p>
-    <div class="mt-6 grid gap-4 md:grid-cols-2">
+    <div class="mt-6 grid gap-4 md:grid-cols-1">
       {#each laterScenarios as scenario (scenario.id)}
         <div class="rounded-lg border border-blue-200 bg-surface p-5 dark:border-blue-900">
           <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
-            A possible tailored need
+            {m.guide_possible_tailored()}
           </p>
           <h3 class="mt-2 font-semibold text-foreground">{scenario.title}</h3>
           <p class="mt-2 text-sm text-muted-foreground">{scenario.description}</p>
@@ -385,16 +397,14 @@
     </div>
 
     <p class="mt-6 text-sm leading-6 text-muted-foreground">
-      Possible starting points include customer routing-guide fields, other label sizes or print
-      formats, printer delivery, shipment data, user roles, and integrations. Each request is
-      reviewed individually.
+      {m.guide_possible_starting()}
     </p>
     <a
       href="#custom-request"
       onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'guide_cta' })}
       class="mt-5 inline-flex rounded-md bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
     >
-      Suggest an improvement or discuss a project
+      {m.guide_suggest_improvement()}
     </a>
   </section>
 
@@ -405,15 +415,13 @@
   >
     <div class="max-w-3xl">
       <p class="text-sm font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
-        Suggestions and tailored projects
+        {m.guide_custom_request()}
       </p>
       <h2 id="custom-request-heading" class="mt-2 text-2xl font-bold text-foreground">
-        Tell me what you need
+        {m.guide_tell_me_what_you_need()}
       </h2>
       <p class="mt-3 leading-7 text-muted-foreground">
-        Choose whether you are suggesting an improvement to the free tool or asking about a specific
-        project. No account is needed. Your message and reply address will be sent by email and will
-        not be saved in the application.
+        {m.guide_custom_request_desc2()}
       </p>
       {#if data?.companyPrefillWarning}
         <p class="mt-3 text-sm text-amber-800 dark:text-amber-200" role="status">
@@ -434,8 +442,7 @@
         class="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/30 dark:text-green-200"
         role="status"
       >
-        Your request was sent. Thanks for getting in touch; I will review it and reply to your
-        email.
+        {m.guide_request_success()}
       </div>
     {:else if form?.message}
       <div
@@ -453,7 +460,9 @@
       class="mt-7 space-y-6"
     >
       <fieldset>
-        <legend class="text-sm font-semibold text-foreground">What would you like to do?</legend>
+        <legend class="text-sm font-semibold text-foreground"
+          >{m.guide_what_would_you_like()}</legend
+        >
         {#if form?.errors?.requestType}
           <p id="request-type-error" class="mt-1 text-sm text-red-700 dark:text-red-300">
             {form.errors.requestType}
@@ -486,7 +495,9 @@
       <div class="grid gap-5 sm:grid-cols-2">
         <div>
           <label for="request-name" class="mb-1 block text-sm font-medium text-foreground">
-            Your name <span class="font-normal text-subtle-foreground">(optional)</span>
+            {m.guide_request_name()}
+            <span class="font-normal text-subtle-foreground">{m.guide_request_name_optional()}</span
+            >
           </label>
           <input
             id="request-name"
@@ -507,7 +518,7 @@
 
         <div>
           <label for="request-email" class="mb-1 block text-sm font-medium text-foreground">
-            Email address <span aria-hidden="true" class="text-red-700">*</span>
+            {m.guide_request_email()} <span aria-hidden="true" class="text-red-700">*</span>
           </label>
           <input
             id="request-email"
@@ -526,14 +537,17 @@
             </p>
           {:else}
             <p id="request-email-help" class="mt-1 text-xs text-subtle-foreground">
-              Used only to reply to your request.
+              {m.guide_request_email_help()}
             </p>
           {/if}
         </div>
 
         <div>
           <label for="request-company" class="mb-1 block text-sm font-medium text-foreground">
-            Company <span class="font-normal text-subtle-foreground">(optional)</span>
+            {m.guide_request_company()}
+            <span class="font-normal text-subtle-foreground"
+              >{m.guide_request_company_optional()}</span
+            >
           </label>
           <input
             id="request-company"
@@ -554,7 +568,7 @@
 
         <div>
           <label for="request-topic" class="mb-1 block text-sm font-medium text-foreground">
-            What is it mostly about?
+            {m.guide_request_topic()}
           </label>
           <select
             id="request-topic"
@@ -577,10 +591,7 @@
 
       <div>
         <label for="request-message" class="mb-1 block text-sm font-medium text-foreground">
-          What are you trying to do, and what do you need? <span
-            aria-hidden="true"
-            class="text-red-700">*</span
-          >
+          {m.guide_request_message()} <span aria-hidden="true" class="text-red-700">*</span>
         </label>
         <textarea
           id="request-message"
@@ -601,14 +612,13 @@
           </p>
         {:else}
           <p id="request-message-help" class="mt-1 text-xs text-subtle-foreground">
-            Please do not include passwords, shipment records, customer-confidential details, SSCCs,
-            or GTINs.
+            {m.guide_request_message_help()}
           </p>
         {/if}
       </div>
 
       <div class="sr-only" aria-hidden="true">
-        <label for="request-website">Leave this field empty</label>
+        <label for="request-website">{m.guide_request_leave_empty()}</label>
         <input
           id="request-website"
           name="website"
@@ -625,25 +635,19 @@
           disabled={submitting}
           class="inline-flex items-center justify-center rounded-md bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? 'Sending…' : 'Send request'}
+          {submitting ? m.guide_request_sending() : m.guide_request_send()}
         </button>
         <p class="text-sm text-muted-foreground">
-          Prefer email? <a
+          {m.guide_prefer_email()}
+          <a
             href="mailto:jbolanosdiaz@gmail.com"
             onclick={() =>
               trackProductEvent('custom_contact_clicked', { placement: 'guide_email_fallback' })}
-            class="font-medium text-blue-700 underline dark:text-blue-300">Contact me directly</a
+            class="font-medium text-blue-700 underline dark:text-blue-300"
+            >{m.guide_contact_directly()}</a
           >.
         </p>
       </div>
     </form>
   </section>
-
-  <aside
-    class="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-5 text-sm text-amber-950 dark:text-amber-100"
-  >
-    These layouts apply the supported baseline rules in this generator. Confirm your trading
-    partner’s current requirements and physically verify printed barcode quality before operational
-    use.
-  </aside>
 </div>
