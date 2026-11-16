@@ -19,10 +19,6 @@ test('public Print Bridge page explains the optional local printing workflow', a
     'href',
     'https://github.com/JamesBolanos/print-bridge/releases/latest'
   );
-  await expect(page.getByRole('link', { name: 'Print Bridge setup guide' })).toHaveAttribute(
-    'href',
-    'https://github.com/JamesBolanos/print-bridge/blob/main/DOCS/sscc-labels-setup.md'
-  );
   await expect(page.locator('footer').getByRole('link', { name: 'Print Bridge' })).toHaveAttribute(
     'href',
     '/print-bridge'

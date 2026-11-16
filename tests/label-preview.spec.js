@@ -54,7 +54,7 @@ test('signed-in user can generate both available shipping situations', async ({
     const expectedDisplayName = email.split('@')[0];
     const appHeader = page.getByRole('banner');
     await expect(appHeader.getByText(expectedDisplayName, { exact: true })).toBeVisible();
-    await expect(appHeader.getByRole('button', { name: 'Logout', exact: true })).toBeVisible();
+    await expect(appHeader.getByRole('button', { name: 'Log out', exact: true })).toBeVisible();
     await expect(appHeader.getByRole('link', { name: 'Login', exact: true })).toHaveCount(0);
 
     const appNavigation = page.getByRole('navigation', { name: 'Application' });
@@ -354,7 +354,7 @@ test('signed-in user can generate both available shipping situations', async ({
     await expect(homogeneousHistoryRow).toBeVisible();
     await expect(homogeneousHistoryRow).toContainText('GTIN 00012345600012');
     await expect(homogeneousHistoryRow).toContainText('Ship to: Customer DC 20 Destination Road');
-    await expect(homogeneousHistoryRow).toContainText('Lot: 123456');
+    await expect(homogeneousHistoryRow).toContainText('Lot 123456');
     await expect(homogeneousHistoryRow).toContainText('Packaging date: 2026-09-28');
     await expect(homogeneousHistoryRow).toContainText('6 × 8 — detailed contents');
 

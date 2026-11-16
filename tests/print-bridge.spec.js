@@ -25,7 +25,7 @@ const zpl = '^XA\n^FD(00)012345670000000015^FS\n^XZ\n';
 
 async function mountFixture(page, component) {
   const template = await readFile('src/app.html', 'utf8');
-  const csp = template.match(/<meta http-equiv="Content-Security-Policy"[^>]+>/)?.[0];
+  const csp = template.match(/<meta\s+http-equiv="Content-Security-Policy"[^>]+>/)?.[0];
   expect(csp).toBeTruthy();
   await page.route('**/tests/fixtures/print-bridge.html', (route) =>
     route.fulfill({
