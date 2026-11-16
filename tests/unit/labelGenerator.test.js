@@ -59,7 +59,7 @@ describe('guided label PDF rendering', () => {
     expect(content).toContain('DESTINO');
     expect(content).toContain('ORDEN DE COMPRA');
     expect(content).toContain('Caf\\351 \\321and\\372');
-    expect(content).toContain('1 cart\\363n');
+    expect(content).toContain('1 caja');
     expect(content).toContain('/Encoding /WinAnsiEncoding');
     expect(content).toContain('\\(00\\)012345670000000015');
   });
