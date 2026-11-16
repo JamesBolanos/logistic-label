@@ -1,4 +1,3 @@
-<!-- src/routes/+layout.svelte -->
 <script>
   import { onMount } from 'svelte';
   import GoogleAnalytics from '#lib/components/Analytics/GoogleAnalytics.svelte';
@@ -12,6 +11,7 @@
   onMount(initTheme);
 </script>
 
+<!-- src/routes/+layout.svelte -->
 <GoogleAnalytics measurementId={data.analyticsMeasurementId} />
 
 {@render children()}

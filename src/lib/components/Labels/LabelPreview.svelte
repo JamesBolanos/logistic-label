@@ -1,6 +1,8 @@
 <!-- src/lib/components/Labels/LabelPreview.svelte -->
 <script>
   import { onDestroy } from 'svelte';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { createOperationId, trackProductEvent } from '#lib/analytics/client.ts';
   import { classifyHttpFailure } from '#lib/analytics/events.ts';
   import {
@@ -20,6 +22,7 @@
   let error = $state(null);
   let verification = $state(null);
   let objectUrl = null;
+  let locale = $derived(getLocale());
 
   const previewAspectRatio = $derived.by(() => {
     const labelSize = labelData ? getLabelSizeForPrintLayout(labelData.print_layout) : '4x6';
@@ -51,7 +54,7 @@
 
     try {
       // Call the API to generate a preview
-      const response = await fetch('/api/pdf/preview', {
+      const response = await fetch(localizeHref('/api/pdf/preview', { locale }), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +66,7 @@
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to generate preview');
+        throw new Error(errorData.message || m.preview_failed());
       }
 
       verification = parseLabelVerificationReport(response.headers.get(LABEL_VERIFICATION_HEADER));
@@ -79,7 +82,7 @@
       });
     } catch (err) {
       console.error('Preview generation error:', err);
-      error = err.message || 'Error generating preview';
+      error = err.message || m.preview_error_generating();
       trackProductEvent('workflow_failed', {
         step: 'label_preview',
         error_category: responseStatus === null ? 'network' : classifyHttpFailure(responseStatus),
@@ -99,8 +102,8 @@
 </script>
 
 <div class="bg-white p-6 rounded-lg shadow-md">
-  <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Step 3 of 3</p>
-  <h3 class="mt-1 text-lg font-bold mb-4">Review label</h3>
+  <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">{m.preview_step3()}</p>
+  <h3 class="mt-1 text-lg font-bold mb-4">{m.preview_review_label()}</h3>
 
   {#if isLoading}
     <div class="flex justify-center items-center h-64">
@@ -108,24 +111,23 @@
     </div>
   {:else if error}
     <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
-      <p>Error: {error}</p>
+      <p>{m.preview_error_prefix()} {error}</p>
       <button onclick={generatePreview} class="mt-2 text-sm text-blue-600 hover:text-blue-500">
-        Try again
+        {m.preview_try_again()}
       </button>
     </div>
   {:else if previewUrl}
     <div class="flex justify-center rounded-md border border-gray-300 bg-gray-100 p-4">
       <iframe
         src={previewUrl}
-        title="Label Preview"
+        title={m.preview_label_preview()}
         class="w-full max-w-sm rounded-md bg-white shadow-sm"
         style={`aspect-ratio: ${previewAspectRatio};`}
       ></iframe>
     </div>
     <div class="mt-4 text-sm text-gray-500">
       <p>
-        The preview uses the next available SSCC. The final number is reserved when you generate and
-        save the label. Print at 100% scale to preserve barcode dimensions.
+        {m.preview_uses_next_sscc()}
       </p>
     </div>
     {#if verification}
@@ -142,25 +144,25 @@
           </div>
           <div>
             <h4 id="automated-label-checks-heading" class="font-semibold text-emerald-950">
-              Automated label checks
+              {m.preview_automated_checks()}
             </h4>
             <p class="mt-1 text-sm text-emerald-900">
-              The preview passed the application checks listed below.
+              {m.preview_passed_checks()}
             </p>
           </div>
         </div>
 
         <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
           <div>
-            <dt class="font-medium text-gray-600">Label type</dt>
+            <dt class="font-medium text-gray-600">{m.preview_label_type()}</dt>
             <dd class="mt-1 text-gray-950">{verification.labelType}</dd>
           </div>
           <div>
-            <dt class="font-medium text-gray-600">Print layout</dt>
+            <dt class="font-medium text-gray-600">{m.preview_print_layout()}</dt>
             <dd class="mt-1 text-gray-950">{verification.printLayout}</dd>
           </div>
           <div>
-            <dt class="font-medium text-gray-600">Barcode data</dt>
+            <dt class="font-medium text-gray-600">{m.preview_barcode_data()}</dt>
             <dd class="mt-1 text-gray-950">
               {verification.symbology}: {verification.applicationIdentifiers
                 .map((ai) => `(${ai})`)
@@ -181,7 +183,7 @@
         </ul>
 
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
-          <p class="font-semibold">Physical verification is still required</p>
+          <p class="font-semibold">{m.preview_physical_verification()}</p>
           <ul class="mt-1 list-disc space-y-1 pl-5">
             {#each verification.warnings as warning (warning)}
               <li>{warning}</li>
@@ -211,7 +213,7 @@
           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
         />
       </svg>
-      <p class="mt-2 text-gray-500">Review the scenario to generate a PDF preview.</p>
+      <p class="mt-2 text-gray-500">{m.preview_review_scenario()}</p>
     </div>
   {/if}
 </div>

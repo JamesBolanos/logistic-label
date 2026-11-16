@@ -1,8 +1,16 @@
 <script>
-  import { formatReleaseDate } from '#lib/content/releases.ts';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
+  import {
+    formatReleaseDate,
+    localizeRelease,
+    releaseCategoryLabel
+  } from '#lib/content/releases.ts';
   import { observeReleaseUpdate, trackProductEvent } from '#lib/analytics/client.ts';
 
   let { updates = [] } = $props();
+  let locale = $derived(getLocale());
+  let localizedUpdates = $derived(updates.map((update) => localizeRelease(update, locale)));
 
   function categoryClass(category) {
     if (category === 'fix')
@@ -24,30 +32,32 @@
       <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
         Product updates
       </p>
-      <h2 id="whats-new-heading" class="mt-1 text-lg font-semibold text-foreground">What's new</h2>
+      <h2 id="whats-new-heading" class="mt-1 text-lg font-semibold text-foreground">
+        {m.whatsnew_heading()}
+      </h2>
     </div>
     <a
       class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 focus:rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface"
-      href="/updates"
+      href={localizeHref('/updates')}
     >
-      View all updates
+      {m.whatsnew_view_all()}
     </a>
   </div>
 
-  {#if updates.length === 0}
-    <p class="px-4 py-6 text-sm text-subtle-foreground sm:px-6">No published updates yet.</p>
+  {#if localizedUpdates.length === 0}
+    <p class="px-4 py-6 text-sm text-subtle-foreground sm:px-6">{m.whatsnew_none()}</p>
   {:else}
     <ul class="divide-y divide-border-default">
-      {#each updates as update (update.id)}
+      {#each localizedUpdates as update (update.id)}
         <li class="px-4 py-5 sm:px-6" use:observeReleaseUpdate={update}>
           <div class="flex flex-wrap items-center gap-2">
             <span
               class={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${categoryClass(update.category)}`}
             >
-              {update.category}
+              {releaseCategoryLabel(update.category, locale)}
             </span>
             <time class="text-xs text-subtle-foreground" datetime={update.publishedAt}>
-              {formatReleaseDate(update.publishedAt)}
+              {formatReleaseDate(update.publishedAt, locale)}
             </time>
           </div>
           <h3 class="mt-3 text-base font-semibold text-foreground">{update.title}</h3>

@@ -2,25 +2,33 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { authClient } from '#lib/auth-client.js';
+  import { m } from '#lib/paraglide/messages.js';
+  import { deLocalizeUrl, getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+  import LocaleSwitcher from './LocaleSwitcher.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
 
   let { user = null, ontogglemenu = () => {} } = $props();
 
   const pageTitles = {
-    '/dashboard': 'Dashboard',
-    '/labels': 'Label Generator',
-    '/labels/history': 'Saved Labels',
-    '/products': 'Products',
-    '/printer': 'Printer Config',
-    '/settings': 'Settings',
-    '/admin/statistics': 'Statistics'
+    '/dashboard': m.nav_dashboard,
+    '/labels': m.nav_label_generator,
+    '/labels/history': m.nav_saved_labels,
+    '/products': m.nav_products,
+    '/printer': m.nav_printer_config,
+    '/settings': m.nav_settings,
+    '/export': m.nav_data_export,
+    '/admin/statistics': m.nav_statistics
   };
 
-  let displayName = $derived(user?.displayName || 'User');
+  let locale = $derived(getLocale());
+  let canonicalPath = $derived(deLocalizeUrl(page.url).pathname);
+  let displayName = $derived(user?.displayName || m.nav_user());
   let email = $derived(user?.email || '');
   let pageTitle = $derived(
-    pageTitles[page.url.pathname] ??
-      (page.url.pathname.startsWith('/labels/create') ? 'Label Generator' : 'Workspace')
+    (
+      pageTitles[canonicalPath] ??
+      (canonicalPath.startsWith('/labels/create') ? m.nav_label_generator : () => m.nav_workspace())
+    )()
   );
   let isLoggingOut = $state(false);
 
@@ -30,7 +38,7 @@
 
     try {
       await authClient.signOut();
-      await goto('/login', { refreshAll: true });
+      await goto(localizeHref('/login', { locale }), { refreshAll: true });
     } catch (error) {
       console.error('Logout error:', error);
       isLoggingOut = false;
@@ -45,7 +53,7 @@
         type="button"
         onclick={ontogglemenu}
         class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border-default bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
-        aria-label="Open navigation"
+        aria-label={m.nav_open_menu()}
         aria-controls="app-sidebar"
       >
         <svg
@@ -64,6 +72,7 @@
     </div>
 
     <div class="flex items-center gap-2 sm:gap-3">
+      <LocaleSwitcher />
       <ThemeToggle />
 
       <div class="hidden text-right sm:block">
@@ -77,7 +86,7 @@
         disabled={isLoggingOut}
         class="inline-flex items-center justify-center rounded-md border border-border-default bg-surface px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50"
       >
-        {isLoggingOut ? 'Signing out...' : 'Logout'}
+        {isLoggingOut ? m.auth_signing_out() : m.nav_logout()}
       </button>
     </div>
   </div>

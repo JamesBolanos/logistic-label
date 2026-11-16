@@ -1,6 +1,19 @@
 # AI Work Log
 
+## 2026-11-12 — `LOCALIZATION-001` — Continue Spanish localization implementation
+
+- Result: translated auth, dashboard, labels, settings, products, printer, history, admin statistics, updates, print bridge, guide chrome, and major components (forms, preview, saved products, onboarding, account preferences, captcha, data export, whats-new); wired all to Paraglide catalogs; added locale-aware label type names; quality passes (format, lint, svelte-check, tsc, 220 unit tests, db:check, build).
+- Decisions: validation error messages, scenario data text, privacy deep content, and guide deep content remain English pending a follow-up pass; migration 0013 not yet applied.
+- Status: in progress; release pending.
+
 This is a concise handoff log for meaningful work increments. It is not a chat transcript, command history, backlog, or release history. Current priority and state belong in [`KANBAN.md`](./KANBAN.md); user-visible releases belong in `src/lib/content/releases.ts`.
+
+## 2026-11-12 — `LOCALIZATION-001` — Prioritize English and Spanish localization
+
+- Result: added the localization requirements and tool choices, including Paraglide.js, `/es/` URLs, `Accept-Language`, in-app translations, and dedicated PDF/ZPL font and layout verification; placed the feature at the top of Ready.
+- Decisions: translate the entire application and all generated emails; redirect unprefixed Spanish requests to `/es/`; treat any `es-*` browser language as Spanish; only language-switch actions update the long-lived preference cookie; `/es/` is a temporary override; use neutral Latin American Spanish; preserve saved-label language and versioned visible rendering on reprint (file bytes need not match; existing labels default to English); localize emails using the initiating page/form language; missing Spanish routes fall back to Spanish home; product owner reviews translations before release.
+- Implementation: moved to In progress; starting with Paraglide/SvelteKit integration, locale routing, and preference handling before expanding translations and label/email output.
+- Status: implementation underway; release pending.
 
 ## 2026-11-11 — `UX-004` — Clarify CAPTCHA recovery feedback
 
@@ -80,7 +93,7 @@ This is a concise handoff log for meaningful work increments. It is not a chat t
 - Decisions: keep the public demo static and non-operational; preserve auth and CAPTCHA policy; do not add analytics/reporting or a What's New announcement.
 - Material files: `src/routes/(public)/+page.svelte`, `src/routes/(public)/guide/+page.svelte`, `src/lib/components/Guide/LabelDiagram.svelte`, `src/lib/labels/guide.js`, `src/lib/components/Auth/Captcha.svelte`, `src/routes/(app)/settings/+page.svelte`, `src/lib/components/Dashboard/OnboardingChecklist.svelte`, `tests/label-guide.spec.js`, `tests/unit/labelGuide.test.ts`, `docs/UX_FIRST_USE_IMPROVEMENTS.md`, `docs/KANBAN.md`, and `docs/WORK_PLAN.md`.
 - Validation: `npm run quality` passes (26 test files, 199 unit tests, no Svelte/TypeScript errors or warnings, database check, and production build); `npx playwright test tests/label-guide.spec.js` passes with the 4 × 6, 4 × 6, and 4 × 3 sample-layout assertions; a production-preview Playwright check confirms CAPTCHA load failure is recoverable while signup remains blocked until verification; the 390px guide viewport has no horizontal overflow.
-- Status: Ready for developer review on `feature/general-improvements`.
+- Status: Production implementation confirmed by the developer on 2026-11-12; `UX-004` is Accomplished.
 
 ## 2026-11-09 — `PRODUCT-003` — Searchable GPC and country lookups
 

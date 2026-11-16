@@ -1,13 +1,14 @@
 <script>
   import { toggleTheme } from '#lib/theme/theme.svelte.js';
+  import { m } from '#lib/paraglide/messages.js';
 </script>
 
 <button
   type="button"
   onclick={toggleTheme}
   class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border-default bg-surface text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-  aria-label="Toggle dark mode"
-  title="Toggle dark mode"
+  aria-label={m.theme_toggle_dark_mode()}
+  title={m.theme_toggle_dark_mode()}
 >
   <!-- Moon: shown in light mode -->
   <svg

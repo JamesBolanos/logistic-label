@@ -1,25 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="%paraglide.lang%" dir="%paraglide.dir%">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
-    
+
     <!-- Security headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.googletagmanager.com https://*.google-analytics.com https://www.gstatic.com/recaptcha/; font-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:* https://*.google-analytics.com https://www.google.com https://www.googletagmanager.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; frame-src 'self' blob: https://www.google.com/recaptcha/; object-src 'none'">
-    
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.googletagmanager.com https://*.google-analytics.com https://www.gstatic.com/recaptcha/; font-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:* https://*.google-analytics.com https://www.google.com https://www.googletagmanager.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; frame-src 'self' blob: https://www.google.com/recaptcha/; object-src 'none'"
+    />
+
     <!-- SEO meta tags -->
-    <meta name="description" content="Generate GS1-128 compliant logistic labels for shipping and inventory" />
+    <meta
+      name="description"
+      content="Generate GS1-128 compliant logistic labels for shipping and inventory"
+    />
     <meta name="keywords" content="GS1-128, logistics, labels, barcode, shipping, inventory" />
     <meta name="author" content="Your Company Name" />
-    
+
     <!-- Open Graph / Social media meta tags -->
     <meta property="og:title" content="GS1-128 Logistic Label Generator" />
-    <meta property="og:description" content="Generate GS1-128 compliant logistic labels for shipping and inventory" />
+    <meta
+      property="og:description"
+      content="Generate GS1-128 compliant logistic labels for shipping and inventory"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://yourdomain.com" />
     <meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
-    
+
     <!--
       Apply the saved color theme before first paint. Keep the storage key in
       sync with src/lib/theme/theme.svelte.js.

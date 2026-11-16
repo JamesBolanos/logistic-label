@@ -1,5 +1,6 @@
 <script>
   import { authClient } from '#lib/auth-client.js';
+  import { m } from '#lib/paraglide/messages.js';
 
   let { user = null } = $props();
 
@@ -30,13 +31,13 @@
       const { error } = await authClient.updateUser({ name: displayName.trim() });
 
       if (error) {
-        nameError = error.message || 'Failed to update your profile.';
+        nameError = error.message || m.account_failed_profile();
         return;
       }
 
-      nameMessage = 'Profile updated.';
+      nameMessage = m.account_profile_updated();
     } catch {
-      nameError = 'We could not connect to the service. Please try again.';
+      nameError = m.account_could_not_connect();
     } finally {
       nameSaving = false;
     }
@@ -50,7 +51,7 @@
     passwordMessage = '';
 
     if (newPassword !== confirmPassword) {
-      passwordError = 'The new passwords do not match.';
+      passwordError = m.account_password_mismatch();
       return;
     }
 
@@ -64,16 +65,16 @@
       });
 
       if (error) {
-        passwordError = error.message || 'Failed to change your password.';
+        passwordError = error.message || m.account_failed_password();
         return;
       }
 
       currentPassword = '';
       newPassword = '';
       confirmPassword = '';
-      passwordMessage = 'Password changed. Other sessions were signed out.';
+      passwordMessage = m.account_password_changed();
     } catch {
-      passwordError = 'We could not connect to the service. Please try again.';
+      passwordError = m.account_could_not_connect();
     } finally {
       passwordSaving = false;
     }
@@ -85,15 +86,15 @@
   class="space-y-6 rounded-lg border border-border-default bg-surface p-6 shadow"
 >
   <div>
-    <h2 id="account-heading" class="text-xl font-semibold text-foreground">Account</h2>
+    <h2 id="account-heading" class="text-xl font-semibold text-foreground">{m.account_title()}</h2>
     <p class="mt-2 text-sm text-muted-foreground">
-      Your account email and display name are shown in the header and sidebar.
+      {m.account_desc()}
     </p>
   </div>
 
   <div>
     <label for="account_email" class="mb-1 block text-sm font-medium text-muted-foreground">
-      Email Address
+      {m.account_email_address()}
     </label>
     <input
       id="account_email"
@@ -107,11 +108,14 @@
   <form
     onsubmit={saveDisplayName}
     class="space-y-4 border-t border-border-default pt-6"
-    aria-label="Display name"
+    aria-label={m.account_display_name_aria()}
   >
     <div>
-      <label for="account_display_name" class="mb-1 block text-sm font-medium text-muted-foreground">
-        Display Name
+      <label
+        for="account_display_name"
+        class="mb-1 block text-sm font-medium text-muted-foreground"
+      >
+        {m.account_display_name()}
       </label>
       <input
         id="account_display_name"
@@ -134,7 +138,7 @@
         disabled={nameSaving}
         class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
       >
-        {nameSaving ? 'Saving...' : 'Save Profile'}
+        {nameSaving ? m.account_saving() : m.account_save_profile()}
       </button>
     </div>
   </form>
@@ -142,12 +146,12 @@
   <form
     onsubmit={changePassword}
     class="space-y-4 border-t border-border-default pt-6"
-    aria-label="Change password"
+    aria-label={m.account_change_password_aria()}
   >
     <div>
-      <h3 class="text-base font-semibold text-foreground">Change password</h3>
+      <h3 class="text-base font-semibold text-foreground">{m.account_change_password()}</h3>
       <p class="mt-1 text-sm text-muted-foreground">
-        Changing your password signs out your other sessions.
+        {m.account_change_password_desc()}
       </p>
     </div>
 
@@ -156,7 +160,7 @@
         for="account_current_password"
         class="mb-1 block text-sm font-medium text-muted-foreground"
       >
-        Current Password
+        {m.account_current_password()}
       </label>
       <input
         id="account_current_password"
@@ -219,7 +223,7 @@
         disabled={passwordSaving}
         class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50"
       >
-        {passwordSaving ? 'Updating...' : 'Change Password'}
+        {passwordSaving ? m.account_updating() : m.account_change_password_button()}
       </button>
     </div>
   </form>

@@ -86,6 +86,8 @@ export const logisticLabel = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     labelType: varchar('label_type', { length: 30 }).notNull().default('legacy_demo'),
     templateVersion: varchar('template_version', { length: 30 }).notNull().default('v1'),
+    renderingVersion: varchar('rendering_version', { length: 30 }).notNull().default('v1'),
+    locale: varchar('locale', { length: 5 }).notNull().default('en'),
     printLayout: varchar('print_layout', { length: 30 }).notNull().default('4x6_single'),
     gtin: varchar('gtin', { length: 14 }),
     packagingLevel: varchar('packaging_level', { length: 30 }),

@@ -4,6 +4,7 @@ import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { waitUntil } from '@vercel/functions';
 import { getRequestEvent } from '$app/server';
 import { dev } from '$app/env';
+import { deLocalizeUrl, localizeHref } from '#lib/paraglide/runtime.js';
 import {
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
@@ -47,7 +48,22 @@ export const auth = betterAuth({
     resetPasswordTokenExpiresIn: 60 * 60,
     revokeSessionsOnPasswordReset: true,
     async sendResetPassword({ user, url }) {
-      await sendPasswordResetEmail({ to: user.email, resetUrl: url });
+      const requestEvent = getRequestEvent();
+      const requestedLocale = requestEvent.request.headers.get('x-app-locale');
+      const locale =
+        requestedLocale === 'en' || requestedLocale === 'es'
+          ? requestedLocale
+          : (requestEvent.locals.locale ?? 'en');
+      const resetUrl = new URL(url);
+      const localizedUrl = deLocalizeUrl(resetUrl);
+      const localizedPath = localizeHref(`${localizedUrl.pathname}${localizedUrl.search}`, {
+        locale
+      });
+      await sendPasswordResetEmail({
+        to: user.email,
+        resetUrl: new URL(localizedPath, resetUrl.origin).toString(),
+        locale
+      });
     }
   },
   account: {

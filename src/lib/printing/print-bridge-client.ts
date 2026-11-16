@@ -1,3 +1,4 @@
+import { localizeHref } from '#lib/paraglide/runtime.js';
 import { validatePrintSettings, type PrintSettings } from './settings';
 
 type BridgeResponse = { message?: string; destination?: string; jobId?: string };
@@ -81,7 +82,7 @@ export async function sendZplToPrintBridge(
 }
 
 export async function printSavedLabel(id: string | number): Promise<'sent' | 'virtual'> {
-  const settingsResponse = await fetch('/api/settings', { cache: 'no-store' });
+  const settingsResponse = await fetch(localizeHref('/api/settings'), { cache: 'no-store' });
   if (!settingsResponse.ok)
     throw new Error('Unable to load printer settings. Check your sign-in and try again.');
   const { settings } = await settingsResponse.json();
@@ -90,7 +91,7 @@ export async function printSavedLabel(id: string | number): Promise<'sent' | 'vi
   if (!settings.printer_hostname)
     throw new Error('Configure your printer in Settings before printing.');
   const response = await fetch(
-    `/api/zpl/download/${encodeURIComponent(id)}?dpi=${settings.printer_dpi}`,
+    localizeHref(`/api/zpl/download/${encodeURIComponent(id)}?dpi=${settings.printer_dpi}`),
     { cache: 'no-store' }
   );
   if (!response.ok)

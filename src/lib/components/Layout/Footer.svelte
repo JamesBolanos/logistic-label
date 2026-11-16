@@ -1,12 +1,14 @@
 <script>
   import { page } from '$app/state';
+  import { m } from '#lib/paraglide/messages.js';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
 
-  const footerLinks = [
-    { href: '/guide', label: 'Label Guide' },
-    { href: '/privacy', label: 'Privacy Policy' },
-    { href: '/print-bridge', label: 'Print Bridge' }
-  ];
-
+  let locale = $derived(getLocale());
+  let footerLinks = $derived([
+    { href: '/guide', label: m.nav_label_guide() },
+    { href: '/privacy', label: m.nav_privacy() },
+    { href: '/print-bridge', label: m.nav_print_bridge() }
+  ]);
   let showAdminLink = $derived(Boolean(page.data.isAnalyticsOwner));
 </script>
 
@@ -16,15 +18,14 @@
       <div class="max-w-sm">
         <p class="text-sm font-semibold text-foreground">SSCC Labels</p>
         <p class="mt-2 text-sm leading-6 text-muted-foreground">
-          Free GS1-128 logistic label generation, with a tailored private implementation available
-          for custom formats, printers, data, and workflows.
+          {m.footer_description()}
         </p>
       </div>
 
-      <nav aria-label="Footer" class="flex flex-wrap gap-x-6 gap-y-3">
+      <nav aria-label={m.nav_footer()} class="flex flex-wrap gap-x-6 gap-y-3">
         {#each footerLinks as link (link.href)}
           <a
-            href={link.href}
+            href={localizeHref(link.href, { locale })}
             target={link.external ? '_blank' : undefined}
             rel={link.external ? 'noopener noreferrer' : undefined}
             class="text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -34,10 +35,10 @@
         {/each}
         {#if showAdminLink}
           <a
-            href="/admin/statistics"
+            href={localizeHref('/admin/statistics', { locale })}
             class="text-sm font-medium text-muted-foreground hover:text-foreground"
           >
-            Statistics
+            {m.nav_statistics()}
           </a>
         {/if}
       </nav>
@@ -45,11 +46,11 @@
 
     <div class="mt-8 border-t border-border-default pt-6">
       <p class="text-sm text-subtle-foreground">
-        &copy; {new Date().getFullYear()} GS1-128 Logistic Label Generator. All rights reserved.
+        &copy; {new Date().getFullYear()}
+        {m.footer_copyright()}
       </p>
       <p class="mt-1 text-xs text-subtle-foreground">
-        This application complies with GS1 standards for barcode generation. GS1 is a registered
-        trademark.
+        {m.footer_gs1_notice()}
       </p>
     </div>
   </div>

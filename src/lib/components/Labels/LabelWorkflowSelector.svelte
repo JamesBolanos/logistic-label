@@ -1,8 +1,13 @@
 <script>
+  import { localizeHref } from '#lib/paraglide/runtime.js';
   import { trackProductEvent } from '#lib/analytics/client.ts';
-  import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES } from '#lib/labels/scenarios.js';
+  import { LABEL_SCENARIOS, LABEL_SCENARIO_STATUSES, localizeScenario } from '#lib/labels/scenarios.js';
+  import { getLocale } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
 
   let { onselect } = $props();
+  const locale = getLocale();
+  const scenarios = LABEL_SCENARIOS.map((scenario) => localizeScenario(scenario, locale));
 
   function isAvailable(scenario) {
     return scenario.status === LABEL_SCENARIO_STATUSES.AVAILABLE;
@@ -38,7 +43,7 @@
 
     <div>
       <p class="text-xs font-semibold uppercase tracking-wide text-subtle-foreground">
-        Label output
+        {m.label_workflow_label_output()}
       </p>
       <ul class="mt-1 space-y-1 text-sm text-muted-foreground">
         {#each scenario.outputs as output (output)}
@@ -52,26 +57,25 @@
   </div>
 
   <span class="mt-5 text-sm font-semibold text-blue-700 dark:text-blue-300">
-    {scenario.actionLabel || 'Discuss a tailored project'} →
+    {scenario.actionLabel || m.label_workflow_discuss()} →
   </span>
 {/snippet}
 
 <section class="rounded-lg bg-surface p-6 shadow-md" aria-labelledby="workflow-heading">
   <div class="mb-6">
     <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
-      Step 1 of 3
+      {m.label_workflow_step1()}
     </p>
     <h2 id="workflow-heading" class="mt-1 text-xl font-bold text-foreground">
-      What do you need to ship?
+      {m.label_workflow_heading()}
     </h2>
     <p class="mt-2 max-w-3xl text-sm text-muted-foreground">
-      Choose the real-world situation that best matches your shipment. The generator will apply the
-      supported GS1 rules for you.
+      {m.label_workflow_desc()}
     </p>
   </div>
 
   <div class="grid gap-5 lg:grid-cols-2">
-    {#each LABEL_SCENARIOS as scenario (scenario.id)}
+    {#each scenarios as scenario (scenario.id)}
       {#if isAvailable(scenario)}
         <button
           type="button"
@@ -84,7 +88,7 @@
         </button>
       {:else}
         <a
-          href="/guide?requestType=tailored_project#custom-request"
+          href={localizeHref('/guide?requestType=tailored_project#custom-request')}
           aria-label={`${scenario.title} — Discuss a tailored project`}
           aria-describedby={`scenario-${scenario.id}-details`}
           onclick={() =>

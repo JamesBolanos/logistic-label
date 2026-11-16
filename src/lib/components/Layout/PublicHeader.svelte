@@ -1,21 +1,29 @@
 <script>
   import { page } from '$app/state';
+  import { m } from '#lib/paraglide/messages.js';
+  import { deLocalizeUrl, getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+  import LocaleSwitcher from './LocaleSwitcher.svelte';
   import Logo from './Logo.svelte';
   import ThemeToggle from './ThemeToggle.svelte';
 
   let { user = null } = $props();
   let isMobileMenuOpen = $state(false);
 
-  const publicLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/guide', label: 'Label Guide' }
-  ];
-
+  let publicLinks = $derived([
+    { href: '/', label: m.nav_home() },
+    { href: '/guide', label: m.nav_label_guide() }
+  ]);
+  let locale = $derived(getLocale());
   let isLoggedIn = $derived(Boolean(user));
 
+  function localize(path) {
+    return localizeHref(path, { locale });
+  }
+
   function isActive(href) {
-    if (href === '/') return page.url.pathname === '/';
-    return page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
+    const path = deLocalizeUrl(page.url).pathname;
+    if (href === '/') return path === '/';
+    return path === href || path.startsWith(`${href}/`);
   }
 
   function linkClass(href, mobile = false) {
@@ -40,10 +48,10 @@
     <div class="flex min-w-0 items-center gap-8">
       <Logo />
 
-      <nav aria-label="Main" class="hidden items-center gap-1 md:flex">
+      <nav aria-label={m.nav_main()} class="hidden items-center gap-1 md:flex">
         {#each publicLinks as link (link.href)}
           <a
-            href={link.href}
+            href={localize(link.href)}
             class={linkClass(link.href)}
             aria-current={isActive(link.href) ? 'page' : undefined}
           >
@@ -54,27 +62,28 @@
     </div>
 
     <div class="flex items-center gap-2">
+      <LocaleSwitcher />
       <ThemeToggle />
 
       {#if isLoggedIn}
         <a
-          href="/dashboard"
+          href={localize('/dashboard')}
           class="hidden rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:inline-flex"
         >
-          Open app
+          {m.nav_open_app()}
         </a>
       {:else}
         <a
-          href="/login"
+          href={localize('/login')}
           class="hidden rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground sm:inline-flex"
         >
-          Log in
+          {m.nav_login()}
         </a>
         <a
-          href="/signup"
+          href={localize('/signup')}
           class="hidden rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:inline-flex"
         >
-          Sign up
+          {m.nav_signup()}
         </a>
       {/if}
 
@@ -84,7 +93,7 @@
         class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border-default bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:hidden"
         aria-expanded={isMobileMenuOpen}
         aria-controls="public-mobile-menu"
-        aria-label={isMobileMenuOpen ? 'Close main menu' : 'Open main menu'}
+        aria-label={isMobileMenuOpen ? m.nav_close_menu() : m.nav_open_menu()}
       >
         {#if isMobileMenuOpen}
           <svg
@@ -115,9 +124,9 @@
 
   {#if isMobileMenuOpen}
     <div id="public-mobile-menu" class="border-t border-border-default bg-surface md:hidden">
-      <nav aria-label="Mobile" class="mx-auto max-w-7xl space-y-1 px-4 py-4 sm:px-6">
+      <nav aria-label={m.nav_mobile()} class="mx-auto max-w-7xl space-y-1 px-4 py-4 sm:px-6">
         {#each publicLinks as link (link.href)}
-          <a href={link.href} class={linkClass(link.href, true)}>
+          <a href={localize(link.href)} class={linkClass(link.href, true)}>
             {link.label}
           </a>
         {/each}
@@ -125,23 +134,23 @@
         <div class="mt-4 flex flex-col gap-2 border-t border-border-default pt-4">
           {#if isLoggedIn}
             <a
-              href="/dashboard"
+              href={localize('/dashboard')}
               class="rounded-md bg-accent px-4 py-2 text-center text-sm font-semibold text-accent-foreground hover:bg-accent-hover"
             >
-              Open app
+              {m.nav_open_app()}
             </a>
           {:else}
             <a
-              href="/login"
+              href={localize('/login')}
               class="rounded-md border border-border-default px-4 py-2 text-center text-sm font-medium text-muted-foreground hover:bg-surface-muted"
             >
-              Log in
+              {m.nav_login()}
             </a>
             <a
-              href="/signup"
+              href={localize('/signup')}
               class="rounded-md bg-accent px-4 py-2 text-center text-sm font-semibold text-accent-foreground hover:bg-accent-hover"
             >
-              Sign up
+              {m.nav_signup()}
             </a>
           {/if}
         </div>

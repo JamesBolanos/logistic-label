@@ -2,7 +2,9 @@
 <script>
   import { goto } from '$app/navigation';
   import { dev } from '$app/env';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
   import { authClient } from '#lib/auth-client.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { trackProductEvent } from '#lib/analytics/client.ts';
   import {
     getGoogleAuthErrorCallbackURL,
@@ -27,9 +29,8 @@
   let captchaToken = $state('');
   let captchaUnavailable = $state(false);
 
-  const CAPTCHA_REQUIRED_MESSAGE = 'Please complete the CAPTCHA verification.';
-  const CAPTCHA_RETRY_MESSAGE =
-    'CAPTCHA is not ready. Use the retry button in the CAPTCHA box, then complete verification.';
+  const CAPTCHA_REQUIRED_MESSAGE = m.auth_captcha_required();
+  const CAPTCHA_RETRY_MESSAGE = m.auth_captcha_retry();
 
   // Handle form submission
   async function handleSubmit() {
@@ -67,12 +68,12 @@
         email,
         password,
         rememberMe,
-        callbackURL: returnUrl,
+        callbackURL: localizeHref(returnUrl),
         captchaToken
       });
 
       if (error) {
-        formError = error.message || 'Login failed. Please check your credentials.';
+        formError = error.message || m.auth_login_failed();
         trackProductEvent('workflow_failed', {
           step: 'login',
           error_category: 'authentication',
@@ -84,10 +85,10 @@
       trackProductEvent('login', { method: 'email' });
       // Refresh server layout data after the session cookie changes so the navbar
       // immediately reflects the authenticated user.
-      await goto(returnUrl, { refreshAll: true });
+      await goto(localizeHref(returnUrl), { refreshAll: true });
     } catch (error) {
       console.error('LoginForm fetch error', error);
-      formError = 'An unexpected error occurred. Please try again.';
+      formError = m.auth_unexpected_error();
       trackProductEvent('workflow_failed', {
         step: 'login',
         error_category: 'network',
@@ -106,8 +107,10 @@
     try {
       const { error } = await authClient.signIn.social({
         provider: 'google',
-        callbackURL: `${returnUrl}${returnUrl.includes('?') ? '&' : '?'}authMethod=google`,
-        errorCallbackURL: getGoogleAuthErrorCallbackURL('/login', returnUrl)
+        callbackURL: localizeHref(
+          `${returnUrl}${returnUrl.includes('?') ? '&' : '?'}authMethod=google`
+        ),
+        errorCallbackURL: localizeHref(getGoogleAuthErrorCallbackURL('/login', returnUrl))
       });
 
       if (error) {
@@ -139,7 +142,7 @@
 </script>
 
 <div class="w-full max-w-md mx-auto p-6 bg-surface rounded-lg shadow-md">
-  <h2 class="text-2xl font-bold mb-6 text-center">Sign In</h2>
+  <h2 class="text-2xl font-bold mb-6 text-center">{m.auth_sign_in_title()}</h2>
 
   {#if displayedError}
     <div
@@ -155,7 +158,7 @@
     disabled={isSocialLoading || isLoading}
     class="mb-6 w-full flex justify-center py-2 px-4 border border-border-strong rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-blue-500 disabled:opacity-50"
   >
-    {isSocialLoading ? 'Opening Google...' : 'Continue with Google'}
+    {isSocialLoading ? m.auth_opening_google() : m.auth_continue_google()}
   </button>
 
   <div class="relative mb-6">
@@ -163,7 +166,7 @@
       <div class="w-full border-t border-border-default"></div>
     </div>
     <div class="relative flex justify-center text-sm">
-      <span class="bg-surface px-2 text-subtle-foreground">or use email</span>
+      <span class="bg-surface px-2 text-subtle-foreground">{m.auth_or_use_email()}</span>
     </div>
   </div>
 
@@ -177,7 +180,7 @@
     <!-- Email Field -->
     <div>
       <label for="email" class="block text-sm font-medium text-muted-foreground mb-1">
-        Email Address
+        {m.auth_email_address()}
       </label>
       <input
         type="email"
@@ -196,13 +199,13 @@
     <div>
       <div class="flex justify-between">
         <label for="password" class="block text-sm font-medium text-muted-foreground mb-1">
-          Password
+          {m.auth_password()}
         </label>
         <a
-          href="/reset-password"
+          href={localizeHref('/reset-password')}
           class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
         >
-          Forgot password?
+          {m.auth_forgot_password()}
         </a>
       </div>
       <input
@@ -226,7 +229,9 @@
         bind:checked={rememberMe}
         class="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 border-border-strong rounded"
       />
-      <label for="rememberMe" class="ml-2 block text-sm text-muted-foreground"> Remember me </label>
+      <label for="rememberMe" class="ml-2 block text-sm text-muted-foreground">
+        {m.auth_remember_me()}
+      </label>
     </div>
 
     <!-- Captcha -->
@@ -268,12 +273,12 @@
 
   <div class="mt-6 text-center">
     <p class="text-sm text-muted-foreground">
-      Don't have an account?
+      {m.auth_no_account()}
       <a
-        href="/signup"
+        href={localizeHref('/signup')}
         class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
-        Sign up
+        {m.auth_sign_up()}
       </a>
     </p>
   </div>

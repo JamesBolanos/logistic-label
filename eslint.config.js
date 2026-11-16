@@ -15,7 +15,8 @@ export default [
       'playwright-report/**',
       'test-results/**',
       'storage/**',
-      'usage_log/**'
+      'usage_log/**',
+      'src/lib/paraglide/**'
     ]
   },
   js.configs.recommended,

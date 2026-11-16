@@ -41,6 +41,18 @@ describe('password recovery', () => {
     expect(message.html).not.toContain('value=<unsafe>');
   });
 
+  it('localizes password reset messages to Spanish', () => {
+    const message = createPasswordResetEmail(
+      'https://example.com/es/reset-password?token=sample',
+      'es'
+    );
+
+    expect(message.subject).toBe('Restablece tu contraseña de SSCC Labels');
+    expect(message.text).toContain('Recibimos una solicitud');
+    expect(message.html).toContain('Elegir una contraseña nueva');
+    expect(message.html).toContain('vence en 60 minutos');
+  });
+
   it('sends the reset message through the Resend HTTPS API', async () => {
     const requests: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
     const fetchImplementation: typeof fetch = async (input, init) => {

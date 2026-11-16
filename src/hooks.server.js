@@ -1,3 +1,6 @@
+import { sequence } from '@sveltejs/kit/hooks';
+import { deLocalizeUrl, getTextDirection, localizeHref } from '#lib/paraglide/runtime.js';
+import { paraglideMiddleware } from '#lib/paraglide/server.js';
 import { building } from '$app/env';
 import { redirect } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
@@ -16,80 +19,6 @@ const CAPTCHA_AUTH_PATHS = new Set([
 ]);
 
 /** @type {import('@sveltejs/kit').Handle} */
-export async function handle({ event, resolve }) {
-  const resolveWithSecurityHeaders = async (event) => {
-    const response = await resolve(event);
-
-    const isGuideSamplePdf = /^\/guide\/samples\/[^/]+\.pdf$/.test(event.url.pathname);
-    response.headers.set('X-Frame-Options', isGuideSamplePdf ? 'SAMEORIGIN' : 'DENY');
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
-    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-
-    return response;
-  };
-
-  if (building) {
-    return svelteKitHandler({
-      auth,
-      event,
-      resolve: resolveWithSecurityHeaders,
-      building
-    });
-  }
-
-  if (event.url.pathname.startsWith('/api/auth/')) {
-    const captchaRequest = await verifyAuthCaptcha(event);
-
-    if (captchaRequest instanceof Response) {
-      return captchaRequest;
-    }
-
-    const passwordRequest = await enforcePasswordPolicy(captchaRequest ?? event.request);
-
-    if (passwordRequest instanceof Response) {
-      return passwordRequest;
-    }
-
-    return auth.handler(passwordRequest);
-  }
-
-  const session = await auth.api.getSession({
-    headers: event.request.headers
-  });
-
-  event.locals.session = session?.session ?? null;
-  event.locals.user = session?.user ?? null;
-
-  if (
-    PROTECTED_PATHS.some(
-      (path) => event.url.pathname === path || event.url.pathname.startsWith(`${path}/`)
-    )
-  ) {
-    if (!event.locals.user) {
-      redirect(
-        303,
-        `/login?returnUrl=${encodeURIComponent(event.url.pathname + event.url.search)}`
-      );
-    }
-  }
-
-  if (
-    event.url.pathname.startsWith('/api/') &&
-    !event.url.pathname.startsWith('/api/auth') &&
-    !event.locals.user
-  ) {
-    return jsonUnauthorized();
-  }
-
-  return svelteKitHandler({
-    auth,
-    event,
-    resolve: resolveWithSecurityHeaders,
-    building
-  });
-}
-
 async function enforcePasswordPolicy(request) {
   const url = new URL(request.url);
 
@@ -126,7 +55,8 @@ async function enforcePasswordPolicy(request) {
 }
 
 async function verifyAuthCaptcha(event) {
-  if (event.request.method !== 'POST' || !CAPTCHA_AUTH_PATHS.has(event.url.pathname)) {
+  const pathname = deLocalizeUrl(event.url).pathname;
+  if (event.request.method !== 'POST' || !CAPTCHA_AUTH_PATHS.has(pathname)) {
     return null;
   }
 
@@ -175,3 +105,82 @@ function jsonUnauthorized() {
     headers: { 'Content-Type': 'application/json' }
   });
 }
+
+async function originalHandle({ event, resolve }) {
+  const resolveWithSecurityHeaders = async (event) => {
+    const response = await resolve(event);
+    const pathname = deLocalizeUrl(event.url).pathname;
+    const isGuideSamplePdf = /^\/guide\/samples\/[^/]+\.pdf$/.test(pathname);
+
+    response.headers.set('X-Frame-Options', isGuideSamplePdf ? 'SAMEORIGIN' : 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
+    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+    return response;
+  };
+
+  if (building) {
+    return svelteKitHandler({ auth, event, resolve: resolveWithSecurityHeaders, building });
+  }
+
+  const pathname = deLocalizeUrl(event.url).pathname;
+
+  if (pathname.startsWith('/api/auth/')) {
+    const captchaRequest = await verifyAuthCaptcha(event);
+
+    if (captchaRequest instanceof Response) {
+      return captchaRequest;
+    }
+
+    const passwordRequest = await enforcePasswordPolicy(captchaRequest ?? event.request);
+
+    if (passwordRequest instanceof Response) {
+      return passwordRequest;
+    }
+
+    return auth.handler(passwordRequest);
+  }
+
+  const session = await auth.api.getSession({ headers: event.request.headers });
+
+  event.locals.session = session?.session ?? null;
+  event.locals.user = session?.user ?? null;
+
+  if (PROTECTED_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+    if (!event.locals.user) {
+      const loginUrl = localizeHref('/login', { locale: event.locals.locale });
+      redirect(
+        303,
+        `${loginUrl}?returnUrl=${encodeURIComponent(event.url.pathname + event.url.search)}`
+      );
+    }
+  }
+
+  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth') && !event.locals.user) {
+    return jsonUnauthorized();
+  }
+
+  return svelteKitHandler({ auth, event, resolve: resolveWithSecurityHeaders, building });
+}
+
+/** @type {import('@sveltejs/kit/hooks').Handle} */ const handleParaglide = ({ event, resolve }) =>
+  paraglideMiddleware(
+    event.request,
+    ({ request, locale }) => {
+      event.locals.locale = locale;
+
+      return resolve(
+        { ...event, request },
+        {
+          transformPageChunk: ({ html }) =>
+            html
+              .replace('%paraglide.lang%', locale)
+              .replace('%paraglide.dir%', getTextDirection(locale))
+        }
+      );
+    },
+    { redirect: 'navigation' }
+  );
+
+export const handle = sequence(handleParaglide, originalHandle);

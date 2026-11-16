@@ -1,9 +1,13 @@
 <!-- Sign-in, sign-up, and password recovery pages. -->
 <script>
+  import { m } from '#lib/paraglide/messages.js';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+  import LocaleSwitcher from '#lib/components/Layout/LocaleSwitcher.svelte';
   import Logo from '#lib/components/Layout/Logo.svelte';
   import ThemeToggle from '#lib/components/Layout/ThemeToggle.svelte';
 
   let { children } = $props();
+  let locale = $derived(getLocale());
 </script>
 
 <div class="flex min-h-screen flex-col bg-background">
@@ -13,12 +17,13 @@
     >
       <Logo />
       <div class="flex items-center gap-2">
+        <LocaleSwitcher />
         <ThemeToggle />
         <a
-          href="/"
+          href={localizeHref('/', { locale })}
           class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground"
         >
-          Back to site
+          {m.nav_back_to_site()}
         </a>
       </div>
     </div>
@@ -33,7 +38,9 @@
       class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-xs text-subtle-foreground sm:px-6 lg:px-8"
     >
       <p>&copy; {new Date().getFullYear()} SSCC Labels</p>
-      <a href="/privacy" class="font-medium hover:text-foreground">Privacy Policy</a>
+      <a href={localizeHref('/privacy', { locale })} class="font-medium hover:text-foreground"
+        >{m.nav_privacy()}</a
+      >
     </div>
   </footer>
 </div>

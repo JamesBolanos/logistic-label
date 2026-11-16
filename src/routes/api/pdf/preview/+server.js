@@ -7,7 +7,11 @@ import {
 import { validateLabelForm, sanitizeLabelForm } from '#lib/server/validation/formValidation.js';
 import { getLabelSettings } from '#lib/server/db/settings.js';
 import { generateSSCC } from '#lib/utils/gs1Utils.js';
-import { getLabelSizeForPrintLayout, LABEL_TYPES } from '#lib/labels/workflows.js';
+import {
+  getLabelSizeForPrintLayout,
+  LABEL_RENDERING_VERSIONS,
+  LABEL_TYPES
+} from '#lib/labels/workflows.js';
 import {
   buildSuccessfulLabelVerification,
   LABEL_VERIFICATION_HEADER,
@@ -73,7 +77,11 @@ export async function POST({ request, locals }) {
     }
 
     // Sanitize form data
-    const sanitizedData = sanitizeLabelForm(labelData);
+    const sanitizedData = {
+      ...sanitizeLabelForm(labelData),
+      locale: locals.locale ?? 'en',
+      rendering_version: LABEL_RENDERING_VERSIONS.LOCALIZED
+    };
 
     const settings = await getLabelSettings(user.id);
 

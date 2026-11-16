@@ -1,9 +1,11 @@
 <script>
   import { dev } from '$app/env';
   import { page } from '$app/state';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
   import { trackProductEvent } from '#lib/analytics/client.ts';
   import { authClient } from '#lib/auth-client.js';
   import Captcha from '#lib/components/Auth/Captcha.svelte';
+  import { m } from '#lib/paraglide/messages.js';
   import {
     validatePasswordResetForm,
     validatePasswordResetRequest
@@ -25,9 +27,8 @@
   let captchaKey = $state(0);
   let captchaUnavailable = $state(false);
 
-  const CAPTCHA_REQUIRED_MESSAGE = 'Please complete the CAPTCHA verification.';
-  const CAPTCHA_RETRY_MESSAGE =
-    'CAPTCHA is not ready. Use the retry button in the CAPTCHA box, then complete verification.';
+  const CAPTCHA_REQUIRED_MESSAGE = m.auth_captcha_reset_required();
+  const CAPTCHA_RETRY_MESSAGE = m.auth_captcha_retry();
 
   async function handleResetRequest(event) {
     event.preventDefault();
@@ -58,7 +59,7 @@
       });
 
       if (error) {
-        formError = 'We could not process the request. Please try again.';
+        formError = m.auth_request_could_not_process();
         recordFailure('password_reset_request', 'authentication', startedAt);
         resetCaptcha();
         return;
@@ -67,7 +68,7 @@
       requestSent = true;
       trackProductEvent('password_reset_requested');
     } catch {
-      formError = 'We could not connect to the service. Please try again.';
+      formError = '{m.auth_could_not_connect()}';
       recordFailure('password_reset_request', 'network', startedAt);
       resetCaptcha();
     } finally {
@@ -87,7 +88,7 @@
     }
 
     if (!token) {
-      formError = 'This password reset link is invalid or has expired.';
+      formError = m.auth_invalid_reset_token();
       return;
     }
 
@@ -102,7 +103,7 @@
       });
 
       if (error) {
-        formError = 'This password reset link is invalid or has expired.';
+        formError = m.auth_invalid_reset_token();
         recordFailure('password_reset', 'authentication', startedAt);
         return;
       }
@@ -112,7 +113,7 @@
       confirmPassword = '';
       trackProductEvent('password_reset_succeeded');
     } catch {
-      formError = 'We could not connect to the service. Please try again.';
+      formError = '{m.auth_could_not_connect()}';
       recordFailure('password_reset', 'network', startedAt);
     } finally {
       isLoading = false;
@@ -142,31 +143,28 @@
 </script>
 
 <svelte:head>
-  <title>Reset Password - SSCC Labels</title>
-  <meta
-    name="description"
-    content="Request a secure password reset link for your SSCC Labels account."
-  />
+  <title>{m.auth_reset_password_title()} - SSCC Labels</title>
+  <meta name="description" content={m.auth_reset_password_meta()} />
 </svelte:head>
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-surface p-6 shadow-md">
   {#if passwordChanged}
-    <h1 class="mb-4 text-center text-2xl font-bold">Password updated</h1>
+    <h1 class="mb-4 text-center text-2xl font-bold">{m.auth_password_updated()}</h1>
     <div
       class="mb-6 rounded-md border border-green-400 bg-green-100 dark:bg-green-900/40 p-4 text-green-800 dark:text-green-300"
     >
-      Your password has been changed. For your security, existing sessions have been signed out.
+      {m.auth_password_changed_sessions()}
     </div>
     <a
-      href="/login"
+      href={localizeHref('/login')}
       class="block w-full rounded-md bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700"
     >
-      Sign in with your new password
+      {m.auth_sign_in_new_password()}
     </a>
   {:else if token}
-    <h1 class="mb-2 text-center text-2xl font-bold">Choose a new password</h1>
+    <h1 class="mb-2 text-center text-2xl font-bold">{m.auth_choose_new_password()}</h1>
     <p class="mb-6 text-center text-sm text-muted-foreground">
-      Use at least 8 characters with uppercase, lowercase, and numbers.
+      {m.auth_password_hint_reset()}
     </p>
 
     {#if formError}
@@ -181,7 +179,7 @@
     <form class="space-y-6" onsubmit={handlePasswordReset}>
       <div>
         <label for="new-password" class="mb-1 block text-sm font-medium text-muted-foreground">
-          New Password
+          {m.auth_new_password()}
         </label>
         <input
           id="new-password"
@@ -200,7 +198,7 @@
 
       <div>
         <label for="confirm-password" class="mb-1 block text-sm font-medium text-muted-foreground">
-          Confirm Password
+          {m.auth_confirm_password_label()}
         </label>
         <input
           id="confirm-password"
@@ -222,27 +220,26 @@
         disabled={isLoading}
         class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
       >
-        {isLoading ? 'Updating password...' : 'Update password'}
+        {isLoading ? m.auth_updating_password() : m.auth_update_password()}
       </button>
     </form>
   {:else if requestSent}
-    <h1 class="mb-4 text-center text-2xl font-bold">Check your email</h1>
+    <h1 class="mb-4 text-center text-2xl font-bold">{m.auth_check_email()}</h1>
     <div
       class="mb-6 rounded-md border border-green-400 bg-green-100 dark:bg-green-900/40 p-4 text-green-800 dark:text-green-300"
     >
-      If an account exists for that address, we sent a password reset link. The link expires in 60
-      minutes.
+      {m.auth_reset_link_sent()}
     </div>
     <a
-      href="/login"
+      href={localizeHref('/login')}
       class="block text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
     >
-      Return to sign in
+      {m.auth_return_sign_in()}
     </a>
   {:else}
-    <h1 class="mb-2 text-center text-2xl font-bold">Reset your password</h1>
+    <h1 class="mb-2 text-center text-2xl font-bold">{m.auth_reset_password_heading()}</h1>
     <p class="mb-6 text-center text-sm text-muted-foreground">
-      Enter your email address and we will send a reset link if an account exists.
+      {m.auth_reset_password_desc()}
     </p>
 
     {#if invalidToken}
@@ -250,7 +247,7 @@
         class="mb-6 rounded-md border border-yellow-400 bg-yellow-100 dark:bg-yellow-900/40 p-4 text-yellow-800 dark:text-yellow-200"
         role="alert"
       >
-        That password reset link is invalid or has expired. Request a new link below.
+        {m.auth_invalid_reset_link()}
       </div>
     {/if}
 
@@ -266,7 +263,7 @@
     <form class="space-y-6" onsubmit={handleResetRequest}>
       <div>
         <label for="email" class="mb-1 block text-sm font-medium text-muted-foreground">
-          Email Address
+          {m.auth_email_address_label()}
         </label>
         <input
           id="email"
@@ -292,16 +289,16 @@
         disabled={isLoading}
         class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
       >
-        {isLoading ? 'Sending link...' : 'Send reset link'}
+        {isLoading ? m.auth_sending_link() : m.auth_send_reset_link()}
       </button>
     </form>
 
     <div class="mt-6 text-center">
       <a
-        href="/login"
+        href={localizeHref('/login')}
         class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
-        Return to sign in
+        {m.auth_return_sign_in()}
       </a>
     </div>
   {/if}

@@ -1,51 +1,52 @@
 <script>
+  import { m } from '#lib/paraglide/messages.js';
   let { data } = $props();
 
   let statistics = $derived(data.statistics);
   let cards = $derived([
     {
-      label: 'New users',
+      label: m.stats_new_users(),
       value: statistics.summary.newUsers,
-      note: `Signed up in ${statistics.days} days`
+      note: m.stats_new_users_note({ days: statistics.days })
     },
     {
-      label: 'First-label users',
+      label: m.stats_first_label_users(),
       value: statistics.summary.firstLabelUsers,
-      note: `Reached a first saved label in ${statistics.days} days`
+      note: m.stats_first_label_note({ days: statistics.days })
     },
     {
-      label: 'Weekly creators',
+      label: m.stats_weekly_creators(),
       value: statistics.summary.weeklyCreators,
-      note: 'Saved a label in the last 7 days'
+      note: m.stats_weekly_creators_note()
     },
     {
-      label: 'Failed attempts',
+      label: m.stats_failed_attempts(),
       value: statistics.summary.failedAttempts,
-      note: `${statistics.summary.affectedUsers} affected users`
+      note: `${statistics.summary.affectedUsers} ${m.stats_affected_users()}`
     },
     {
-      label: 'Data exports',
+      label: m.stats_data_exports(),
       value: statistics.summary.dataExports,
-      note: `${statistics.summary.dataExportUsers ?? 0} affected users`
+      note: `${statistics.summary.dataExportUsers ?? 0} ${m.stats_affected_users()}`
     },
     {
-      label: 'Custom inquiries',
+      label: m.stats_custom_inquiries(),
       value: statistics.summary.customInquiries,
-      note: 'Inquiry submissions are not tracked yet'
+      note: m.stats_custom_inquiries_note()
     },
     {
-      label: 'Accepted projects',
+      label: m.stats_accepted_projects(),
       value: statistics.summary.acceptedProjects,
-      note: 'Sales outcomes are not tracked yet'
+      note: m.stats_accepted_projects_note()
     }
   ]);
 
   function displayValue(value) {
-    return value === null ? 'Unavailable' : new Intl.NumberFormat('en').format(value);
+    return value === null ? m.stats_unavailable() : new Intl.NumberFormat('en').format(value);
   }
 
   function formatDate(value) {
-    if (!value) return 'No external event data yet';
+    if (!value) return m.stats_no_external_event_data();
 
     return new Intl.DateTimeFormat('en', {
       dateStyle: 'medium',
@@ -55,11 +56,8 @@
 </script>
 
 <svelte:head>
-  <title>Usage Statistics - GS1-128 Logistic Label Generator</title>
-  <meta
-    name="description"
-    content="Private aggregate usage statistics for the SSCC label application."
-  />
+  <title>{m.stats_title()} - GS1-128 Logistic Label Generator</title>
+  <meta name="description" content={m.stats_meta()} />
 </svelte:head>
 
 <div class="space-y-8">
@@ -68,10 +66,9 @@
       <p class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
         Owner dashboard
       </p>
-      <h1 class="mt-1 text-3xl font-bold text-foreground">Usage statistics</h1>
+      <h1 class="mt-1 text-3xl font-bold text-foreground">{m.stats_heading()}</h1>
       <p class="mt-2 max-w-3xl text-sm text-muted-foreground">
-        Aggregate product signals for deciding where onboarding, reliability, and feature work need
-        attention. No emails, company names, or label contents are shown.
+        {m.stats_desc()}
       </p>
     </div>
 
@@ -104,22 +101,25 @@
       : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300'} px-4 py-3 text-sm"
   >
     {#if statistics.configuration.excludedOwnerCount > 0}
-      {statistics.configuration.excludedOwnerCount} configured owner
-      {statistics.configuration.excludedOwnerCount === 1 ? 'account is' : 'accounts are'} excluded.
+      {statistics.configuration.excludedOwnerCount}
+      {statistics.configuration.excludedOwnerCount === 1
+        ? m.stats_owner_excluded()
+        : m.stats_owner_excluded_plural()}
     {:else}
-      Owner account IDs are not configured yet. Treat the totals as provisional until owner access
-      is configured.
+      {m.stats_owner_not_configured()}
     {/if}
     {#if statistics.dataCoverageStart}
-      Operational-event coverage begins {formatDate(statistics.dataCoverageStart)}.
+      {m.stats_coverage_begins()} {formatDate(statistics.dataCoverageStart)}.
     {:else}
-      No external operational-event data is available yet.
+      {m.stats_no_external_data()}
     {/if}
   </section>
 
   <section aria-labelledby="summary-heading">
     <div class="mb-4">
-      <h2 id="summary-heading" class="text-xl font-semibold text-foreground">Summary</h2>
+      <h2 id="summary-heading" class="text-xl font-semibold text-foreground">
+        {m.stats_summary()}
+      </h2>
       <p class="mt-1 text-sm text-subtle-foreground">
         Rolling {statistics.days}-day window ending now; weekly creators always use seven days.
       </p>
@@ -147,9 +147,11 @@
     class="rounded-lg border border-border-default bg-surface shadow-sm"
   >
     <div class="border-b border-border-default px-5 py-4">
-      <h2 id="funnel-heading" class="text-xl font-semibold text-foreground">First-label funnel</h2>
+      <h2 id="funnel-heading" class="text-xl font-semibold text-foreground">
+        {m.stats_first_label_funnel()}
+      </h2>
       <p class="mt-1 text-sm text-subtle-foreground">
-        Users who signed up in this window and had at least 24 hours to complete the workflow.
+        {m.stats_funnel_desc()}
       </p>
     </div>
 
@@ -178,9 +180,11 @@
     class="rounded-lg border border-border-default bg-surface shadow-sm"
   >
     <div class="border-b border-border-default px-5 py-4">
-      <h2 id="failures-heading" class="text-xl font-semibold text-foreground">Workflow failures</h2>
+      <h2 id="failures-heading" class="text-xl font-semibold text-foreground">
+        {m.stats_workflow_failures()}
+      </h2>
       <p class="mt-1 text-sm text-subtle-foreground">
-        Controlled categories only; raw errors and user-entered values are excluded.
+        {m.stats_failures_desc()}
       </p>
     </div>
 
@@ -221,8 +225,6 @@
   </section>
 
   <p class="text-xs leading-5 text-subtle-foreground">
-    A saved label, PDF response, browser download, and physical print remain separate milestones.
-    Inquiry and accepted-project cards stay unavailable until those outcomes have an authoritative
-    recording source.
+    {m.stats_footnote()}
   </p>
 </div>

@@ -1,30 +1,33 @@
 <script>
   import { page } from '$app/state';
+  import { m } from '#lib/paraglide/messages.js';
+  import { deLocalizeUrl, getLocale, localizeHref } from '#lib/paraglide/runtime.js';
   import Logo from './Logo.svelte';
 
   let { user = null, isAnalyticsOwner = false, mobileOpen = false, onclose = () => {} } = $props();
 
-  const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { href: '/labels', label: 'Label Generator', icon: 'generator' },
-    { href: '/labels/history', label: 'Saved Labels', icon: 'saved' },
-    { href: '/products', label: 'Products', icon: 'products' },
-    { href: '/printer', label: 'Printer Config', icon: 'printer' },
-    { href: '/settings', label: 'Settings', icon: 'settings' },
-    { href: '/updates', label: "What's New", icon: 'updates' }
-  ];
-
+  let locale = $derived(getLocale());
+  let navItems = $derived([
+    { href: '/dashboard', label: m.nav_dashboard(), icon: 'dashboard' },
+    { href: '/labels', label: m.nav_label_generator(), icon: 'generator' },
+    { href: '/labels/history', label: m.nav_saved_labels(), icon: 'saved' },
+    { href: '/products', label: m.nav_products(), icon: 'products' },
+    { href: '/printer', label: m.nav_printer_config(), icon: 'printer' },
+    { href: '/settings', label: m.nav_settings(), icon: 'settings' },
+    { href: '/export', label: m.nav_data_export(), icon: 'export' },
+    { href: '/updates', label: m.nav_whats_new(), icon: 'updates' }
+  ]);
   let visibleNavItems = $derived(
     isAnalyticsOwner
       ? [
           ...navItems.slice(0, 2),
-          { href: '/admin/statistics', label: 'Statistics', icon: 'statistics' },
+          { href: '/admin/statistics', label: m.nav_statistics(), icon: 'statistics' },
           ...navItems.slice(2)
         ]
       : navItems
   );
 
-  let displayName = $derived(user?.displayName || 'User');
+  let displayName = $derived(user?.displayName || m.nav_user());
   let email = $derived(user?.email || '');
   let initials = $derived(getInitials(displayName));
 
@@ -40,7 +43,7 @@
   }
 
   function isActive(href) {
-    const path = page.url.pathname;
+    const path = deLocalizeUrl(page.url).pathname;
 
     if (href === '/dashboard') return path === '/dashboard';
     if (href === '/labels') return path === '/labels' || path.startsWith('/labels/create');
@@ -48,9 +51,14 @@
     if (href === '/products') return path === '/products' || path.startsWith('/products/');
     if (href === '/printer') return path === '/printer' || path.startsWith('/printer/');
     if (href === '/settings') return path === '/settings' || path.startsWith('/settings/');
+    if (href === '/export') return path === '/export' || path.startsWith('/export/');
     if (href === '/updates') return path === '/updates' || path.startsWith('/updates/');
     if (href === '/admin/statistics') return path.startsWith('/admin/statistics');
     return path === href;
+  }
+
+  function localize(path) {
+    return localizeHref(path, { locale });
   }
 
   function itemClass(href) {
@@ -65,7 +73,7 @@
     type="button"
     class="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden"
     onclick={onclose}
-    aria-label="Close navigation overlay"
+    aria-label={m.nav_close_navigation_overlay()}
   ></button>
 {/if}
 
@@ -74,7 +82,7 @@
   class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-200 ease-out lg:translate-x-0 {mobileOpen
     ? 'translate-x-0'
     : '-translate-x-full'}"
-  aria-label="Application sidebar"
+  aria-label={m.nav_application()}
 >
   <div class="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border px-5">
     <Logo />
@@ -82,7 +90,7 @@
       type="button"
       onclick={onclose}
       class="inline-flex h-9 w-9 items-center justify-center rounded-md text-subtle-foreground hover:bg-surface-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
-      aria-label="Close navigation"
+      aria-label={m.nav_close_navigation()}
     >
       <svg
         class="h-5 w-5"
@@ -97,15 +105,15 @@
     </button>
   </div>
 
-  <nav aria-label="Application" class="flex-1 overflow-y-auto px-3 py-4">
+  <nav aria-label={m.nav_application()} class="flex-1 overflow-y-auto px-3 py-4">
     <p class="px-3 pb-2 text-[11px] font-semibold tracking-wider text-subtle-foreground uppercase">
-      Workspace
+      {m.nav_workspace()}
     </p>
 
     <div class="space-y-1">
       {#each visibleNavItems as item (item.href)}
         <a
-          href={item.href}
+          href={localize(item.href)}
           class={itemClass(item.href)}
           aria-current={isActive(item.href) ? 'page' : undefined}
           onclick={onclose}
@@ -200,6 +208,21 @@
                 d="M4 20V10m5 10V4m5 16v-7m5 7V7"
               />
             </svg>
+          {:else if item.icon === 'export'}
+            <svg
+              class="h-5 w-5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+              />
+            </svg>
           {:else if item.icon === 'updates'}
             <svg
               class="h-5 w-5 shrink-0"
@@ -239,7 +262,7 @@
 
     <div class="mt-8 border-t border-sidebar-border pt-4">
       <a
-        href="/guide"
+        href={localize('/guide')}
         onclick={onclose}
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground"
       >
@@ -257,7 +280,7 @@
             d="M12 6.25c-1.5-1.5-3.5-2-6-2v13.5c2.5 0 4.5.5 6 2m0-13.5c1.5-1.5 3.5-2 6-2v13.5c-2.5 0-4.5.5-6 2m0-13.5v13.5"
           />
         </svg>
-        <span class="truncate">Label Guide</span>
+        <span class="truncate">{m.nav_label_guide()}</span>
       </a>
     </div>
   </nav>

@@ -1,9 +1,13 @@
 <script>
+  import { m } from '#lib/paraglide/messages.js';
+  import { getLocale, localizeHref } from '#lib/paraglide/runtime.js';
+
   let { href = '/', compact = false } = $props();
+  let localizedHref = $derived(localizeHref(href, { locale: getLocale() }));
 </script>
 
 <a
-  {href}
+  href={localizedHref}
   class="inline-flex items-center gap-2.5 rounded-md text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
   aria-label="SSCC Labels home"
 >
@@ -20,7 +24,7 @@
     <span class="truncate text-sm font-bold tracking-tight">SSCC Labels</span>
     {#if !compact}
       <span class="truncate text-[11px] font-medium text-subtle-foreground">
-        GS1-128 logistic labels
+        {m.logo_subtitle()}
       </span>
     {/if}
   </span>

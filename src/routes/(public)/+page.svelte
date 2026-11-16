@@ -1,112 +1,104 @@
 <!-- src/routes/+page.svelte -->
 <script>
   import { page } from '$app/state';
+  import { localizeHref } from '#lib/paraglide/runtime.js';
+  import { m } from '#lib/paraglide/messages.js';
   import { trackProductEvent } from '#lib/analytics/client.ts';
 
   let isLoggedIn = $derived(Boolean(page.data.user));
 
   const features = [
     {
-      title: 'Choose by shipping situation',
-      description:
-        'Track one pallet, carton, or parcel, or describe a shipping unit containing multiple identical cases or items.',
+      title: m.home_feature_shipping_title(),
+      description: m.home_feature_shipping_description(),
       icon: 'check'
     },
     {
-      title: 'Practical SSCC print layouts',
-      description:
-        'Print one 4 × 6 label, two identical 4 × 3 copies on a 4 × 6 sheet, or one compact 4 × 3 label.',
+      title: m.home_feature_layout_title(),
+      description: m.home_feature_layout_description(),
       icon: 'layout'
     },
     {
-      title: 'PDF and ZPL downloads',
-      description:
-        'Download PDF labels for viewing and printing, or ZPL files for compatible thermal printers at 203, 300, or 600 dpi.',
+      title: m.home_feature_download_title(),
+      description: m.home_feature_download_description(),
       icon: 'file'
     },
     {
-      title: 'Label history',
-      description:
-        'Authenticated users can preview saved labels, recent activity, and account-specific label records.',
+      title: m.home_feature_history_title(),
+      description: m.home_feature_history_description(),
       icon: 'clipboard'
     },
     {
-      title: 'Private access',
-      description: 'Login keeps generated labels and label history separated by user account.',
+      title: m.home_feature_private_title(),
+      description: m.home_feature_private_description(),
       icon: 'lock'
     },
     {
-      title: 'Tailored solutions',
-      description:
-        'The same foundation can be adapted privately around your workflows, integrations, users, and deployment requirements.',
+      title: m.home_feature_tailored_title(),
+      description: m.home_feature_tailored_description(),
       icon: 'database'
     }
   ];
 </script>
 
 <svelte:head>
-  <title>GS1-128 Logistic & SSCC Label Generator</title>
-  <meta
-    name="description"
-    content="Generate compliant GS1-128 and SSCC labels for pallet, transport, and homogeneous-content shipments. Download PDF or ZPL output and compare the supported workflows before you start."
-  />
+  <title>{m.home_seo_title()}</title>
+  <meta name="description" content={m.home_seo_description()} />
 </svelte:head>
 
 <div class="pb-16">
   <div class="bg-blue-600 rounded-lg shadow-lg overflow-hidden">
     <div class="max-w-5xl mx-auto px-6 py-16 text-center text-white">
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">
-        GS1-128 & SSCC labels
+        {m.home_hero_badge()}
       </p>
       <h1 class="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-        Generate compliant labels in minutes.
+        {m.home_hero_title()}
       </h1>
       <p class="mt-6 text-xl max-w-3xl mx-auto">
-        Create PDF and ZPL logistics labels for pallets, transport units, and identical-content
-        shipments without guessing at the format.
+        {m.home_hero_description()}
       </p>
       <p class="mt-4 text-base text-blue-100 max-w-3xl mx-auto">
-        Try the public guide instantly. Real SSCC allocation requires a free account and your
-        organization’s licensed GS1 Company Prefix.
+        {m.home_hero_note()}
       </p>
       <div class="mt-10">
         <div class="space-y-4 sm:space-y-0 sm:flex sm:justify-center sm:space-x-4">
           {#if isLoggedIn}
             <a
-              href="/labels"
+              href={localizeHref('/labels')}
               class="flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-800 hover:bg-blue-700 md:text-lg"
             >
-              Generate Labels
+              {m.nav_label_generator()}
             </a>
             <a
-              href="/dashboard"
+              href={localizeHref('/dashboard')}
               class="flex items-center justify-center px-6 py-3 border border-white text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:text-lg"
             >
-              Dashboard
+              {m.nav_dashboard()}
             </a>
           {:else}
             <a
-              href="/signup"
+              href={localizeHref('/signup')}
               class="flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-800 hover:bg-blue-700 md:text-lg"
             >
-              Start Free
+              {m.home_start_free()}
             </a>
           {/if}
           <a
-            href="/guide"
+            href={localizeHref('/guide')}
             class="flex items-center justify-center px-6 py-3 border border-white text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:text-lg"
           >
-            View label guide
+            {m.home_view_guide()}
           </a>
         </div>
         <p class="mt-5 text-sm text-blue-100">
-          Need a custom format or private deployment?
+          {m.home_custom_prompt()}
           <a
-            href="/guide#custom-request"
+            href={localizeHref('/guide#custom-request')}
             onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'home_hero' })}
             class="font-semibold text-white underline decoration-blue-200 underline-offset-4 hover:text-blue-50"
           >
-            Discuss a tailored project
+            {m.home_discuss_project()}
           </a>
         </p>
       </div>
@@ -116,15 +108,15 @@
   <!-- Features Section -->
   <div class="mt-16">
     <h2 class="text-3xl font-extrabold text-foreground text-center mb-12">
-      What You Can Use Today
+      {m.home_features_heading()}
     </h2>
     <p class="-mt-8 mb-10 text-center text-muted-foreground">
-      Unsure which option fits?
+      {m.home_compare_prompt()}
       <a
-        href="/guide"
+        href={localizeHref('/guide')}
         class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
       >
-        Compare the supported labels and their barcodes.
+        {m.home_compare_link()}
       </a>
     </p>
     <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -241,16 +233,14 @@
   <!-- GS1 Info Section -->
   <div class="mt-16 bg-surface-muted p-8 rounded-lg shadow-md">
     <h2 class="text-2xl font-bold text-foreground mb-6">
-      Free Tool, Tailored Solution When You Need More
+      {m.home_solution_heading()}
     </h2>
     <div class="prose max-w-none">
       <p>
-        This website is meant to be useful on its own for generating GS1-128 logistic labels. It
-        will continue to improve with additional label formats, printer models, and workflow
-        features.
+        {m.home_solution_intro()}
       </p>
       <p class="mt-4">
-        This solution is guided by the
+        {m.home_solution_guided_by()}
         <a
           href="https://www.gs1.org/docs/tl/GS1_Logistic_Label_Guideline.pdf"
           target="_blank"
@@ -261,22 +251,21 @@
         </a>.
       </p>
       <p class="mt-4">
-        For companies that need more than the public tool, a tailored private implementation can be
-        configured for:
+        {m.home_solution_for_companies()}
       </p>
       <ul class="mt-2">
-        <li>Different label sizes and layouts</li>
-        <li>Specific printer models and print formats</li>
-        <li>Company, item, shipment, and customer data fields</li>
-        <li>Warehouse workflows, user roles, and integrations</li>
+        <li>{m.home_solution_size()}</li>
+        <li>{m.home_solution_printers()}</li>
+        <li>{m.home_solution_fields()}</li>
+        <li>{m.home_solution_workflows()}</li>
       </ul>
-      <p class="mt-4">The generator currently helps you:</p>
+      <p class="mt-4">{m.home_generator_heading()}</p>
       <ul class="mt-2">
-        <li>Track one pallet, carton, or parcel using AI (00) SSCC</li>
-        <li>Ship multiple identical cases or items using AI (02) CONTENT and AI (37) COUNT</li>
-        <li>Create a basic SSCC-only label without transport details</li>
-        <li>Optional batch/lot and production, packaging, best-before, sell-by, or expiry date</li>
-        <li>A separate AI (00) SSCC barcode as the lowest barcode on the label</li>
+        <li>{m.home_generator_sscc()}</li>
+        <li>{m.home_generator_homogeneous()}</li>
+        <li>{m.home_generator_basic()}</li>
+        <li>{m.home_generator_traceability()}</li>
+        <li>{m.home_generator_barcode()}</li>
       </ul>
     </div>
   </div>
@@ -284,34 +273,33 @@
   <!-- CTA Section -->
   <div class="mt-16 text-center">
     <h2 class="text-3xl font-extrabold text-foreground sm:text-4xl">
-      Need something beyond the free generator?
+      {m.home_final_heading()}
     </h2>
     <p class="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-      The free tool supports three common workflows. Suggest an improvement or tell me about a
-      specific requirement for a customer label, printer, data flow, or integration.
+      {m.home_final_description()}
     </p>
     <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
       {#if isLoggedIn}
         <a
-          href="/labels"
+          href={localizeHref('/labels')}
           class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:text-lg"
         >
-          Generate Labels
+          {m.nav_label_generator()}
         </a>
       {:else}
         <a
-          href="/signup"
+          href={localizeHref('/signup')}
           class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:text-lg"
         >
-          Start Free
+          {m.home_start_free()}
         </a>
       {/if}
       <a
-        href="/guide#custom-request"
+        href={localizeHref('/guide#custom-request')}
         onclick={() => trackProductEvent('custom_contact_clicked', { placement: 'home_cta' })}
         class="inline-flex items-center justify-center px-8 py-3 border border-border-strong text-base font-medium rounded-md text-foreground bg-surface hover:bg-surface-muted md:text-lg"
       >
-        Suggest or discuss a tailored project
+        {m.home_suggest_project()}
       </a>
     </div>
   </div>

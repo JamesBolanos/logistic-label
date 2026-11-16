@@ -33,14 +33,14 @@ export async function GET({ params, request, locals }) {
   if (!user) {
     return new Response('Authentication required', { status: 401 });
   }
-  
+
   // Get label ID from params
   const { id } = params;
-  
+
   try {
     // Get label from database
     const label = await getLabelById(id, user.id);
-    
+
     if (!label) {
       await recordOperationalEvent({
         eventName: 'workflow_failed',
@@ -53,7 +53,7 @@ export async function GET({ params, request, locals }) {
 
       return new Response('Label not found', { status: 404 });
     }
-    
+
     const settings = await getLabelSettings(user.id);
     const pdfBuffer = await generateLogisticLabelPDF(label, {
       company_name: settings.company_name
@@ -67,7 +67,7 @@ export async function GET({ params, request, locals }) {
       downloadSource: request.headers.get('x-download-source'),
       durationMs: durationSince(startedAt)
     });
-    
+
     // Return the PDF
     return new Response(pdfBuffer, {
       status: 200,
