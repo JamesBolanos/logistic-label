@@ -15,7 +15,7 @@ test('public Print Bridge page explains the optional local printing workflow', a
     'href',
     'https://github.com/JamesBolanos/print-bridge'
   );
-  await expect(page.getByRole('link', { name: 'View downloads' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Download installer' })).toHaveAttribute(
     'href',
     'https://github.com/JamesBolanos/print-bridge/releases/latest'
   );

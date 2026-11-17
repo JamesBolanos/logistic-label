@@ -29,9 +29,20 @@ export function validatePrintSettings(settings: PrintSettings): Record<string, s
   if (!['127.0.0.1', 'localhost'].includes(settings.print_bridge_host)) {
     errors.print_bridge_host = 'Choose 127.0.0.1 or localhost for the bridge on this computer.';
   }
-  for (const field of ['print_bridge_port', 'printer_port'] as const) {
-    if (!Number.isInteger(settings[field]) || settings[field] < 1 || settings[field] > 65535) {
-      errors[field] = 'Enter a port from 1 to 65535.';
+  if (
+    !Number.isInteger(settings.print_bridge_port) ||
+    settings.print_bridge_port < 1 ||
+    settings.print_bridge_port > 65535
+  ) {
+    errors.print_bridge_port = 'Enter a port from 1 to 65535.';
+  }
+  if (settings.printer_hostname) {
+    if (
+      !Number.isInteger(settings.printer_port) ||
+      settings.printer_port < 1 ||
+      settings.printer_port > 65535
+    ) {
+      errors.printer_port = 'Enter a port from 1 to 65535.';
     }
   }
   if (settings.printer_hostname && !isPrinterHostname(settings.printer_hostname)) {

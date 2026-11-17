@@ -15,6 +15,7 @@
   let busy = $state(false);
   let errorMessage = $state('');
   let statusMessage = $state('');
+  let bridgeStatus = $state('idle'); // 'idle' | 'reachable' | 'unreachable'
 
   onMount(loadSettings);
 
@@ -50,6 +51,7 @@
     try {
       if (testOnly) {
         await pingPrintBridge(settings);
+        bridgeStatus = 'reachable';
         statusMessage =
           'Bridge is reachable. This checks the bridge only; no label was sent to the printer.';
       } else {
@@ -67,6 +69,7 @@
         statusMessage = m.print_settings_saved();
       }
     } catch (error) {
+      if (testOnly) bridgeStatus = 'unreachable';
       errorMessage = error.message || m.print_settings_unable_complete();
     } finally {
       busy = false;
@@ -81,48 +84,65 @@
   <h2 id="printer-settings-heading" class="text-xl font-semibold text-foreground">
     {m.print_settings_lan_printer()}
   </h2>
+  <section
+    aria-labelledby="do-you-need-heading"
+    class="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30"
+  >
+    <h3 id="do-you-need-heading" class="text-sm font-semibold text-foreground">
+      {m.printbridge_need_this_title()}
+    </h3>
+    <p class="mt-1 text-sm leading-6 text-muted-foreground">
+      {m.printbridge_need_this_body()}
+    </p>
+  </section>
   <p class="text-sm leading-6 text-muted-foreground">
     {m.print_settings_desc()}
   </p>
   <p
     class="rounded-md bg-blue-50 dark:bg-blue-950/40 px-3 py-2 text-sm font-medium text-blue-900 dark:text-blue-200"
   >
-    SSCC Labels → Print Bridge on this computer → Network printer
+    {m.print_settings_flow()}
   </p>
   <p class="text-sm text-muted-foreground">
+    {m.print_settings_need_bridge()}
     <a
-      href="https://github.com/JamesBolanos/print-bridge/releases/latest"
-      target="_blank"
-      rel="noopener noreferrer"
+      href={localizeHref('/print-bridge')}
       class="font-medium text-blue-700 dark:text-blue-300 underline"
-      >Download Print Bridge from GitHub</a
-    >
-    for macOS (Apple silicon) or Windows (64-bit).
-    <a
-      href="https://github.com/JamesBolanos/print-bridge/blob/main/DOCS/sscc-labels-setup.md"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="ml-1 font-medium text-blue-700 dark:text-blue-300 underline">Setup guide</a
-    > covers installation, configuration, and your first label.
+      >{m.print_settings_view_print_bridge()}</a
+    >.
   </p>
   <p class="text-sm text-muted-foreground">
     {m.print_settings_saved_account()}
   </p>
-  {#if errorMessage}<p role="alert" class="text-sm text-red-700 dark:text-red-300">
+  {#if errorMessage}<p
+      role="alert"
+      class="flex items-center gap-2 rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300"
+    >
+      <span aria-hidden="true">⚠</span>
       {errorMessage}
     </p>{/if}
-  {#if statusMessage}<p role="status" class="text-sm text-green-700 dark:text-green-300">
+  {#if statusMessage}<p
+      role="status"
+      class="flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm font-medium text-green-700 dark:bg-green-950/40 dark:text-green-300"
+    >
+      <span aria-hidden="true">✓</span>
       {statusMessage}
     </p>{/if}
   {#if !loaded}
-    <button
-      type="button"
-      onclick={loadSettings}
-      disabled={busy}
-      class="text-sm font-medium text-blue-700 dark:text-blue-300 disabled:opacity-50"
-    >
+    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+      <span
+        class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-border-strong border-t-blue-600"
+      ></span>
       {busy ? m.print_settings_loading() : m.print_settings_load_button()}
-    </button>
+      {#if !busy}
+        <button
+          type="button"
+          onclick={loadSettings}
+          class="ml-2 text-sm font-medium text-blue-700 dark:text-blue-300"
+          >{m.print_settings_load_button()}</button
+        >
+      {/if}
+    </div>
   {:else}
     <form
       onsubmit={(event) => {
@@ -164,6 +184,7 @@
               step="1"
               required
               bind:value={form.print_bridge_port}
+              title="Must match Print Bridge's listening port (default 18080)."
               class="w-full rounded-md border border-border-strong px-3 py-2"
             />
             {#if errors.print_bridge_port}<p class="text-sm text-red-600 dark:text-red-400">
@@ -174,7 +195,7 @@
             <label
               for="printer_hostname"
               class="mb-1 block text-sm font-medium text-muted-foreground"
-              >Printer IP address or hostname</label
+              >{m.print_settings_printer_ip()}</label
             >
             <input
               id="printer_hostname"
@@ -188,12 +209,12 @@
                 {errors.printer_hostname}
               </p>{/if}
             <p class="mt-1 text-xs text-subtle-foreground">
-              Leave empty to disable printing through the bridge.
+              {m.print_settings_leave_empty()}
             </p>
           </div>
           <div>
             <label for="printer_port" class="mb-1 block text-sm font-medium text-muted-foreground"
-              >Printer TCP port</label
+              >{m.print_settings_printer_port()}</label
             >
             <input
               id="printer_port"
@@ -211,7 +232,7 @@
           </div>
           <div>
             <label for="printer_dpi" class="mb-1 block text-sm font-medium text-muted-foreground"
-              >Printer resolution</label
+              >{m.print_settings_printer_resolution()}</label
             >
             <select
               id="printer_dpi"
@@ -222,16 +243,20 @@
               <option value={300}>300 dpi</option>
               <option value={600}>600 dpi</option>
             </select>
+            <p class="mt-1 text-xs text-subtle-foreground">
+              Match this to your printer's DPI (check the printer label).
+            </p>
             {#if errors.printer_dpi}<p class="text-sm text-red-600 dark:text-red-400">
                 {errors.printer_dpi}
               </p>{/if}
           </div>
         </div>
+        <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+          <li>Allow local network access if your browser asks.</li>
+          <li>Match the resolution and media to your printer.</li>
+        </ul>
         <p class="text-sm text-muted-foreground">
-          New installations of Print Bridge v1.0.0-beta.4 or later already allow sscc-labels.com and
-          www.sscc-labels.com. If you are upgrading, add this website's origin in the bridge's
-          Settings if needed. Choose Physical mode for paper output. Allow local network access if
-          your browser asks. Match the resolution and media to your printer.
+          In Print Bridge's own settings, choose Physical mode for paper output.
         </p>
         <div class="flex flex-wrap gap-3">
           <button
@@ -245,7 +270,23 @@
             class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >{m.print_settings_save()}</button
           >
+          <button
+            type="button"
+            onclick={() => {
+              form.printer_hostname = '';
+              runAction();
+            }}
+            class="rounded-md border border-border-strong px-4 py-2 text-sm font-medium hover:bg-surface-muted"
+            >{m.print_settings_disable_printing()}</button
+          >
         </div>
+        <p class="text-xs text-subtle-foreground">
+          Bridge status: {bridgeStatus === 'idle'
+            ? 'not checked yet'
+            : bridgeStatus === 'reachable'
+              ? 'reachable'
+              : 'unreachable'}.
+        </p>
         <p class="text-xs text-subtle-foreground">
           {m.print_settings_test_uses_values()}
         </p>

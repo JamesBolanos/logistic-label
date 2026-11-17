@@ -55,11 +55,11 @@ test('printer settings save independently and test the bridge under the app CSP'
     });
   });
   await mountFixture(page, '/src/lib/components/Labels/PrintBridgeSettings.svelte');
-  await expect(page.getByLabel('Printer IP address or hostname')).toHaveValue('printer.test');
-  await page.getByLabel('Printer TCP port').fill('9300');
-  await page.getByLabel('Printer resolution', { exact: true }).selectOption('600');
+  await expect(page.locator('#printer_hostname')).toHaveValue('printer.test');
+  await page.locator('#printer_port').fill('9300');
+  await page.locator('#printer_dpi').selectOption('600');
   await page.getByRole('button', { name: 'Save printer settings' }).click();
-  await expect(page.getByRole('status')).toHaveText('Printer settings saved.');
+  await expect(page.getByRole('status')).toContainText('Printer settings saved.');
   expect(writes).toEqual([
     {
       print_bridge_host: '127.0.0.1',

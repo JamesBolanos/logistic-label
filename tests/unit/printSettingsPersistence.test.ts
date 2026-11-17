@@ -57,7 +57,11 @@ describe('printer settings persistence', () => {
   });
   it('rejects invalid settings before any database write', async () => {
     await expect(
-      upsertPrintSettings('owner', { ...defaultPrintSettings, printer_port: -1 })
+      upsertPrintSettings('owner', {
+        ...defaultPrintSettings,
+        printer_hostname: 'printer.test',
+        printer_port: -1
+      })
     ).rejects.toThrow('Invalid printer settings');
     expect(mocks.insert).not.toHaveBeenCalled();
   });

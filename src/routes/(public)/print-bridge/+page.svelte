@@ -1,5 +1,4 @@
 <script>
-  import { localizeHref } from '#lib/paraglide/runtime.js';
   import { m } from '#lib/paraglide/messages.js';
 </script>
 
@@ -76,6 +75,18 @@
     </ol>
   </section>
 
+  <figure class="overflow-hidden rounded-xl border border-border-default bg-surface shadow-sm">
+    <img
+      src="/print_bridge.png"
+      alt={m.printbridge_screenshot_caption()}
+      class="w-full max-h-96 object-contain"
+      loading="lazy"
+    />
+    <figcaption class="px-4 py-3 text-sm text-muted-foreground">
+      {m.printbridge_screenshot_caption()}
+    </figcaption>
+  </figure>
+
   <section
     aria-labelledby="what-you-need-heading"
     class="rounded-xl border border-border-default bg-surface p-6 shadow-sm sm:p-8"
@@ -92,21 +103,40 @@
     </ul>
     <p class="mt-4 text-sm leading-6 text-muted-foreground">
       {m.printbridge_setup_desc()}
+      <a
+        href="https://github.com/JamesBolanos/print-bridge/blob/main/DOCS/sscc-labels-setup.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-medium text-blue-700 dark:text-blue-300 underline"
+        >{m.printbridge_github_page()}</a
+      >.
     </p>
   </section>
 
-  <nav aria-label="Related pages" class="flex flex-wrap gap-4 text-sm font-semibold">
-    <a
-      href={localizeHref('/guide')}
-      class="text-blue-700 underline hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
-    >
-      {m.printbridge_compare_labels()}
-    </a>
-    <a
-      href={localizeHref('/settings')}
-      class="text-blue-700 underline hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
-    >
-      {m.printbridge_configure_printer()}
-    </a>
-  </nav>
+  <section
+    aria-labelledby="faq-heading"
+    class="rounded-xl border border-border-default bg-surface p-6 shadow-sm sm:p-8"
+  >
+    <h2 id="faq-heading" class="text-2xl font-bold text-foreground">
+      {m.printbridge_faq_title()}
+    </h2>
+    <dl class="mt-4 space-y-4">
+      <div>
+        <dt class="font-semibold text-foreground">{m.printbridge_faq_safe_q()}</dt>
+        <dd class="mt-1 text-sm leading-6 text-muted-foreground">{m.printbridge_faq_safe_a()}</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-foreground">{m.printbridge_faq_offline_q()}</dt>
+        <dd class="mt-1 text-sm leading-6 text-muted-foreground">
+          {m.printbridge_faq_offline_a()}
+        </dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-foreground">{m.printbridge_faq_printers_q()}</dt>
+        <dd class="mt-1 text-sm leading-6 text-muted-foreground">
+          {m.printbridge_faq_printers_a()}
+        </dd>
+      </div>
+    </dl>
+  </section>
 </div>
